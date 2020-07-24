@@ -38,7 +38,7 @@ always_comb
 
         if(d_alpha.out_sel == 2'b11 && m_alpha.lo_wen)//LO
             to_d_alpha.lo_forward = 2'b10 ;
-        else if(e_alpha.out_sel == 2'b11 && w_alpha.lo_wen)
+        else if(d_alpha.out_sel == 2'b11 && w_alpha.lo_wen)
             to_d_alpha.lo_forward = 2'b01 ;
         else
             to_d_alpha.lo_forward = 2'b00 ;    

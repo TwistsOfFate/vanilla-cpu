@@ -57,13 +57,13 @@ logic       chooseissuetwo    ;
 logic       instr_alpha_memreq, instr_beta_memreq    ;
 logic       instr_alpha_regwrite, instr_beta_regwrite ;
 logic [ 1:0]instr_alpha_regdst, instr_beta_regdst ;// include rt, rd, r31
-logic       instr_alpha_cp0write, instr_beta_cp0write ;
 logic       instr_alpha_hiwrite, instr_beta_hiwrite ;
 logic       instr_alpha_lowrite, instr_beta_lowrite ;
 logic       instr_alpha_is_jump, instr_alpha_is_branch, instr_beta_is_jump, instr_beta_is_branch  ;
+logic       instr_alpha_cp0rel ;
 
-logic       instr_alpha_needrs, instr_alpha_needrt, instr_alpha_needhi, instr_alpha_needlo, instr_alpha_needcp0 ;
-logic       instr_beta_needrs, instr_beta_needrt, instr_beta_needhi, instr_beta_needlo, instr_beta_needcp0 ;
+logic       instr_alpha_needrs, instr_alpha_needrt, instr_alpha_needhi, instr_alpha_needlo ;
+logic       instr_beta_needrs, instr_beta_needrt, instr_beta_needhi, instr_beta_needlo ;
 
 logic       jb_issueone, hazard_issueone, lwst_issueone ;
 logic [ 4:0]instr_alpha_writereg ;
@@ -103,7 +103,7 @@ begin
 end
 
 assign hazard_issueone = (instr_alpha_regwrite && (((instr_alpha_writereg == instr_beta_rs) && instr_beta_needrs) || ((instr_alpha_writereg == instr_beta_rt) && instr_beta_needrt)))
-|| (instr_alpha_hiwrite && instr_beta_needhi)  || (instr_alpha_lowrite && instr_beta_needlo) || (instr_alpha_cp0write && instr_beta_needcp0) ; 
+|| (instr_alpha_hiwrite && instr_beta_needhi)  || (instr_alpha_lowrite && instr_beta_needlo) || instr_alpha_cp0rel || instr_beta_cp0rel ; 
 
 
 always_comb
@@ -285,7 +285,6 @@ issue_controller is_ctrl_instr_alpha(
     .d_memreq       (instr_alpha_memreq),
     .d_regwrite     (instr_alpha_regwrite),
     .d_regdst       (instr_alpha_regdst),
-    .d_cp0write     (instr_alpha_cp0write),
     .d_hiwrite      (instr_alpha_hiwrite),
     .d_lowrite      (instr_alpha_lowrite),
 
@@ -296,7 +295,7 @@ issue_controller is_ctrl_instr_alpha(
     .d_needrt       (instr_alpha_needrt),
     .d_needhi       (instr_alpha_needhi),
     .d_needlo       (instr_alpha_needlo),
-    .d_needcp0      (instr_alpha_needcp0)
+    .d_cp0rel       (instr_alpha_cp0rel)
 //    .d_sys_jump     (instr_alpha_sys_jump)
 
 ) ;
@@ -310,7 +309,6 @@ issue_controller is_ctrl_instr_beta(
     .d_memreq       (instr_beta_memreq),
     .d_regwrite     (instr_beta_regwrite),
     .d_regdst       (instr_beta_regdst),
-    .d_cp0write     (instr_beta_cp0write),
     .d_hiwrite      (instr_beta_hiwrite),
     .d_lowrite      (instr_beta_lowrite),
 
@@ -321,7 +319,7 @@ issue_controller is_ctrl_instr_beta(
     .d_needrt       (instr_beta_needrt),
     .d_needhi       (instr_beta_needhi),
     .d_needlo       (instr_beta_needlo),
-    .d_needcp0      (instr_beta_needcp0)
+    .d_cp0rel       (instr_beta_cp0rel)
 //    .d_sys_jump     (instr_beta_sys_jump)
 
 

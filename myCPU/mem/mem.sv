@@ -6,6 +6,8 @@ module mem(
 	input  dp_etom	etom,
 	output dp_mtow  mtow,
 	output dp_mtoh  mtoh,
+
+	input [31:0]	data_rdata,
 	
 	//MEM STAGE INPUT
 	input [31:0]	cp0_epc,
@@ -105,6 +107,7 @@ module mem(
 	assign mtow.lo_wdata = etom.lo_wdata ;
 	assign mtow.rd = etom.rd ;
 	assign mtow.is_instr = etom.is_instr ;
+	assign mtow.data_rdata = data_rdata ;
 
 	assign mtoh.reg_waddr = etom.reg_waddr ;
 	assign mtoh.regwrite  = msig.regwrite ;

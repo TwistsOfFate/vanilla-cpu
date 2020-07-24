@@ -7,7 +7,6 @@ module issue_controller(
     output logic       d_memreq          , //
     output logic       d_regwrite        , //
     output logic [1:0] d_regdst          , //  00rt 01rd 10r31
-    output logic       d_cp0write        , //
     output logic       d_hiwrite         , //
     output logic       d_lowrite         , //
      
@@ -18,7 +17,7 @@ module issue_controller(
     output logic       d_needrt          , //
     output logic       d_needhi          , //
     output logic       d_needlo          , //
-    output logic       d_needcp0           //
+    output logic       d_cp0rel           //
 //    output logic       d_sys_jump             
 );
     
@@ -489,10 +488,9 @@ assign d_memreq = ((d_op == 6'b100000) || (d_op == 6'b100100)
     || (d_op == 6'b100001) || (d_op == 6'b100101) || (d_op == 6'b100011)
     || (d_op == 6'b101000) || (d_op == 6'b101001) || (d_op == 6'b101011)) ;
 
-assign d_needcp0 = (d_op == 6'b010000 && d_funct == 6'b011000)
-    || (d_op == 6'b010000 && d_c0funct == 5'b00000) ;
-
-assign d_cp0write = (d_op == 6'b010000 && d_c0funct == 5'b00100) ;   
+assign d_cp0rel = (d_op == 6'b010000 && d_funct == 6'b011000)
+    || (d_op == 6'b010000 && d_c0funct == 5'b00000)
+    || (d_op == 6'b010000 && d_c0funct == 5'b00100) ;
 
 assign d_needhi = (d_op == 6'b000000 && d_funct == 6'b010000) ;
 assign d_needlo = (d_op == 6'b000000 && d_funct == 6'b010010) ;

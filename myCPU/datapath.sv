@@ -6,7 +6,7 @@ module datapath(
     input  logic [5:0]	  ext_int           ,
     
     // the instr fetched
-    input  logic [31:0]   f_instr_alpha           , 
+    input  logic [31:0]   f_instr_alpha     ,
     
     // signals of the corresponding instr
     input  ctrl_reg       dsig_alpha        ,
@@ -27,11 +27,11 @@ module datapath(
     output logic [31:0]	  m_pc_alpha        ,
     
     // whether choose to flush 
-    output stage_val_1    flush_alpha             ,
-    output stage_val_1    stall_alpha             ,
+    output stage_val_1    flush_alpha       ,
+    output stage_val_1    stall_alpha       ,
         
     //compare num
-    output branch_rel     dbranchcmp_alpha        ,
+    output branch_rel     dbranchcmp_alpha  ,
     
     //dmem sram-like interface
 	output logic       	  m_data_req        ,
@@ -226,7 +226,6 @@ assign f_pc_alpha = dp_ftod_f_alpha.pc ;
 assign m_pc_alpha = dp_etom_m_alpha.pc ;
 assign dp_ftod_f_alpha.is_instr = 1'b1;
 assign dp_ftod_f_alpha.addr_err_if = (f_pc_alpha[1:0] != 2'b00) ;
-assign dp_mtow_m_alpha.data_rdata = m_data_rdata ;
 assign dp_ftod_f_alpha.instr = f_instr_alpha ;
 //EX to WB Stages
 
@@ -252,6 +251,8 @@ mem my_mem(
     .etom(dp_etom_m_alpha),
     .mtow(dp_mtow_m_alpha),
     .mtoh(dp_mtoh_m_alpha),
+
+    .data_rdata(m_data_rdata),
 
 
 	//MEM STAGE INPUT

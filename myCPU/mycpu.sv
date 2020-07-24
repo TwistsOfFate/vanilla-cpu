@@ -46,28 +46,26 @@ logic		 m_stall_late	   ;
 logic		 m_flush_late	   ;
 
 stage_val_1  flush_ext_alpha, stall_ext_alpha ;
-
+busy_ok      idmem ;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
-//--------------------------------------------------------------------------
-branch_rel   dcompare_alpha          ;
-//--------------------------------------------------------------------------
+branch_rel   dcompare_alpha;
 
-logic		m_data_req;
+logic		 m_data_req;
 
-logic [1:0]	imem_state, dmem_state;
-busy_ok     idmem ;
+logic [1:0] imem_state, dmem_state;
+
 assign idmem.inst_data_ok = inst_data_ok ;
 assign idmem.data_data_ok = data_data_ok ;
 
 logic [31:0]	f_inst_addr;
 logic [31:0]	m_data_addr;
 
-logic [3:0]	m_data_wen;
+logic [3:0]     m_data_wen;
 
 
 //--------------------------------------------------------------------------
 
-assign {stall_ext_alpha.f, stall_ext_alpha.d, stall_ext_alpha.e, stall_ext_alpha.m, flush_ext_alpha.d, flush_ext_alpha.e, flush_ext_alpha.m, flush_ext_alpha.w} = 8'b0;
+assign {stall_ext_alpha.f, stall_ext_alpha.d, stall_ext_alpha.e, stall_ext_alpha.m, stall_ext_alpha.w, flush_ext_alpha.f, flush_ext_alpha.d, flush_ext_alpha.e, flush_ext_alpha.m, flush_ext_alpha.w} = 10'b0;
 
 //--------------------------------------------------------------------------
 
@@ -164,63 +162,102 @@ rdata_latch m_rdata_latch(
 
 // SRAM-Like Interface FSM
 
-always_ff @(posedge clk) begin
-	if (~resetn)
-		f_inst_addr_tmp <= 32'hffff_ffff;
-	else
-		f_inst_addr_tmp <= f_inst_addr;
-end
+logic [31:0] d_instr_count, e_instr_count, m_instr_count;
 
 always_ff @(posedge clk) begin
-	if (~resetn) begin
-		imem_state <= 2'b00;
-	end else if (imem_state == 2'b00) begin
-		imem_state <= inst_addr_ok && f_inst_addr != f_inst_addr_tmp ? 2'b10 : 2'b01;
-	end else if (imem_state == 2'b01) begin
-		imem_state <= inst_addr_ok ? 2'b10 : 2'b01;
-	end else if (imem_state == 2'b10) begin
-		imem_state <= inst_data_ok ? 2'b00 : 2'b10;
-	end
+    if(~resetn) begin
+         d_instr_count <= 32'b0;
+    end else if (!stall_alpha.d && !flush_alpha.d) begin
+         d_instr_count <= d_instr_count + 32'b1;
+    end
 end
 
-always_comb begin
-	case (imem_state)
-		2'b00:		inst_req = 1'b1 && f_inst_addr != f_inst_addr_tmp;
-		2'b01:		inst_req = 1'b1;
-		2'b10:		inst_req = 1'b0;
-		default:	inst_req = 1'b0;
-	endcase
-end
+flop de_instr_count (clk, ~resetn | flush_alpha.e, stall_alpha.e, d_instr_count, e_instr_count);
+flop em_instr_count (clk, ~resetn | flush_alpha.m, stall_alpha.m, e_instr_count, m_instr_count);
 
-always_ff @(posedge clk) begin
-	if (~resetn | flush_alpha.m)
-		m_pc_tmp <= 32'hffff_ffff;
-	else
-		m_pc_tmp <= m_pc;
-end
+sram_like_handshake imem_handshake(
+    .clk(clk),
+    .rst(~resetn),
+    .unique_id(f_inst_addr),
+    .need_req(1'b1),
+    .busy(idmem.imem_busy),
 
-always_ff @(posedge clk) begin
-	if (~resetn) begin
-		dmem_state <= 2'b00;
-	end else if (dmem_state == 2'b00) begin
-		dmem_state <= m_data_req && m_pc != m_pc_tmp ? (data_addr_ok ? 2'b10 : 2'b01) : 2'b00;
-	end else if (dmem_state == 2'b01) begin
-		dmem_state <= data_addr_ok ? 2'b10 : 2'b01;
-	end else if (dmem_state == 2'b10) begin
-		dmem_state <= data_data_ok ? 2'b00 : 2'b10;
-	end
-end
+    .addr_ok(inst_addr_ok),
+    .data_ok(inst_data_ok),
+    .req(inst_req)
+    );
 
-always_comb begin
-	case (dmem_state)
-		2'b00:		data_req = m_data_req && m_pc != m_pc_tmp;
-		2'b01:		data_req = 1'b1;
-		2'b10:		data_req = 1'b0;
-		default:	data_req = 1'b0;
-	endcase
-end
+sram_like_handshake dmem_handshake(
+    .clk(clk),
+    .rst(~resetn),
+    .unique_id(m_instr_count),
+    .need_req(m_data_req),
+    .busy(idmem.dmem_busy),
 
-assign idmem.imem_busy = !inst_data_ok;
-assign idmem.dmem_busy = dmem_state == 2'b01 || dmem_state == 2'b10 || dmem_state == 2'b00 && data_req == 1'b1;
+    .addr_ok(data_addr_ok),
+    .data_ok(data_data_ok),
+    .req(data_req)
+    );
+
+//----------------------------------------------------
+
+// always_ff @(posedge clk) begin
+// 	if (~resetn)
+// 		f_inst_addr_tmp <= 32'hffff_ffff;
+// 	else
+// 		f_inst_addr_tmp <= f_inst_addr;
+// end
+
+// always_ff @(posedge clk) begin
+// 	if (~resetn) begin
+// 		imem_state <= 2'b00;
+// 	end else if (imem_state == 2'b00) begin
+// 		imem_state <= inst_addr_ok && f_inst_addr != f_inst_addr_tmp ? 2'b10 : 2'b01;
+// 	end else if (imem_state == 2'b01) begin
+// 		imem_state <= inst_addr_ok ? 2'b10 : 2'b01;
+// 	end else if (imem_state == 2'b10) begin
+// 		imem_state <= inst_data_ok ? 2'b00 : 2'b10;
+// 	end
+// end
+
+// always_comb begin
+// 	case (imem_state)
+// 		2'b00:		inst_req = 1'b1 && f_inst_addr != f_inst_addr_tmp;
+// 		2'b01:		inst_req = 1'b1;
+// 		2'b10:		inst_req = 1'b0;
+// 		default:	inst_req = 1'b0;
+// 	endcase
+// end
+
+// always_ff @(posedge clk) begin
+// 	if (~resetn | flush_alpha.m)
+// 		m_pc_tmp <= 32'hffff_ffff;
+// 	else
+// 		m_pc_tmp <= m_pc;
+// end
+
+// always_ff @(posedge clk) begin
+// 	if (~resetn) begin
+// 		dmem_state <= 2'b00;
+// 	end else if (dmem_state == 2'b00) begin
+// 		dmem_state <= m_data_req && m_pc != m_pc_tmp ? (data_addr_ok ? 2'b10 : 2'b01) : 2'b00;
+// 	end else if (dmem_state == 2'b01) begin
+// 		dmem_state <= data_addr_ok ? 2'b10 : 2'b01;
+// 	end else if (dmem_state == 2'b10) begin
+// 		dmem_state <= data_data_ok ? 2'b00 : 2'b10;
+// 	end
+// end
+
+// always_comb begin
+// 	case (dmem_state)
+// 		2'b00:		data_req = m_data_req && m_pc != m_pc_tmp;
+// 		2'b01:		data_req = 1'b1;
+// 		2'b10:		data_req = 1'b0;
+// 		default:	data_req = 1'b0;
+// 	endcase
+// end
+
+// assign idmem.imem_busy = !inst_data_ok;
+// assign idmem.dmem_busy = dmem_state == 2'b01 || dmem_state == 2'b10 || dmem_state == 2'b00 && data_req == 1'b1;
     
 endmodule
