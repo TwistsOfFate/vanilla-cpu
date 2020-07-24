@@ -3,12 +3,12 @@ module ex(
 	input				clk,
 	input 				rst,
 
+	input [31:0]		e_for_rsdata,
+	input [31:0]		e_for_rtdata,
+
 	input	dp_htoe 	htoe,
 	input	dp_dtoe 	dtoe,
 	input	ctrl_reg 	esig,
-
-	input [31:0]		w_reg_wdata,
-	input [31:0]		m_ex_out,
 
 	output	dp_etom 	etom,
 	output	dp_etoh 	etoh
@@ -28,8 +28,6 @@ module ex(
 	wire [31:0]			e_sft_srca;
 	wire [4:0]			e_sft_srcb;
 	wire [31:0]			e_sft_out;
-	wire [31:0]			e_for_rsdata;
-	wire [31:0]			e_for_rtdata;
 	wire [31:0]			e_bta_out;
 
 	wire [31:0]			mul_hi;
@@ -43,24 +41,6 @@ module ex(
 		.b		({{16{dtoe.imm[15]}}, dtoe.imm}),
 		.sel	(esig.imm_sign),
 		.out	(e_imm_out)
-	);
-//E_FORWARD_RS_MUX4
-	mux4 e_forward_rs_mux4(
-		.a		(dtoe.rsdata),
-		.b		(w_reg_wdata),
-		.c		(m_ex_out),
-		.d		(),
-		.sel	(htoe.forwarda),
-		.out	(e_for_rsdata)
-	);
-//E_FORWARD_RT_MUX4
-	mux4 e_forward_rt_mux4(
-		.a		(dtoe.rtdata),
-		.b		(w_reg_wdata),
-		.c		(m_ex_out),
-		.d		(),
-		.sel	(htoe.forwardb),
-		.out	(e_for_rtdata)
 	);
 //ALU_SRCB_MUX2
 	mux2 alu_srcb_mux2(

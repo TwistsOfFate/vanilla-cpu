@@ -67,7 +67,8 @@ logic f_in_delay_slot;
 logic [31:0] delayslot_addr ;
 
 logic [31:0] d_for_hi_alpha, d_for_lo_alpha;
-logic [31:0] d_for_rsdata_alpha, d_for_rtdata_alpha ;
+logic [31:0] d_for_rsdata_alpha, d_for_rtdata_alpha;
+logic [31:0] e_for_rsdata_alpha, e_for_rtdata_alpha;
 
 logic [31:0] w_reg_wdata_alpha ;
 logic [31:0] f_nextpc_alpha ;
@@ -186,6 +187,24 @@ mux3 #(32) d_forwardlomux(
     .mux3_result (d_for_lo_alpha)       
 ) ;
 
+mux4 #(32) e_forward_rs_mux4(
+    .a      (dp_dtoe_e_alpha.rsdata),
+    .b      (w_reg_wdata_alpha),
+    .c      (dp_mtow_m_alpha.ex_out),
+    .d      (),
+    .sel    (dp_htoe_e_alpha.forwarda),
+    .out    (e_for_rsdata_alpha)
+);
+
+mux4 #(32) e_forward_rt_mux4(
+    .a      (dp_dtoe_e_alpha.rtdata),
+    .b      (w_reg_wdata_alpha),
+    .c      (dp_mtow_m_alpha.ex_out),
+    .d      (),
+    .sel    (dp_htoe_e_alpha.forwardb),
+    .out    (e_for_rtdata_alpha)
+);
+
 decode my_decode(
     .d_for_rsdata(d_for_rsdata_alpha),
     .d_for_rtdata(d_for_rtdata_alpha),
@@ -230,17 +249,19 @@ assign dp_ftod_f_alpha.instr = f_instr_alpha ;
 //EX to WB Stages
 
 ex my_ex(
+// input
 	.clk(clk),
     .rst(~resetn),
+
+    .e_for_rsdata(e_for_rsdata_alpha),
+    .e_for_rtdata(e_for_rtdata_alpha),
 
     .esig(esig_alpha),
 
     .htoe(dp_htoe_e_alpha),
     .dtoe(dp_dtoe_e_alpha),
 
-	.w_reg_wdata(w_reg_wdata_alpha),
-	.m_ex_out(dp_etom_m_alpha.ex_out),
-	
+// output
     .etom(dp_etom_e_alpha),
     .etoh(dp_etoh_e_alpha)
 
