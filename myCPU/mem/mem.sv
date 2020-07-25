@@ -113,6 +113,7 @@ module mem(
 	assign mtoh.regwrite  = msig.regwrite ;
 	assign mtoh.memtoreg  = msig.memtoreg ;
 	assign mtoh.cp0_sel  = msig.cp0_sel ;
+	assign mtoh.cp0_wen  = msig.cp0_wen ;
 	assign mtoh.hi_wen   = msig.hi_wen ;
 	assign mtoh.lo_wen   = msig.lo_wen ;
 	assign mtoh.exc_cp0_wen = exc_cp0_wen ;

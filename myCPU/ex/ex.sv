@@ -122,11 +122,15 @@ module ex(
 		e_alu_intovf
 	);
 //E_OUT_MUX2
-	mux4 e_out_mux4(
+	mux8 e_out_mux4(
 		.a		(e_alu_out),
 		.b		(e_sft_out),
 		.c		(dtoe.hi),
 		.d		(dtoe.lo),
+		.e		(mul_lo),
+		.f		(),
+		.g		(),
+		.h		(),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)
 	);
@@ -171,6 +175,7 @@ module ex(
 	assign etoh.memtoreg  = esig.memtoreg ;
 	assign etoh.out_sel   = esig.out_sel  ;
 	assign etoh.cp0_sel   = esig.cp0_sel ;
+	assign etoh.cp0_wen   = esig.cp0_wen ;
 	assign etoh.hi_wen    = esig.hi_wen  ;
 	assign etoh.lo_wen    = esig.lo_wen  ;
 	assign etoh.div_en    = esig.div_en  ;

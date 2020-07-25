@@ -123,5 +123,6 @@ assign dtoh.isjump = dsig.isjump ;
 assign dtoh.out_sel = dsig.out_sel ;
 assign dtoh.rs = dtoe.rs ;
 assign dtoh.rt = dtoe.rt ;
+assign dtoh.cp0_sel = dsig.cp0_sel;
 
 endmodule

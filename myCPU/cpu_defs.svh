@@ -53,7 +53,7 @@ typedef struct packed {
 	logic 		 div_en   ;
 	logic		 div_sign ;
 	logic		 intovf_en;
-	logic [ 1:0] out_sel  ;
+	logic [ 2:0] out_sel  ;
 	logic		 alu_srcb_sel_rt ;
 	logic		 sft_srca_sel_imm;
 	logic		 sft_srcb_sel_rs ;
@@ -155,6 +155,7 @@ typedef struct packed {
 	logic	[ 1:0]out_sel;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
+	logic		  cp0_sel;
 } dp_dtoh;
 
 typedef struct packed {
@@ -163,6 +164,7 @@ typedef struct packed {
 	logic		  memtoreg ;
 	logic	[ 1:0]out_sel  ;
 	logic		  cp0_sel  ;
+	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  div_en   ;
@@ -177,6 +179,7 @@ typedef struct packed {
 	logic 	 	  regwrite ;
 	logic		  memtoreg ;
 	logic		  cp0_sel  ;
+	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  exc_cp0_wen;
