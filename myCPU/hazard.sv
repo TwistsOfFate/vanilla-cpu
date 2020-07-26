@@ -18,7 +18,8 @@ module hazard(
                
     
 logic lwstall, branchstall, hilostall;
-logic mfc0_stall, mtc0_stall, cp0_wconflict_stall, divider_stall;
+logic mfc0_stall, mtc0_stall, cp0_wconflict_stall;
+logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
 
 logic [9:0] stall_flush;
@@ -82,8 +83,8 @@ assign lwstall = e_alpha.memtoreg && ((e_alpha.rt == d_alpha.rs) || (e_alpha.rt 
 
 assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 2'b10) || (e_alpha.lo_wen && d_alpha.out_sel == 2'b11) ;
 
-assign branchstall = ( d_alpha.isbranch || d_alpha.isjump ) && ((e_alpha.regwrite && ((e_alpha.reg_waddr == d_alpha.rs) 
-|| (e_alpha.reg_waddr == d_alpha.rt))) || (m_alpha.memtoreg &&  ((m_alpha.reg_waddr == d_alpha.rs) || (m_alpha.reg_waddr == d_alpha.rt)))) ;
+assign branchstall = ( d_alpha.isbranch || d_alpha.isjump ) && ((e_alpha.regwrite && (e_alpha.reg_waddr == d_alpha.rs 
+|| e_alpha.reg_waddr == d_alpha.rt)) || (m_alpha.memtoreg && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt))) ;
 
 assign mfc0_stall = (e_alpha.cp0_sel && (e_alpha.reg_waddr == d_alpha.rs || e_alpha.reg_waddr == d_alpha.rt)) 
 || (m_alpha.cp0_sel && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)) 
@@ -94,6 +95,7 @@ assign mtc0_stall = d_alpha.cp0_sel && (e_alpha.cp0_wen || m_alpha.cp0_wen || w_
 assign cp0_wconflict_stall = m_alpha.exc_cp0_wen && w_alpha.cp0_wen ;
 
 assign divider_stall = e_alpha.div_en && !e_alpha.div_ready;
+assign multiplier_stall = e_alpha.mul_en && !e_alpha.mul_ready;
 
 assign imem_stall = idmem.imem_busy;
 assign dmem_stall = idmem.dmem_busy;
@@ -108,7 +110,7 @@ always_comb begin
         stall_flush = 10'b11110_00001;
     else if (m_alpha.is_valid_exc || m_alpha.eret)
         stall_flush = 10'b00000_01111;
-    else if (divider_stall)
+    else if (divider_stall || multiplier_stall)
         stall_flush = 10'b11100_00010;
     else if (imem_stall)
         stall_flush = 10'b11000_00100;

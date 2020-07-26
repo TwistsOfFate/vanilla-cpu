@@ -87,12 +87,23 @@ module ex(
 		.out	(e_bta_out)
 	);
 //MULTIPLIER
-	multiplier my_multiplier(
-		.sign	(esig.mul_sign),
-		.srca	(e_for_rsdata),
-		.srcb	(e_for_rtdata),
-		.hi		(mul_hi),
-		.lo		(mul_lo)
+	// multiplier my_multiplier(
+	// 	.sign	(esig.mul_sign),
+	// 	.srca	(e_for_rsdata),
+	// 	.srcb	(e_for_rtdata),
+	// 	.hi		(mul_hi),
+	// 	.lo		(mul_lo)
+	// );
+	multiplier_ip my_multiplier(
+		.clk(clk),
+		.rst(rst),
+		.in_valid(esig.mul_en),
+		.sign(esig.mul_sign),
+		.srca(e_for_rsdata),
+		.srcb(e_for_rtdata),
+		.out_valid(etoh.mul_ready),
+		.hi(mul_hi),
+		.lo(mul_lo)
 	);
 //DIVIDER
 //Use divider_comb to speed up simulation
@@ -179,6 +190,7 @@ module ex(
 	assign etoh.hi_wen    = esig.hi_wen  ;
 	assign etoh.lo_wen    = esig.lo_wen  ;
 	assign etoh.div_en    = esig.div_en  ;
+	assign etoh.mul_en    = esig.mul_en  ;
 	assign etoh.rs		  = dtoe.rs		 ;
 	assign etoh.rt		  = dtoe.rt		 ;
 	assign etoh.rd		  = dtoe.rd		 ;

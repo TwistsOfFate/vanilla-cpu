@@ -95,7 +95,7 @@ wire [31:0]		cp0_wdata;
 
 //-----------------------------debug signals-----------------------------------
 assign debug_wb_pc 		= dp_mtow_w_alpha.pc ;
-assign debug_wb_rf_wen 	= {4{wsig_alpha.regwrite}};
+assign debug_wb_rf_wen 	= {4{wsig_alpha.regwrite & ~stall_alpha.w}};
 assign debug_wb_rf_wnum = dp_mtow_w_alpha.reg_waddr ;
 assign debug_wb_rf_wdata = w_reg_wdata_alpha;
 

@@ -141,7 +141,7 @@ BEGIN
       C_XDEVICEFAMILY => "artix7",
       C_HAS_ARESETN => 1,
       C_HAS_ACLKEN => 0,
-      C_LATENCY => 12,
+      C_LATENCY => 15,
       ALGORITHM_TYPE => 1,
       DIVISOR_WIDTH => 32,
       DIVIDEND_WIDTH => 32,

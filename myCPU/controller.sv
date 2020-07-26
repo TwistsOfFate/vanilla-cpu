@@ -713,6 +713,8 @@ assign dstage.intovf_en = ((dinstr.op == 6'b000000 && dinstr.funct == 6'b100000)
 assign dstage.imm_sign = (dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dinstr.op == 6'b001010 || dinstr.op == 6'b001011) || 
 (dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011);
 
+assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010);
+
 assign dstage.mul_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011000) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010) ;
 
 assign dstage.div_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011010 || dinstr.funct == 6'b011011));
@@ -798,7 +800,7 @@ assign dstage.pcsrc = |branch ;
 
 
 
-flop #(46) regE(
+flop #(47) regE(
     .clk(clk) ,
     .rst(~resetn | flush.e) ,
     .stall(stall.e) ,
@@ -806,7 +808,7 @@ flop #(46) regE(
     .out(estage) 
 );
 
-flop #(46) regM(
+flop #(47) regM(
     .clk(clk) ,
     .rst(~resetn | flush.m) ,
     .stall(stall.m) ,
@@ -814,7 +816,7 @@ flop #(46) regM(
     .out(mstage) 
 );
 
-flop #(46) regW(
+flop #(47) regW(
     .clk(clk) ,
     .rst(~resetn | flush.w) ,
     .stall(stall.w) ,

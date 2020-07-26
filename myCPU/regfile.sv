@@ -20,7 +20,7 @@ module regfile(
     always_ff @(posedge clk)
         begin 
             if(reset)
-               for(i = 0; i < 32; i = i + 1)
+                for(i = 0; i < 32; i = i + 1)
                     RAM[i] <= 0;
             else if (regwrite_en && !w_stall)
                 RAM[regwrite_addr] <= regwrite_data ;
