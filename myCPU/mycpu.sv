@@ -33,6 +33,10 @@ module mycpu(
 	output logic [ 4:0]  debug_wb_rf_wnum,
 	output logic [31:0]  debug_wb_rf_wdata
     ); 
+
+logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req;
+logic [31:0] inst_cpu_addr;
+logic [31:0] inst_cpu_rdata;
     
 logic [31:0] f_instr_alpha, f_inst_addr_tmp;
 logic [31:0] m_pc, m_pc_tmp;
@@ -54,7 +58,7 @@ logic		 m_data_req;
 
 logic [1:0] imem_state, dmem_state;
 
-assign idmem.inst_data_ok = inst_data_ok ;
+assign idmem.inst_data_ok = inst_cpu_data_ok ;
 assign idmem.data_data_ok = data_data_ok ;
 
 logic [31:0]	f_inst_addr;
@@ -131,7 +135,7 @@ datapath dp(
  
 ); 
 
-mmu immu(f_inst_addr, inst_addr);
+mmu immu(f_inst_addr, inst_cpu_addr);
 mmu dmmu(m_data_addr, data_addr);
 
 assign inst_wr = 1'b0;
@@ -145,8 +149,8 @@ rdata_latch f_rdata_latch(
 	.rst(~resetn),
 	.stall(stall_alpha.f),
 	.flush(1'b0),
-	.data_ok(inst_data_ok),
-	.in(inst_rdata),
+	.data_ok(inst_cpu_data_ok),
+	.in(inst_cpu_rdata),
 	.out(f_instr_alpha)
 );
 
@@ -182,9 +186,9 @@ sram_like_handshake imem_handshake(
     .need_req(1'b1),
     .busy(idmem.imem_busy),
 
-    .addr_ok(inst_addr_ok),
-    .data_ok(inst_data_ok),
-    .req(inst_req)
+    .addr_ok(inst_cpu_addr_ok),
+    .data_ok(inst_cpu_data_ok),
+    .req(inst_cpu_req)
     );
 
 sram_like_handshake dmem_handshake(
@@ -199,65 +203,18 @@ sram_like_handshake dmem_handshake(
     .req(data_req)
     );
 
-//----------------------------------------------------
-
-// always_ff @(posedge clk) begin
-// 	if (~resetn)
-// 		f_inst_addr_tmp <= 32'hffff_ffff;
-// 	else
-// 		f_inst_addr_tmp <= f_inst_addr;
-// end
-
-// always_ff @(posedge clk) begin
-// 	if (~resetn) begin
-// 		imem_state <= 2'b00;
-// 	end else if (imem_state == 2'b00) begin
-// 		imem_state <= inst_addr_ok && f_inst_addr != f_inst_addr_tmp ? 2'b10 : 2'b01;
-// 	end else if (imem_state == 2'b01) begin
-// 		imem_state <= inst_addr_ok ? 2'b10 : 2'b01;
-// 	end else if (imem_state == 2'b10) begin
-// 		imem_state <= inst_data_ok ? 2'b00 : 2'b10;
-// 	end
-// end
-
-// always_comb begin
-// 	case (imem_state)
-// 		2'b00:		inst_req = 1'b1 && f_inst_addr != f_inst_addr_tmp;
-// 		2'b01:		inst_req = 1'b1;
-// 		2'b10:		inst_req = 1'b0;
-// 		default:	inst_req = 1'b0;
-// 	endcase
-// end
-
-// always_ff @(posedge clk) begin
-// 	if (~resetn | flush_alpha.m)
-// 		m_pc_tmp <= 32'hffff_ffff;
-// 	else
-// 		m_pc_tmp <= m_pc;
-// end
-
-// always_ff @(posedge clk) begin
-// 	if (~resetn) begin
-// 		dmem_state <= 2'b00;
-// 	end else if (dmem_state == 2'b00) begin
-// 		dmem_state <= m_data_req && m_pc != m_pc_tmp ? (data_addr_ok ? 2'b10 : 2'b01) : 2'b00;
-// 	end else if (dmem_state == 2'b01) begin
-// 		dmem_state <= data_addr_ok ? 2'b10 : 2'b01;
-// 	end else if (dmem_state == 2'b10) begin
-// 		dmem_state <= data_data_ok ? 2'b00 : 2'b10;
-// 	end
-// end
-
-// always_comb begin
-// 	case (dmem_state)
-// 		2'b00:		data_req = m_data_req && m_pc != m_pc_tmp;
-// 		2'b01:		data_req = 1'b1;
-// 		2'b10:		data_req = 1'b0;
-// 		default:	data_req = 1'b0;
-// 	endcase
-// end
-
-// assign idmem.imem_busy = !inst_data_ok;
-// assign idmem.dmem_busy = dmem_state == 2'b01 || dmem_state == 2'b10 || dmem_state == 2'b00 && data_req == 1'b1;
-    
+iCache icache(
+    .clk                (clk)               ,
+    .reset              (~resetn)           ,
+    .instr_addr         (inst_cpu_addr)     ,
+    .cpu_req            (inst_cpu_req)      ,
+    .cpu_addr_ok        (inst_cpu_addr_ok)  ,
+    .cpu_data_ok        (inst_cpu_data_ok)  ,
+    .instr_rdata        (inst_cpu_rdata)    ,
+    .mem_req            (inst_req)          ,
+    .mem_read_addr      (inst_addr)         ,
+    .mem_read_data      (inst_rdata)        ,
+    .mem_addr_ok        (inst_addr_ok)      ,
+    .mem_data_ok        (inst_data_ok)
+);    
 endmodule
