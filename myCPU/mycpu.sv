@@ -36,8 +36,9 @@ module mycpu(
     logic inst_cached, data_cached;
 
     logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req;
-    logic [31:0] inst_cpu_addr;
-    logic [31:0] inst_cpu_rdata;
+    logic [31:0] inst_cpu_addr_1, inst_cpu_addr_2;
+    logic [31:0] inst_cpu_rdata_1, inst_cpu_rdata_2;
+    logic second_data_ok;
 
     logic data_cache_req, data_cache_wr, data_cache_data_ok, data_cache_addr_ok;
     logic [31:0] data_cache_addr;
@@ -51,7 +52,8 @@ module mycpu(
     logic [31:0] data_cpu_wdata;
 
     logic icached, dcached;
-
+    
+    // TODO : adjust following ports -- inst_rdata_1, inst_rdata_2, inst_addr_1, inst_addr_2, second_data_ok
     mypipeline mypipeline(
         .clk                (clk)               ,
         .resetn             (resetn)            ,
@@ -59,9 +61,12 @@ module mycpu(
         .inst_req           (inst_cpu_req)      ,
         .inst_wr            (inst_wr)           ,
         .inst_size          (inst_size)         , 
-        .inst_addr          (inst_cpu_addr)     , 
-        .inst_wdata         (inst_wdata)    , 
-        .inst_rdata         (inst_cpu_rdata)    , 
+        .inst_addr_1        (inst_cpu_addr_1)   , // new
+        .inst_addr_2        (inst_cpu_addr_2)   , // new
+        .inst_wdata         (inst_wdata)        , 
+        .inst_rdata_1       (inst_cpu_rdata_1)  , // new
+        .inst_rdata_2       (inst_cpu_rdata_2)  , // new
+        .second_data_ok     (second_data_ok)    , // new
         .inst_addr_ok       (inst_cpu_addr_ok)  , 
         .inst_data_ok       (inst_cpu_data_ok)  ,
         .data_req           (data_cpu_req)      , 
@@ -84,8 +89,11 @@ module mycpu(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
         .cpu_req            (inst_cpu_req)      ,
-        .instr_addr         (inst_cpu_addr)     ,
-        .instr_rdata        (inst_cpu_rdata)    ,
+        .instr_addr_1       (inst_cpu_addr_1)   , // new
+        .instr_addr_2       (inst_cpu_addr_2)   , // new
+        .instr_rdata_1      (inst_cpu_rdata_1)  , // new
+        .instr_rdata_2      (inst_cpu_rdata_2)  , // new
+        .second_data_ok     (second_data_ok)    , // new
         .cpu_addr_ok        (inst_cpu_addr_ok)  ,
         .cpu_data_ok        (inst_cpu_data_ok)  ,
         .mem_req            (inst_req)          ,

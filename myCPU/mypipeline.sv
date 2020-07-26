@@ -8,10 +8,13 @@ module mypipeline(
     output logic         inst_req     ,
     output logic         inst_wr      ,
     output logic  [ 1:0] inst_size    ,
-    output logic  [31:0] inst_addr    ,
+    output logic  [31:0] inst_addr_1  ,
+    output logic  [31:0] inst_addr_2  ,
     output logic  [31:0] inst_wdata   ,
     
-    input  logic  [31:0] inst_rdata   ,
+    input  logic  [31:0] inst_rdata_1 ,
+    input  logic  [31:0] inst_rdata_2 ,
+    input  logic         second_data_ok,
     input  logic         inst_addr_ok ,
     input  logic         inst_data_ok ,
     
