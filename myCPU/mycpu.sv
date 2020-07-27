@@ -35,7 +35,7 @@ module mycpu(
 
     logic inst_cached, data_cached;
 
-    logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req;
+    logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req_1, inst_cpu_req_2;
     logic [31:0] inst_cpu_addr_1, inst_cpu_addr_2;
     logic [31:0] inst_cpu_rdata_1, inst_cpu_rdata_2;
     logic second_data_ok;
@@ -88,7 +88,8 @@ module mycpu(
     iCache icache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (inst_cpu_req)      ,
+        .cpu_req_1          (inst_cpu_req_1)    ,
+        .cpu_req_2          (inst_cpu_req_2)    ,
         .instr_addr_1       (inst_cpu_addr_1)   , // new
         .instr_addr_2       (inst_cpu_addr_2)   , // new
         .instr_rdata_1      (inst_cpu_rdata_1)  , // new

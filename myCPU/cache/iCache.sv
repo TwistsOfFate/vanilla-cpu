@@ -16,7 +16,8 @@ module iCache #(
     input  logic [31 : 0]  instr_addr_1, // the request address
     input  logic [31 : 0]  instr_addr_2,
     output logic           second_data_ok,
-    input  logic           cpu_req,
+    input  logic           cpu_req_1,
+    input  logic           cpu_req_2,
     output logic           cpu_addr_ok,
     output logic           cpu_data_ok, // whether the data is transported
     output logic [31 : 0]  instr_rdata_1, // the data need to be read
@@ -40,7 +41,7 @@ module iCache #(
     logic [31 : 0] instr_rdata_1_0, instr_rdata_2_0;
     logic [OFFSET_WIDTH - 3 : 0] addr_block_offset, data_block_offset;
     logic state, hit, hit_0, hit_1;
-    logic cpu_req_1;
+    logic cpu_req_1_1;
     logic mem_addr_ok_1, mem_data_ok_1;
     logic cpu_data_ok_0;
     logic second_data_ok_0;
@@ -90,7 +91,7 @@ module iCache #(
         case (hit)
             1'b1 : begin
                     instr_rdata_1_0 <= icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
-                    if (instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
+                    if (cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
                         instr_rdata_2_0 <= icache_line_data[hit_line_num][instr_addr_offset_2 * 32 +: 32];
                         second_data_ok_0 <= 1'b1;
                     end else begin
@@ -100,7 +101,7 @@ module iCache #(
                    end
             default : begin
                         instr_rdata_1_0 <= icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
-                        if (instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
+                        if (cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
                             instr_rdata_2_0 <= icache_line_data[replaceID][instr_addr_offset_2 * 32 +: 32];
                             second_data_ok_0 <= 1'b1;
                         end else begin
@@ -117,12 +118,12 @@ module iCache #(
                                   mem_read_data, line_data, line_data_ok);
     
  
-    assign cpu_addr_ok = cpu_req & hit;
+    assign cpu_addr_ok = cpu_req_1 & hit;
     
     // TODO: removed icache_flop
-    flop #(67) icache_flop(clk, reset, 1'b0, {hit  , instr_rdata_1_0, instr_rdata_1_0, second_data_ok_0, cpu_req  },
-                                             {hit_1, instr_rdata_1  , instr_rdata_2  , second_data_ok  , cpu_req_1});
-    assign cpu_data_ok = hit_1 & cpu_req_1;
+    flop #(67) icache_flop(clk, reset, 1'b0, {hit  , instr_rdata_1_0, instr_rdata_1_0, second_data_ok_0, cpu_req_1  },
+                                             {hit_1, instr_rdata_1  , instr_rdata_2  , second_data_ok  , cpu_req_1_1});
+    assign cpu_data_ok = hit_1 & cpu_req_1_1;
         
     assign mem_read_addr = {instr_addr_tag, instr_addr_index, addr_block_offset, 2'b00};
     assign mem_data_addr = {instr_addr_tag, instr_addr_index, data_block_offset, 2'b00};
