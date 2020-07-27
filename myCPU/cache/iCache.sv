@@ -111,7 +111,7 @@ module iCache #(
                       end
         endcase
     
-    assign hit = |way_selector;
+    assign hit = (|way_selector) || !cpu_req_1;
     
     iCache_Controller icache_ctrl(clk, reset, mem_addr_ok, mem_data_ok, hit, instr_addr_offset, linew_en, 
                                   addr_block_offset, data_block_offset, offset_sel, state, mem_req,
