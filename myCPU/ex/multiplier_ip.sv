@@ -13,21 +13,21 @@ module multiplier_ip(
 	);
 
 logic [31:0] hi0, lo0, hi1, lo1;
-logic [31:0] count;
-logic [63:0] ops_reg;
+logic [4:0] count;
+logic [64:0] in_reg;
 
 always_ff @(posedge clk) begin
 	if (rst)
-		ops_reg <= 64'd0;
+		in_reg <= 65'd0;
 	else
-		ops_reg <= {srca, srcb};
+		in_reg <= {sign, srca, srcb};
 end
 
 always_ff @(posedge clk) begin
-	if (ops_reg != {srca, srcb} || !in_valid || rst)
-		count <= 32'd0;
+	if (in_reg != {sign, srca, srcb} || !in_valid || rst)
+		count <= 5'd0;
 	else
-		count <= count < 32'd3 ? count + 32'd1 : count;
+		count <= count < 5'd3 ? count + 5'd1 : count;
 end
 
 mult_gen_0 my_mult_gen_0(
@@ -44,7 +44,7 @@ mult_gen_1 my_mult_gen_1(
     .P({hi1, lo1})
 );
 
-assign out_valid = count >= 32'd3;
+assign out_valid = count >= 5'd3;
 assign hi = sign ? hi1 : hi0;
 assign lo = sign ? lo1 : lo0;
 

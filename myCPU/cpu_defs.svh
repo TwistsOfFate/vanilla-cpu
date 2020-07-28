@@ -124,6 +124,7 @@ typedef struct packed {
 
 typedef struct packed {
 	logic		  in_delay_slot;
+	logic	[ 4:0]rt;
 	logic	[31:0]rsdata;
 	logic	[31:0]rtdata;
 	logic	[31:0]ex_out;
@@ -175,6 +176,7 @@ typedef struct packed {
 	logic	[ 4:0]rd;
 	logic		  div_ready;
 	logic		  mul_ready;
+	logic		  link;
 } dp_etoh;
 
 typedef struct packed {
@@ -188,6 +190,8 @@ typedef struct packed {
 	logic		  exc_cp0_wen;
 	logic		  eret;
 	logic		  is_valid_exc;
+	logic	[ 4:0]rt;
+	logic		  link;
 } dp_mtoh;
 
 typedef struct packed {

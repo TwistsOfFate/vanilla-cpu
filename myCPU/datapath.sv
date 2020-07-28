@@ -377,7 +377,7 @@ flop    #(199) dtoe(
     .out 		(dp_dtoe_e_alpha)  
 ) ;
 
-flop   #(206) etom(
+flop   #(211) etom(
     .clk       	(clk),
     .rst     	(~resetn | flush_alpha.m),
     .stall		(stall_alpha.m),

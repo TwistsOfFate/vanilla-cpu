@@ -118,6 +118,7 @@ module mem(
 	assign mtoh.lo_wen   = msig.lo_wen ;
 	assign mtoh.exc_cp0_wen = exc_cp0_wen ;
 	assign mtoh.eret     = msig.eret ;
-
+	assign mtoh.rt 		 = etom.rt;
+	assign mtoh.link 	 = msig.link;
 
 endmodule

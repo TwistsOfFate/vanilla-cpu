@@ -174,6 +174,7 @@ module ex(
     );
 	
 	assign etom.in_delay_slot = dtoe.in_delay_slot ;
+	assign etom.rt = dtoe.rt ;
 	assign etom.rsdata = e_for_rsdata ;
 	assign etom.rtdata = e_for_rtdata ;
 	assign etom.pc = dtoe.pc ;
@@ -194,5 +195,6 @@ module ex(
 	assign etoh.rs		  = dtoe.rs		 ;
 	assign etoh.rt		  = dtoe.rt		 ;
 	assign etoh.rd		  = dtoe.rd		 ;
+	assign etoh.link 	  = esig.link    ;
 	
 endmodule

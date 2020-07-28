@@ -10,9 +10,10 @@ module divider_ip(
 	output [31:0] 	lo
     );
 
-logic [31:0] q0, q1, r0, r1;
-logic out_valid0, out_valid1;
-logic sign_reg;
+wire [31:0] q0, q1, r0, r1;
+wire out_valid0, out_valid1;
+logic [64:0] in_reg;
+logic [4:0] count;
 
 div_gen_0 my_div_gen_0 (
   .aclk(clk),                                      	// input wire aclk
@@ -36,7 +37,21 @@ div_gen_1 my_div_gen_1 (
   .m_axis_dout_tdata({q1, r1})         				// output wire [63 : 0] m_axis_dout_tdata
 );
 
-assign out_valid = sign ? out_valid1 : out_valid0;
+always_ff @(posedge clk) begin
+  if (rst)
+    in_reg <= 65'd0;
+  else
+    in_reg <= {sign, srca, srcb};
+end
+
+always_ff @(posedge clk) begin
+  if (in_reg != {sign, srca, srcb} || !in_valid || rst)
+    count <= 5'd0;
+  else
+    count <= count < 5'd15 ? count + 5'd1 : count;
+end
+
+assign out_valid = count >= 5'd15;
 assign lo = sign ? q1 : q0;
 assign hi = sign ? r1 : r0;
     
