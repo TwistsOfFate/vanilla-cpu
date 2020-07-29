@@ -14,7 +14,7 @@ logic [1:0] state;
 logic [31:0] unique_id_prev;
 
 always_ff @(posedge clk) begin
-	if(rst)
+	if (rst)
 		unique_id_prev <= 32'hffff_ffff;
 	else if (req)
 		unique_id_prev <= unique_id;
