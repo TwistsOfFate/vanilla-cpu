@@ -25,7 +25,7 @@ logic imem_stall, dmem_stall;
 logic [9:0] stall_flush;
 
 assign {stall.f, stall.d, stall.e, stall.m, stall.w, flush.f, flush.d, flush.e, flush.m, flush.w} = 
-stall_flush | {stall_ext.f, stall_ext.d, stall_ext.e, stall_ext.m, stall_ext.w, 1'b0, flush_ext.d, flush_ext.e, flush_ext.m, flush_ext.w};
+stall_flush | {stall_ext.f, stall_ext.d, stall_ext.e, stall_ext.m, 1'b0, 1'b0, flush_ext.d, flush_ext.e, flush_ext.m, flush_ext.w};
 
 
 always_comb

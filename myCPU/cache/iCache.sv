@@ -91,12 +91,12 @@ module iCache #(
 	  
     always_comb
         case (hit)
-            1'b1 : instr_rdata_0 = icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
-	       		default: instr_rdata_0 = icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
+            1'b1 : instr_rdata_0 <= icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
+	       		default: instr_rdata_0 <= icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
 	   		endcase
 	
 //	assign hit_0 = |way_selector;
-    assign hit = |way_selector;
+    assign hit = (|way_selector) || !cpu_req;
 	
 	iCache_Controller icache_ctrl(clk, reset, mem_addr_ok, mem_data_ok, hit, instr_addr_offset, linew_en, 
     							  addr_block_offset, data_block_offset, offset_sel, state, mem_req,//cpu_data_ok, mem_req,
@@ -113,12 +113,8 @@ module iCache #(
     assign cpu_addr_ok = cpu_req & hit;
 //    assign cpu_data_ok = hit;
     
-    // flop #(34) flop(clk, reset, 0, {hit  , instr_rdata_0, cpu_req  },
-    //                                {hit_1, instr_rdata  , cpu_req_1});
-    assign hit_1 = hit;
-   	assign instr_rdata = instr_rdata_0;
-    assign cpu_req_1 = cpu_req;
-    
+    flop #(34) flop(clk, reset, 0, {hit  , instr_rdata_0, cpu_req  },
+                                   {hit_1, instr_rdata  , cpu_req_1});
     assign cpu_data_ok = hit_1 & cpu_req_1;
         
 //    assign mem_read_addr = {instr_addr_tag_1, instr_addr_index_1, addr_block_offset, 2'b00};

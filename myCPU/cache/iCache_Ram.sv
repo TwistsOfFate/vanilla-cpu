@@ -17,7 +17,12 @@ module iCache_Ram #(
 
 	assign wdata = RAM[addr];
 	
-	always_ff @(posedge clk)
-		if (wen) RAM[addr] <= din;
+//	always_ff @(posedge clk)
+//	if (reset)
+//			for (int i = 0; i < 2 ** `CACHE_S; i = i + 1) RAM[i] <= '0;
+//	else if (wen) RAM[addr] <= din;
+
+    always_ff @(posedge clk)
+        if (wen) RAM[addr] <= din;
 	
 endmodule
