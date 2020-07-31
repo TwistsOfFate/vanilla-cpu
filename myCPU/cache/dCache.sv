@@ -85,7 +85,7 @@ module dCache #(
     generate
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
         
-        assign dcache_line_wen[i] = linew_en && (((i == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && !cpu_data_ok && cpu_req;
+        assign dcache_line_wen[i] = linew_en && (((i == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
     
         dCache_Ram #(TAG_WIDTH + 2, OFFSET_SIZE)
                     dcache_info_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, 2'b11,
@@ -137,10 +137,15 @@ module dCache #(
     
     assign cpu_addr_ok = cpu_req & hit;
         
-    flop #(2) dcache_flop(clk, reset, 1'b0, {hit  , cpu_req  },
-                                            {hit_1, cpu_req_1});
+    // flop #(2) dcache_flop(clk, reset, 1'b0, {hit  , cpu_req  },
+    //                                         {hit_1, cpu_req_1});
 
-    flop #(32) dcache_flop_2(clk, reset, 1'b0, data_rdata_0, data_rdata);
+    // flop #(32) dcache_flop_2(clk, reset, 1'b0, data_rdata_0, data_rdata);
+
+    assign hit_1 = hit;
+    assign cpu_req_1 = cpu_req;
+    assign data_rdata = data_rdata_0;
+
     assign cpu_data_ok = hit_1 & cpu_req_1;
             
     mux2 #(32) maddr_mux({data_addr[31 : OFFSET_WIDTH], addr_block_offset, 2'b00},  

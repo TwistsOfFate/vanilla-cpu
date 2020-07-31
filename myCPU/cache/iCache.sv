@@ -113,8 +113,13 @@ module iCache #(
     assign cpu_addr_ok = cpu_req & hit;
 //    assign cpu_data_ok = hit;
     
-    flop #(34) flop(clk, reset, 0, {hit  , instr_rdata_0, cpu_req  },
-                                   {hit_1, instr_rdata  , cpu_req_1});
+    // flop #(34) flop(clk, reset, 0, {hit  , instr_rdata_0, cpu_req  },
+    //                                {hit_1, instr_rdata  , cpu_req_1});
+
+    assign hit_1 = hit;
+    assign instr_rdata = instr_rdata_0;
+    assign cpu_req_1 = cpu_req;  
+
     assign cpu_data_ok = hit_1 & cpu_req_1;
         
 //    assign mem_read_addr = {instr_addr_tag_1, instr_addr_index_1, addr_block_offset, 2'b00};
