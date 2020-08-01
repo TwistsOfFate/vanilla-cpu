@@ -24,27 +24,7 @@ logic [ 7:0] branch ;
 always_comb
 begin
     case(dinstr.op)
-        6'b011100:
-        begin
-            if (dinstr.funct == 6'b000010)
-            begin
-                dstage.alu_srcb_sel_rt <= 0;
-                dstage.sft_srcb_sel_rs <= 0;
-                dstage.out_sel <= 3'b100;
-                dstage.regwrite <= 1'b1;
-                dstage.regdst <= 2'b01;
-                dstage.reserved_instr <= 1'b0;
-            end
-            else
-            begin
-                dstage.alu_srcb_sel_rt <= 0;
-                dstage.sft_srcb_sel_rs <= 0;
-                dstage.out_sel <= 3'b000;
-                dstage.regwrite <= 1'b0;
-                dstage.regdst <= 2'b00;
-                dstage.reserved_instr <= 1'b1;
-            end
-        end
+    
         6'b000000: 
         begin
             case(dinstr.funct)
@@ -52,7 +32,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -61,7 +41,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -70,7 +50,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -79,7 +59,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -88,7 +68,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -97,7 +77,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -106,7 +86,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -115,7 +95,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -124,7 +104,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ; 
+                    dstage.out_sel <= 2'b00 ; 
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -133,7 +113,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -142,7 +122,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -151,7 +131,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -160,7 +140,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -169,7 +149,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -178,7 +158,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 1 ;
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -187,7 +167,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -196,7 +176,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 1 ;
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -205,7 +185,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -214,7 +194,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 1 ;
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -223,7 +203,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;   
                     dstage.sft_srcb_sel_rs <= 0 ;    
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 2'b01 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -232,7 +212,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -241,7 +221,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -250,7 +230,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b010 ;
+                    dstage.out_sel <= 2'b10 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -259,7 +239,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b011 ;
+                    dstage.out_sel <= 2'b11 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -268,7 +248,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -277,7 +257,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -286,7 +266,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -295,7 +275,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -304,7 +284,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b1 ;
@@ -316,7 +296,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -325,7 +305,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -334,7 +314,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -343,7 +323,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -352,7 +332,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -361,7 +341,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b001 ;
+            dstage.out_sel <= 2'b01 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -370,7 +350,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -379,7 +359,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -388,7 +368,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -397,7 +377,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -409,7 +389,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -418,7 +398,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b0 ;
                     dstage.regdst <= 2'b00 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -427,7 +407,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b10 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -436,7 +416,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b10 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -445,7 +425,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
                     dstage.sft_srcb_sel_rs <= 0 ;
-                    dstage.out_sel <= 3'b000 ;
+                    dstage.out_sel <= 2'b00 ;
                     dstage.regwrite <= 1'b1 ;
                     dstage.regdst <= 2'b10 ;
                     dstage.reserved_instr <= 1'b1 ;
@@ -456,7 +436,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -465,7 +445,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -474,7 +454,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -483,7 +463,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b10 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -492,7 +472,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -501,7 +481,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -510,7 +490,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -519,7 +499,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -528,7 +508,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -537,7 +517,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -546,7 +526,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -555,7 +535,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -567,7 +547,7 @@ begin
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
                 dstage.sft_srcb_sel_rs <= 0 ;
-                dstage.out_sel <= 3'b000 ;
+                dstage.out_sel <= 2'b00 ;
                 dstage.regwrite <= 1'b0 ;
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b0 ;
@@ -576,7 +556,7 @@ begin
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
                 dstage.sft_srcb_sel_rs <= 0 ;
-                dstage.out_sel <= 3'b000 ;
+                dstage.out_sel <= 2'b00 ;
                 dstage.regwrite <= 1'b1 ;
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b0 ;
@@ -585,7 +565,7 @@ begin
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
                 dstage.sft_srcb_sel_rs <= 0 ;
-                dstage.out_sel <= 3'b000 ;
+                dstage.out_sel <= 2'b00 ;
                 dstage.regwrite <= 1'b0 ;
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b0 ;
@@ -594,7 +574,7 @@ begin
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
                 dstage.sft_srcb_sel_rs <= 0 ;
-                dstage.out_sel <= 3'b000 ;
+                dstage.out_sel <= 2'b00 ;
                 dstage.regwrite <= 1'b0 ;
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b1 ;
@@ -605,7 +585,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b000 ;
+            dstage.out_sel <= 2'b00 ;
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b1 ;
@@ -713,9 +693,7 @@ assign dstage.intovf_en = ((dinstr.op == 6'b000000 && dinstr.funct == 6'b100000)
 assign dstage.imm_sign = (dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dinstr.op == 6'b001010 || dinstr.op == 6'b001011) || 
 (dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011);
 
-assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010);
-
-assign dstage.mul_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011000) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010) ;
+assign dstage.mul_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011000) ;
 
 assign dstage.div_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011010 || dinstr.funct == 6'b011011));
 
@@ -800,7 +778,7 @@ assign dstage.pcsrc = |branch ;
 
 
 
-flop #(47) regE(
+flop #(45) regE(
     .clk(clk) ,
     .rst(~resetn | flush.e) ,
     .stall(stall.e) ,
@@ -808,7 +786,7 @@ flop #(47) regE(
     .out(estage) 
 );
 
-flop #(47) regM(
+flop #(45) regM(
     .clk(clk) ,
     .rst(~resetn | flush.m) ,
     .stall(stall.m) ,
@@ -816,7 +794,7 @@ flop #(47) regM(
     .out(mstage) 
 );
 
-flop #(47) regW(
+flop #(45) regW(
     .clk(clk) ,
     .rst(~resetn | flush.w) ,
     .stall(stall.w) ,

@@ -58,7 +58,8 @@ module mycpu(
         .clk                (clk)               ,
         .resetn             (resetn)            ,
         .ext_int            (ext_int)           ,
-        .inst_req           (inst_cpu_req)      ,
+        .inst_req_1         (inst_cpu_req_1)    ,
+        .inst_req_2         (inst_cpu_req_2)    ,
         .inst_wr            (inst_wr)           ,
         .inst_size          (inst_size)         , 
         .inst_addr_1        (inst_cpu_addr_1)   , // new
@@ -80,9 +81,9 @@ module mycpu(
         .debug_wb_pc        (debug_wb_pc)       , 
         .debug_wb_rf_wen    (debug_wb_rf_wen)   , 
         .debug_wb_rf_wnum   (debug_wb_rf_wnum)  , 
-        .debug_wb_rf_wdata  (debug_wb_rf_wdata) ,
-        .icached            (icached)           ,
-        .dcached            (dcached)
+        .debug_wb_rf_wdata  (debug_wb_rf_wdata) 
+        // .icached            (icached)           ,
+        // .dcached            (dcached)
     );
 
     iCache icache(

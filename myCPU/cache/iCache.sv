@@ -91,7 +91,7 @@ module iCache #(
         case (hit)
             1'b1 : begin
                     instr_rdata_1_0 <= icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
-                    if (cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
+                    if (cpu_req_1 && cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
                         instr_rdata_2_0 <= icache_line_data[hit_line_num][instr_addr_offset_2 * 32 +: 32];
                         second_data_ok_0 <= 1'b1;
                     end else begin
@@ -101,9 +101,9 @@ module iCache #(
                    end
             default : begin
                         instr_rdata_1_0 <= icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
-                        if (cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
+                        if (cpu_req_1 && cpu_req_2 && instr_addr_1[31 : OFFSET_WIDTH] == instr_addr_2[31 : OFFSET_WIDTH]) begin
                             instr_rdata_2_0 <= icache_line_data[replaceID][instr_addr_offset_2 * 32 +: 32];
-                            second_data_ok_0 <= 1'b1;
+                            second_data_ok_0 <= 1'b0;
                         end else begin
                             instr_rdata_2_0 <= '0;
                             second_data_ok_0 <= 1'b0;
@@ -121,8 +121,14 @@ module iCache #(
     assign cpu_addr_ok = cpu_req_1 & hit;
     
     // TODO: removed icache_flop
-    flop #(67) icache_flop(clk, reset, 1'b0, {hit  , instr_rdata_1_0, instr_rdata_1_0, second_data_ok_0, cpu_req_1  },
-                                             {hit_1, instr_rdata_1  , instr_rdata_2  , second_data_ok  , cpu_req_1_1});
+    // flop #(67) icache_flop(clk, reset, 1'b0, {hit  , instr_rdata_1_0, instr_rdata_2_0, second_data_ok_0, cpu_req_1  },
+    //                                          {hit_1, instr_rdata_1  , instr_rdata_2  , second_data_ok  , cpu_req_1_1});
+    assign hit_1 = hit;
+    assign instr_rdata_1 = instr_rdata_1_0;
+    assign instr_rdata_2 = instr_rdata_2_0;
+    assign second_data_ok = second_data_ok_0;
+    assign cpu_req_1_1 = cpu_req_1;
+
     assign cpu_data_ok = hit_1 & cpu_req_1_1;
         
     assign mem_read_addr = {instr_addr_tag, instr_addr_index, addr_block_offset, 2'b00};

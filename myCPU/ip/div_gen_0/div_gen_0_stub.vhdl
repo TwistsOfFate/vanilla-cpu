@@ -1,10 +1,10 @@
 -- Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2019.2 (win64) Build 2708876 Wed Nov  6 21:40:23 MST 2019
--- Date        : Sun Jul 26 16:39:53 2020
--- Host        : DESKTOP-8C2EFT2 running 64-bit major release  (build 9200)
+-- Date        : Tue Jul 28 15:09:21 2020
+-- Host        : HatsuneHan running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode synth_stub
---               D:/000/func_test_v0.01/soc_axi_func/rtl/myCPU/ip/div_gen_0/div_gen_0_stub.vhdl
+--               D:/func_test/3/func_test_v0.01/soc_axi_func/rtl/myCPU/ip/div_gen_0/div_gen_0_stub.vhdl
 -- Design      : div_gen_0
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xc7a200tfbg676-2

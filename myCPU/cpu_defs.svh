@@ -49,12 +49,11 @@ typedef struct packed {
 	logic [ 2:0] alu_func ;
 	logic [ 1:0] sft_func ;
 	logic 		 imm_sign ;
-	logic		 mul_en	  ;
 	logic		 mul_sign ;
 	logic 		 div_en   ;
 	logic		 div_sign ;
 	logic		 intovf_en;
-	logic [ 2:0] out_sel  ;
+	logic [ 1:0] out_sel  ;
 	logic		 alu_srcb_sel_rt ;
 	logic		 sft_srca_sel_imm;
 	logic		 sft_srcb_sel_rs ;
@@ -156,7 +155,8 @@ typedef struct packed {
 	logic	[ 1:0]out_sel;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
-	logic		  cp0_sel;
+	logic		  pcsrc;
+	logic   [31:0]pc;
 } dp_dtoh;
 
 typedef struct packed {
@@ -165,16 +165,14 @@ typedef struct packed {
 	logic		  memtoreg ;
 	logic	[ 1:0]out_sel  ;
 	logic		  cp0_sel  ;
-	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  div_en   ;
-	logic		  mul_en   ;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
 	logic	[ 4:0]rd;
 	logic		  div_ready;
-	logic		  mul_ready;
+	logic	[ 1:0]regdst;
 } dp_etoh;
 
 typedef struct packed {
@@ -182,12 +180,12 @@ typedef struct packed {
 	logic 	 	  regwrite ;
 	logic		  memtoreg ;
 	logic		  cp0_sel  ;
-	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  exc_cp0_wen;
 	logic		  eret;
 	logic		  is_valid_exc;
+	logic	[ 1:0]regdst;
 } dp_mtoh;
 
 typedef struct packed {
@@ -201,15 +199,15 @@ typedef struct packed {
 } dp_wtoh;
 
 typedef struct packed {
-	logic	[ 1:0]forwarda;
-	logic	[ 1:0]forwardb;
-	logic	[ 1:0]hi_forward;
-	logic	[ 1:0]lo_forward;
+	logic	[ 2:0]forwarda;
+	logic	[ 2:0]forwardb;
+	logic	[ 2:0]hi_forward;
+	logic	[ 2:0]lo_forward;
 } dp_htod;
 
 typedef struct packed {
-	logic	[ 1:0]forwarda;
-	logic	[ 1:0]forwardb;
+	logic	[ 2:0]forwarda;
+	logic	[ 2:0]forwardb;
 } dp_htoe;
 
 

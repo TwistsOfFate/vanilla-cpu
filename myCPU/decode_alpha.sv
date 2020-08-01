@@ -1,35 +1,48 @@
 `include"cpu_defs.svh"
-module decode(    
+module decode_alpha(
+    input  logic       clk,
+    input  logic       rst,
+
+    input  logic       d_stall,
+    input  logic       d_flush,
+
     input  logic[31:0] d_for_rsdata,
     input  logic[31:0] d_for_rtdata,
     input  logic[31:0] d_for_hi,
     input  logic[31:0] d_for_lo,
-    input  logic[31:0] f_nowpc,
+
+    // input  logic[31:0] f_nowpc,
     input  logic[31:0] cp0_epc,
     input  logic       is_valid_exc ,
+
     input  ctrl_reg    dsig,
-
     input  logic       eret,
-    input  dp_ftod     ftod,
 
-    output logic[31:0] f_nextpc,
+    input  dp_ftod     ftod,
+    input  logic [1:0] issue_method,
+
+    output logic       d_inst_req,
+    output logic [31:0]d_inst_addr,
+
     output branch_rel  dbranchcmp,
-    output logic       f_indelayslot,
+    // output logic       beta_indelayslot,
 
     output dp_dtoe     dtoe ,
     output instr_inf   dinstrinf,
     output dp_dtoh     dtoh
 );
 
-logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc ;
+logic jb_yes;
+logic [31:0] jb_inst_addr, jb_target;
+logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc,pcnextexc ;
 logic [31:0] d_signimm, d_signimmsh ;
 logic [31:0] f_pcplus4 ;
 
-adder   pcadd1( 
-    .add_valA   (f_nowpc)      ,
-    .add_valB   (32'b100)   ,
-    .add_result (f_pcplus4) 
-) ; //add 4 to get the pc in the delay slot
+//跳转且双发（单发会发延迟槽） flushD_alpha _beta
+// 跳转且单发， 给一个flushD_beta
+
+assign f_pcplus4 = ftod.pc + 32'd4;
+
 
 eqcmp   cmpeq(
     .a  (d_for_rsdata)  ,
@@ -54,14 +67,14 @@ sl2     immsh(
     .sl2_result (d_signimmsh)   
 ) ; //imm shifts left 2
 
-adder   pcadd2(
-    .add_valA   (ftod.pc + 32'd4)     ,
+adder   pcadd3(
+    .add_valA   (f_pcplus4)     ,
     .add_valB   (d_signimmsh)   ,
-    .add_result (d_pcbranch)    
+    .add_result (d_pcbranch)          
 ) ; //add pc in the delay slot and imm
 
 mux2 #(32) pcbrmux(
-    .a  		(f_pcplus4)     ,
+    .a  		(0)     ,
     .b  		(d_pcbranch)    ,
     .sel   		(dsig.pcsrc)       ,
     .out		(pcnextbr)      
@@ -93,16 +106,30 @@ mux2 #(32) pcexcmux(
     .a          (pcnexteret)   ,
     .b          (32'hBFC00380) ,         
     .sel        (is_valid_exc) ,
-    .out        (f_nextpc)
+    .out        (jb_inst_addr)
 ) ;
 
-assign f_indelayslot    = dsig.isbranch || dsig.isjump;
+// flop #(1) jb_yes_flop(clk, rst | d_flush, d_stall, dsig.pcsrc | dsig.isjump, jb_yes);
+
+// always_ff @(posedge clk)
+//     if (rst) jb_target <= 32'h0000_0000;
+//     else if (dsig.pcsrc || dsig.isjump) jb_target <= jb_inst_addr;
+
+// assign d_inst_req = issue_method == 2'd2 && (dsig.pcsrc || !dsig.jump[0] && dsig.isjump || dsig.jump[0] && dsig.isjump)
+//                      || eret || is_valid_exc || ftod.in_delay_slot && jb_yes;
+
+// assign d_inst_addr = ftod.in_delay_slot ? jb_target : jb_inst_addr;
+
+assign d_inst_req = dsig.pcsrc || !dsig.jump[0] && dsig.isjump || dsig.jump[0] && dsig.isjump || eret || is_valid_exc;
+
+assign d_inst_addr = jb_inst_addr;
+
 
 assign dtoe.rs          = ftod.instr[25:21] ;
 assign dtoe.rt          = ftod.instr[20:16] ;
 assign dtoe.rd          = ftod.instr[15:11] ;
 assign dtoe.sa          = ftod.instr[10:6]  ;
-assign dtoe.imm		    = ftod.instr[15:0]  ;
+assign dtoe.imm         = ftod.instr[15:0]  ;
 assign dtoe.rsdata      = d_for_rsdata ;
 assign dtoe.rtdata      = d_for_rtdata ;
 assign dtoe.hi          = d_for_hi ;
@@ -123,5 +150,7 @@ assign dtoh.isjump = dsig.isjump ;
 assign dtoh.out_sel = dsig.out_sel ;
 assign dtoh.rs = dtoe.rs ;
 assign dtoh.rt = dtoe.rt ;
+assign dtoh.pcsrc = dsig.pcsrc ;
+assign dtoh.pc = ftod.pc ;
 
 endmodule

@@ -1,5 +1,4 @@
-
-module flop #(
+module pc_flop_beta #(
 	parameter WIDTH=32
 )(
 	input clk,
@@ -14,9 +13,7 @@ module flop #(
     
     always_ff @(posedge clk) begin
     	if (rst) begin
-    		for (i = 0; i < WIDTH; i = i + 1) begin
-    			tmp[i] <= 1'b0;
-    		end
+    		tmp <= 32'hBFC0_0004;
     	end else if (stall) begin
     		tmp <= tmp;
     	end else begin
