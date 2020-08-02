@@ -87,11 +87,19 @@ module dCache #(
         
         assign dcache_line_wen[i] = linew_en && (((i == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
     
-        dCache_Ram #(TAG_WIDTH + 2, OFFSET_SIZE)
+        icache_Info_Ram #(TAG_WIDTH + 1, INDEX_WIDTH)
+        dcache_info_ram(clk, reset,// (i == replaceID) && (state == 2'b01), 
+                        data_addr_index,
+                        set_dcache_valid, {set_dcache_dirty, data_addr_tag}, 
+                        dcache_line_valid[i], {dcache_line_dirty[i], dcache_line_tag[i]}, 
+//                        dcache_line_visit[i],
+                        dcache_line_wen[i]);
+           /*dCache_Ram #(TAG_WIDTH + 2, OFFSET_SIZE)
                     dcache_info_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, 2'b11,
                                     {set_dcache_valid, set_dcache_dirty, data_addr_tag}, 
                                     {dcache_line_valid[i], dcache_line_dirty[i], dcache_line_tag[i]}, 
-                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);
+                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);*/
+        
                         
         dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
                     dcache_data_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
@@ -100,7 +108,7 @@ module dCache #(
                                     dcache_line_wen[i], (i == replaceID) & line_data_ok);
         
         always_comb
-            if (dcache_line_tag[i] == data_addr_tag) way_selector[i] <= 1;
+            if (dcache_line_valid[i] && dcache_line_tag[i] == data_addr_tag) way_selector[i] <= 1;
             else way_selector[i] <= 0;
         end
     endgenerate
@@ -123,14 +131,10 @@ module dCache #(
         
     dCache_Replacement dcache_replacement(clk, reset, cpu_req, hit, state, replaceID);
 
-    /*always_comb 
-        if (cpu_req && ~hit) begin
-            if (replaceID >= LINE_NUM - 1) replace_target = dcache_line_dirty[0];
-            else replace_target = dcache_line_dirty[replaceID + 1];
-        end else replace_target = dcache_line_dirty[replaceID];*/
-       assign replace_target = replaceID;
+
+    assign replace_target = replaceID;
         
-    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_dirty[replace_target], 
+    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replace_target] & dcache_line_dirty[replace_target], 
                                   data_addr_bit, data_addr_offset, addr_block_offset, data_block_offset, 
                                   linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, offset_sel, state, //cpu_data_ok,
                                   mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size);

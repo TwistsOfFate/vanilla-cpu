@@ -20,8 +20,8 @@ module dCache_Replacement#(
             end else check <= 0;
             if (reset) replaceID <= '0;
             else if (cpu_req && hit && check == 0) begin
-                replaceID <= replaceID + 1;
-            end else if (replaceID >= LINE_NUM - 1) replaceID <= '0;
-            else replaceID <= replaceID;
+                if (replaceID >= LINE_NUM - 1) replaceID <= '0;
+                else replaceID <= replaceID + 1;
+            end else replaceID <= replaceID;
         end
 endmodule

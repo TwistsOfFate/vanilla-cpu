@@ -54,24 +54,29 @@ module iCache #(
 	logic line_data_ok;
 	logic [LINE_NUM - 1 : 0] way_selector;
 	logic [31:0] hit_line_num;
+	logic [LINE_NUM - 1 : 0] icache_line_valid;
 	
 	// access cache
 	// the data in the same cacheline was organized in the same ram
 	// the `instr_addr_index` can be used to locate the accurate data position in both RAM
 	
-	assign instr_addr_tag = instr_addr_tag_0;//state ? instr_addr_tag_1 : instr_addr_tag_0;
-	assign instr_addr_index = instr_addr_index_0;//state ? instr_addr_index_1 : instr_addr_index_0;
-	assign instr_addr_offset = instr_addr_offset_0;//state ? instr_addr_offset_1 : instr_addr_offset_0;
-	//assign ram_addr = state ? data_block_offset : instr_addr_offset;
+	assign instr_addr_tag = instr_addr_tag_0;
+	assign instr_addr_index = instr_addr_index_0;
+	assign instr_addr_offset = instr_addr_offset_0;
+	
 	genvar i;
 	generate
 		for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
-			iCache_Ram  #(TAG_WIDTH, OFFSET_SIZE)
-			     icache_tag_ram  (clk, reset, instr_addr_index, instr_addr_tag, icache_line_tag[i], (i == replaceID) & line_data_ok);
+			     
+		    icache_Info_Ram  #(TAG_WIDTH, INDEX_WIDTH)
+					 icache_tag_ram  (clk, reset, instr_addr_index, 
+														1'b1, instr_addr_tag, 
+														icache_line_valid[i], icache_line_tag[i], 
+														(i == replaceID) & line_data_ok);
 			iCache_Ram  #(OFFSET_SIZE * 32, OFFSET_SIZE) 
 			     icache_data_ram (clk, reset, instr_addr_index, line_data, icache_line_data[i], (i == replaceID) & line_data_ok);
 			always_comb
-				if (icache_line_tag[i] == instr_addr_tag_0) way_selector[i] <= 1;
+				if (icache_line_valid[i] && icache_line_tag[i] == instr_addr_tag_0) way_selector[i] <= 1;
 				else way_selector[i] <= 0;
 		end
 	endgenerate

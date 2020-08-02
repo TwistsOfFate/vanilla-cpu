@@ -82,6 +82,12 @@ module mycpu(
         .dcached            (dcached)
     );
 
+/*assign inst_req = inst_cpu_req;
+assign inst_addr = inst_cpu_addr;
+assign inst_cpu_rdata = inst_rdata;
+assign inst_cpu_addr_ok = inst_addr_ok;
+assign inst_cpu_data_ok = inst_data_ok;
+*/
     iCache icache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
@@ -102,6 +108,7 @@ module mycpu(
     mux2 #(1) i_cpu_data_ok_mux2(inst_data_ok, inst_cache_data_ok, icached, inst_cpu_data_ok);
     mux2 #(1) i_cpu_addr_ok_mux2(inst_addr_ok, inst_cache_addr_ok, icached, inst_cpu_addr_ok);
     mux2 #(32) i_cpu_rdata_mux2(inst_rdata, inst_cache_rdata, icached, inst_cpu_rdata);
+
 
     dCache dcache(
         .clk                (clk)               ,
@@ -132,6 +139,7 @@ module mycpu(
     mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_rdata, data_cache_rdata, dcached, data_cpu_rdata);
 /*
+
 assign data_req = data_cpu_req;
 assign data_wr = data_cpu_wr;
 assign data_size = data_cpu_size;
@@ -139,6 +147,6 @@ assign data_wdata = data_cpu_wdata;
 assign data_addr = data_cpu_addr;
 assign data_cpu_rdata = data_rdata;
 assign data_cpu_addr_ok = data_addr_ok;
-assign data_cpu_data_ok = data_data_ok;
-*/
+assign data_cpu_data_ok = data_data_ok;*/
+
 endmodule
