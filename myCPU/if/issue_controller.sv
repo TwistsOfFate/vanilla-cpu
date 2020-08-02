@@ -29,7 +29,7 @@ begin
     case(d_op)
         6'b011100:
         begin
-            if (dinstr.funct == 6'b000010)  // MUL
+            if (d_funct == 6'b000010)  // MUL
             begin
                 d_regwrite <= 1'b1;
                 d_regdst <= 2'b01;
