@@ -26,7 +26,7 @@ begin
     case(dinstr.op)
         6'b011100:
         begin
-            if (dinstr.funct == 6'b000010)
+            if (dinstr.funct == 6'b000010)  // MUL
             begin
                 dstage.alu_srcb_sel_rt <= 0;
                 dstage.sft_srcb_sel_rs <= 0;

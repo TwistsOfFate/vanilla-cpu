@@ -27,7 +27,23 @@ module issue_controller(
 always_comb
 begin
     case(d_op)
-    
+        6'b011100:
+        begin
+            if (dinstr.funct == 6'b000010)  // MUL
+            begin
+                d_regwrite <= 1'b1;
+                d_regdst <= 2'b01;
+                d_needrs <= 1'b1;
+                d_needrt <= 1'b1;
+            end
+            else
+            begin
+                d_regwrite <= 1'b0;
+                d_regdst <= 2'b00;
+                d_needrs <= 1'b0;
+                d_needrt <= 1'b0;
+            end
+        end
         6'b000000: 
         begin
             case(d_funct)
