@@ -32,9 +32,6 @@ module mycpu(
   output logic [ 4:0]  debug_wb_rf_wnum,
   output logic [31:0]  debug_wb_rf_wdata
 ); 
-
-    logic inst_cached, data_cached;
-
     logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req_1, inst_cpu_req_2;
     logic [31:0] inst_cpu_addr_1, inst_cpu_addr_2;
     logic [31:0] inst_cpu_rdata_1, inst_cpu_rdata_2;
@@ -81,9 +78,9 @@ module mycpu(
         .debug_wb_pc        (debug_wb_pc)       , 
         .debug_wb_rf_wen    (debug_wb_rf_wen)   , 
         .debug_wb_rf_wnum   (debug_wb_rf_wnum)  , 
-        .debug_wb_rf_wdata  (debug_wb_rf_wdata) 
-        // .icached            (icached)           ,
-        // .dcached            (dcached)
+        .debug_wb_rf_wdata  (debug_wb_rf_wdata) ,
+        .icached            (icached)           ,
+        .dcached            (dcached)
     );
 
     iCache icache(
@@ -105,10 +102,10 @@ module mycpu(
         .mem_data_ok        (inst_data_ok)
     ); 
 
-/*    dCache dcache(
+    dCache dcache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (data_cpu_req & data_cached)      ,
+        .cpu_req            (data_cpu_req & dcached)      ,
         .wr                 (data_cpu_wr)       ,
         .size               (data_cpu_size)     ,
         .data_addr          (data_cpu_addr)     ,
@@ -125,22 +122,22 @@ module mycpu(
         .mem_data_ok        (data_data_ok)
     );
 
-    mux2 #(2) mem_size_mux2(data_cpu_size, 2'b10, data_cached, data_size);
-    mux2 #(1) mem_req_mux2(data_cpu_req, data_cache_req, data_cached, data_req);
-    mux2 #(1) mem_wen_mux2(data_cpu_wr, data_cache_wr, data_cached, data_wr);
-    mux2 #(32) mem_addr_mux2(data_cpu_addr, data_cache_addr, data_cached, data_addr);
-    mux2 #(32) mem_wdata_mux2(data_cpu_wdata, data_cache_wdata, data_cached, data_wdata);
-    mux2 #(1) cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, data_cached, data_cpu_data_ok);
-    mux2 #(1) cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, data_cached, data_cpu_addr_ok);
-    mux2 #(32) cpu_rdata_mux2(data_rdata, data_cache_rdata, data_cached, data_cpu_rdata);
-*/
-assign data_req = data_cpu_req;
-assign data_wr = data_cpu_wr;
-assign data_size = data_cpu_size;
-assign data_wdata = data_cpu_wdata;
-assign data_addr = data_cpu_addr;
-assign data_cpu_rdata = data_rdata;
-assign data_cpu_addr_ok = data_addr_ok;
-assign data_cpu_data_ok = data_data_ok;
+    mux2 #(2) mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);
+    mux2 #(1) mem_req_mux2(data_cpu_req, data_cache_req, dcached, data_req);
+    mux2 #(1) mem_wen_mux2(data_cpu_wr, data_cache_wr, dcached, data_wr);
+    mux2 #(32) mem_addr_mux2(data_cpu_addr, data_cache_addr, dcached, data_addr);
+    mux2 #(32) mem_wdata_mux2(data_cpu_wdata, data_cache_wdata, dcached, data_wdata);
+    mux2 #(1) cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
+    mux2 #(1) cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
+    mux2 #(32) cpu_rdata_mux2(data_rdata, data_cache_rdata, dcached, data_cpu_rdata);
+
+// assign data_req = data_cpu_req;
+// assign data_wr = data_cpu_wr;
+// assign data_size = data_cpu_size;
+// assign data_wdata = data_cpu_wdata;
+// assign data_addr = data_cpu_addr;
+// assign data_cpu_rdata = data_rdata;
+// assign data_cpu_addr_ok = data_addr_ok;
+// assign data_cpu_data_ok = data_data_ok;
 
 endmodule

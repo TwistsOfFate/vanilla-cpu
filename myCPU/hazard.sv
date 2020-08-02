@@ -41,7 +41,7 @@ module hazard(
                
     
 logic lwstall, branchstall, hilostall, link_stall;
-logic mfc0_stall, mtc0_stall, cp0_wconflict_stall, divider_stall;
+logic mfc0_stall, mtc0_stall, cp0_wconflict_stall, multiplier_stall, divider_stall;
 logic imem_stall, dmem_stall;
 logic jb_d_flush_db ;
 
@@ -239,7 +239,8 @@ assign mfc0_stall = (e_alpha.cp0_sel && (e_alpha.reg_waddr == d_alpha.rs || e_al
 
 assign cp0_wconflict_stall = (m_alpha.exc_cp0_wen || m_beta.exc_cp0_wen) && w_alpha.cp0_wen ;
 
-assign divider_stall = (e_alpha.div_en && !e_alpha.div_ready) || (e_beta.div_en && !e_beta.div_ready);
+assign multiplier_stall = e_alpha.mul_en && !e_alpha.mul_ready || e_beta.mul_en && !e_beta.mul_ready;
+assign divider_stall = e_alpha.div_en && !e_alpha.div_ready || e_beta.div_en && !e_beta.div_ready;
 
 assign imem_stall = imem_busy;
 assign dmem_stall = dmem_busy;
@@ -258,7 +259,7 @@ begin
         stall_flush_alpha = 10'b00000_01111;
     else if (m_beta.is_valid_exc || m_beta.eret)
         stall_flush_alpha = 10'b00000_01110;
-    else if (divider_stall)
+    else if (multiplier_stall || divider_stall)
         stall_flush_alpha = 10'b11111_00000;
     else if (imem_stall)
         stall_flush_alpha = 10'b11000_00100;
@@ -280,7 +281,7 @@ begin
         stall_flush_beta = stall_flush_alpha;
     else if (m_alpha.is_valid_exc || m_alpha.eret || m_beta.is_valid_exc || m_beta.eret)
         stall_flush_beta = 10'b00000_01111;
-    else if (divider_stall)
+    else if (multiplier_stall || divider_stall)
         stall_flush_beta = stall_flush_alpha;
     else if (imem_stall)
         stall_flush_beta = stall_flush_alpha;

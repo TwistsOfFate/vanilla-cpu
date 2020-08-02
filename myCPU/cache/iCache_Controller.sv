@@ -93,7 +93,7 @@ module iCache_Controller #(
 						zero <= 1'b1;
 						addr_block_offset <= addr_offset;
 						data_block_offset <= addr_offset;
-						if (hit) {linew_en, offset_sel} <= 2'b10;
+						if (hit) linew_en <= 1'b1;
 						else linew_en <= 1'b0;
 				//		mem_req <= 1'b0;
 				   end 
@@ -104,7 +104,6 @@ module iCache_Controller #(
 						//if (addr_load > OFFSET_SIZE - 1) mem_req <= 1'b0;
 					//	else mem_req <= 1'b1;
 						linew_en <= 1'b1;
-						offset_sel <= 1'b1;
 				   end
 		endcase
 	

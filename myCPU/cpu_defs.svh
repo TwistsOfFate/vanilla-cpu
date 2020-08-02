@@ -49,11 +49,12 @@ typedef struct packed {
 	logic [ 2:0] alu_func ;
 	logic [ 1:0] sft_func ;
 	logic 		 imm_sign ;
+	logic	     mul_en	  ;
 	logic		 mul_sign ;
 	logic 		 div_en   ;
 	logic		 div_sign ;
 	logic		 intovf_en;
-	logic [ 1:0] out_sel  ;
+	logic [ 2:0] out_sel  ;
 	logic		 alu_srcb_sel_rt ;
 	logic		 sft_srca_sel_imm;
 	logic		 sft_srcb_sel_rs ;
@@ -168,10 +169,12 @@ typedef struct packed {
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  div_en   ;
+	logic 		  mul_en   ;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
 	logic	[ 4:0]rd;
 	logic		  div_ready;
+	logic		  mul_ready;
 	logic	[ 1:0]regdst;
 } dp_etoh;
 

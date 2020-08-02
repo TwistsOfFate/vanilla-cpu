@@ -19,14 +19,14 @@ module dCache_Ram #(
     assign wdata = RAM[addr];
 
     always_ff @(posedge clk)
-        if (reset)
+        /*if (reset)
             for (int i = 0; i < 2 ** `CACHE_S; i = i + 1) RAM[i] <= '0;
-        else if (wen)
+        else*/ if (wen)
         //  case (wen)
         //  1'b1: 
             case (size)
                 2'b00: RAM[addr][offset * 32 + bit_pos * 8 +: 8] <= din[offset * 32 + bit_pos * 8 +: 8];
-                2'b01: RAM[addr][offset * 32 + bit_pos * 8 +: 16] <= din[offset * 32 + bit_pos * 8 +: 8];
+                2'b01: RAM[addr][offset * 32 + bit_pos * 8 +: 16] <= din[offset * 32 + bit_pos * 8 +: 16];
                 2'b10: RAM[addr][offset * 32 +: 32] <= din[offset * 32 +: 32];
                 default : RAM[addr] <= din;
             endcase

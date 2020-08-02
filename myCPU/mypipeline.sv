@@ -35,7 +35,10 @@ module mypipeline(
     output logic [31:0]  debug_wb_pc	,
 	output logic [ 3:0]  debug_wb_rf_wen,
 	output logic [ 4:0]  debug_wb_rf_wnum,
-	output logic [31:0]  debug_wb_rf_wdata
+	output logic [31:0]  debug_wb_rf_wdata,
+
+    output logic         icached,
+    output logic         dcached
     ); 
     
 logic [31:0] f_instr_alpha, f_inst_addr_tmp, f_instr_beta;
@@ -218,40 +221,18 @@ regfifo my_regfifo(
     .output_debug_wb_rf_wdata (debug_wb_rf_wdata)
 ) ;
 
-// assign debug_wb_pc = debug_wb_pc_alpha ;
-// assign debug_wb_rf_wen = debug_wb_rf_wen_alpha ;
-// assign debug_wb_rf_wnum = debug_wb_rf_wnum_alpha ;
-// assign debug_wb_rf_wdata = debug_wb_rf_wdata_alpha ;
+assign icached = 1'b1;
 
 mmu immu_alpha(f_inst_addr_alpha, inst_addr_1);
 mmu immu_beta(f_inst_addr_beta, inst_addr_2);
-mmu dmmu(m_data_addr, data_addr);
+mmu dmmu(m_data_addr, data_addr, dcached);
 
 assign inst_wr = 1'b0;
 assign inst_size = 2'b10;
 assign inst_wdata = 32'b0;
 
-// rdata latches
-
-rdata_latch f_rdata_latch_alpha(
-	.clk(clk),
-	.rst(~resetn),
-	.stall(stall_alpha.f),
-	.flush(1'b0),
-	.data_ok(inst_data_ok),
-	.in(inst_rdata_1),
-	.out(f_instr_alpha)
-);
-
-rdata_latch f_rdata_latch_beta(
-	.clk(clk),
-	.rst(~resetn),
-	.stall(stall_beta.f),
-	.flush(1'b0),
-	.data_ok(inst_data_ok & second_data_ok),
-	.in(inst_rdata_2),
-	.out(f_instr_beta)
-);
+assign f_instr_alpha = inst_rdata_1;
+assign f_instr_beta = inst_rdata_2;
 
 assign inst_req_2 = f_inst_req_beta ;
 
