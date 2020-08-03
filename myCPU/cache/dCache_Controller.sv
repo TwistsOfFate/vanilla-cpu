@@ -44,7 +44,7 @@ module dCache_Controller #(
         begin
             if (reset | zero) begin
                 addr_load <= 0;
-            end else if (!mem_addr_ok) begin
+            end else if (!mem_data_ok) begin
                 addr_load <= addr_load;
             end else if (addr_load <= OFFSET_SIZE - 1) begin
                 addr_load <= addr_load + 1;
