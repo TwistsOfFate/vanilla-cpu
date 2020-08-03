@@ -134,27 +134,30 @@ module axi_interconnect(
     
     // states
     // TODO: maybe we don't need state machines?
-    enum logic {AXI_R0, AXI_R1} read_state, next_read_state;
-    always_ff @ (posedge aclk)
-        if (!aresetn) read_state <= AXI_R0;
+    enum logic [1:0] {AXI_R0, AXI_R1, AXI_RFREE} read_state, next_read_state;
+    always_ff @ (posedge aclk) 
+        if (!aresetn) read_state <= AXI_RFREE;  // the first read must be an inst read
         else read_state <= next_read_state;
     always_comb  // R1 (data read) has higher priority
     case (read_state)
         AXI_R0:
-            if (rlast & rvalid) begin  // end of a inst read
+            if (rlast & rvalid & rready) begin  // end of a inst read
                 if (data_arvalid) next_read_state = AXI_R1;
                 else if (inst_arvalid) next_read_state = AXI_R0;
-                else next_read_state = AXI_R0;
-                 // Inst reads tend to appear consecutively, so we keep AXI_R0 state despite low priority
+                else next_read_state = AXI_RFREE;
             end
             else next_read_state = AXI_R0;
         AXI_R1:
-            if (rlast & rvalid) begin  // end of a data read
+            if (rlast & rvalid & rready) begin  // end of a data read
                 if (data_arvalid) next_read_state = AXI_R1;
                 else if (inst_arvalid) next_read_state = AXI_R0;
-                else next_read_state = AXI_R0; 
+                else next_read_state = AXI_RFREE;
             end
             else next_read_state = AXI_R1;
+        AXI_RFREE:
+            if (data_arvalid) next_read_state = AXI_R1;
+            else if (inst_arvalid) next_read_state = AXI_R0;
+            else next_read_state = AXI_RFREE;
     endcase
     
     // valid and ready signals
@@ -182,6 +185,19 @@ module axi_interconnect(
             inst_rvalid  = 1'b0;
             data_rvalid  = rvalid;
         end
+        AXI_RFREE:
+        begin
+            arvalid = inst_arvalid & !data_arvalid;
+             // If we're in RFREE state and data_arvalid == 1, then we'll go to R1 state in the next clock,
+             //  so we shouldn't maintain arvalid = 1 even if inst_arvalid == 1.
+            rready  = inst_rready & !data_arvalid;
+            
+            inst_arready = arready & !data_arvalid;
+            data_arready = 1'b0;
+            
+            inst_rvalid  = rvalid & !data_arvalid;
+            data_rvalid  = 1'b0;
+        end
     endcase
     
     // r-signals (slave -> master)
@@ -201,17 +217,6 @@ module axi_interconnect(
     // ar-signals (master -> slave)
     always_comb
     case (read_state)
-        AXI_R0:
-        begin
-            arid    = inst_arid;
-            araddr  = inst_araddr;
-            arlen   = inst_arlen;
-            arsize  = inst_arsize;
-            arburst = inst_arburst;
-            arlock  = inst_arlock;
-            arcache = inst_arcache;
-            arprot  = inst_arprot;
-        end
         AXI_R1:
         begin
             arid    = data_arid;
@@ -223,8 +228,20 @@ module axi_interconnect(
             arcache = data_arcache;
             arprot  = data_arprot;
         end
+        // Because inst reads are far more than data reads, in AXI_RFREE state we transfer inst signals
+        default:
+        begin
+            arid    = inst_arid;
+            araddr  = inst_araddr;
+            arlen   = inst_arlen;
+            arsize  = inst_arsize;
+            arburst = inst_arburst;
+            arlock  = inst_arlock;
+            arcache = inst_arcache;
+            arprot  = inst_arprot;
+        end
     endcase
-    
+
     
     
     
