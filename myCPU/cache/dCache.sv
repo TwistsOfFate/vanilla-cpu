@@ -3,12 +3,12 @@
 typedef logic [31:0] d_int;
 /* SRAM */
 module dCache #(
-    parameter TAG_WIDTH    = `CACHE_T,
-              INDEX_WIDTH  = `CACHE_S,
-              SET_NUM      = `SET_NUM,
-              OFFSET_WIDTH = `CACHE_B,
-              OFFSET_SIZE  = 2 ** (`CACHE_B - 2),
-              LINE_NUM     = `CACHE_E
+    parameter TAG_WIDTH    = `DCACHE_T,
+              INDEX_WIDTH  = `DCACHE_S,
+              SET_NUM      = `DSET_NUM,
+              OFFSET_WIDTH = `DCACHE_B,
+              OFFSET_SIZE  = 2 ** (`DCACHE_B - 2),
+              LINE_NUM     = `DCACHE_E
 )(
     /* CPU */
     input  logic           clk, reset, 
@@ -28,7 +28,8 @@ module dCache #(
     output logic [31 : 0]  mem_wdata,
     input  logic [31 : 0]  mem_rdata,
     input  logic           mem_addr_ok,
-    input  logic           mem_data_ok
+    input  logic           mem_data_ok,
+    output logic           wlast
 );
     
     logic [TAG_WIDTH - 1 : 0] data_addr_tag, data_addr_tag_0;
@@ -137,7 +138,7 @@ module dCache #(
     dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replace_target] & dcache_line_dirty[replace_target], 
                                   data_addr_bit, data_addr_offset, addr_block_offset, data_block_offset, 
                                   linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, offset_sel, state, //cpu_data_ok,
-                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size);
+                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, wlast);
     
     assign cpu_addr_ok = cpu_req & hit;
         

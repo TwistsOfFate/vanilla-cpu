@@ -11,8 +11,8 @@
  * offset_sel : control signal for cache line and this may be used in other places
  */
 module dCache_Controller #(
-    parameter OFFSET_WIDTH = `CACHE_B,
-              OFFSET_SIZE  = 2 ** (`CACHE_B - 2)
+    parameter OFFSET_WIDTH = `DCACHE_B,
+              OFFSET_SIZE  = 2 ** (`DCACHE_B - 2)
 )(
     input  logic                                  clk, reset, cpu_req, w_en, hit, dirty,
     input  logic [ 1 : 0]             bit_pos,
@@ -31,7 +31,8 @@ module dCache_Controller #(
     output logic [OFFSET_SIZE * 32 - 1 : 0]       line_data,
     output logic                                  line_data_ok,
     input  logic [ 1 : 0]             size,
-    output logic [ 1 : 0]             wr_size
+    output logic [ 1 : 0]             wr_size,
+    output logic                      wlast
 );
 
     
@@ -73,6 +74,7 @@ module dCache_Controller #(
             end else if (cpu_req) begin
                 case (state)
                     2'b01 : begin
+                                wlast <= 1'b0;
                                 if (addr_load <= OFFSET_SIZE - 1 || data_load <= OFFSET_SIZE - 1) begin
                                     state <= state; // not ready, ReadMem -> ReadMem
                                     if (mem_data_ok == 1'b1) begin
@@ -80,25 +82,23 @@ module dCache_Controller #(
                                         else mem_req <= 1'b0;
                                     end else if (mem_addr_ok == 1'b1) mem_req <= 1'b0;
                                     else mem_req <= mem_req;
-                //							 cpu_data_ok <= 1'b0;
                                 end else begin
                                     state <= 2'b00; // ReadMem -> Initial
                                     mem_req <= 1'b0;
-                //						     cpu_data_ok <= 1'b1;
                                 end
                                 line_data[data_load * 32 +: 32] <= mem_rdata;
                             end
                     2'b10 : begin
                                 if  (addr_load <= OFFSET_SIZE - 1 || data_load <= OFFSET_SIZE - 1) begin
                                     state <= state; // not ready, WriteBack -> WriteBack
+                                    wlast <= 1'b0;
                                     if (mem_data_ok == 1'b1) begin
                                         if (data_load < OFFSET_SIZE - 1) mem_req <= 1'b1;
                                         else mem_req <= 1'b0;
                                     end else if (mem_addr_ok == 1'b1) mem_req <= 1'b0;
                                     else mem_req <= mem_req;
-//							 cpu_data_ok <= 1'b0;
-                                
                                 end else begin
+                                    wlast <= 1'b1;
                                     state <= 2'b01; // WriteBack -> ReadMem
                                     mem_req <= 1'b1;
                                 end
@@ -106,14 +106,14 @@ module dCache_Controller #(
                     default : if (hit) begin
                                 state <= state; // Initial -> Initial
                                 mem_req <= 1'b0;
+                                wlast <= 1'b0;
                                 case (size)
                                     2'b00 : line_data[addr_offset * 32 + bit_pos * 8 +: 8] <= cpu_rdata[bit_pos * 8 +: 8];
                                     2'b01 : line_data[addr_offset * 32 + bit_pos * 8 +: 16] <= cpu_rdata[bit_pos * 8 +: 8];
                                     default : line_data[addr_offset * 32 +: 32] <= cpu_rdata;
                                 endcase
-//		    				     cpu_data_ok <= 1'b1;
                               end else begin
-//					    	   	 cpu_data_ok <= 1'b0;
+                                wlast <= 1'b0;
                                 mem_req <= 1'b1;
                                 if (dirty)	state <= 2'b10; // Initial -> WriteBack
                                 else state <= 2'b01; // Initial -> ReadMem

@@ -1,9 +1,9 @@
 `include "iCache.vh"
 
 module iCache_Replacement#(
-	parameter TAG_WIDTH    = `CACHE_T,
-		      OFFSET_WIDTH = `CACHE_B,
-		      LINE_NUM     = `CACHE_E
+	parameter TAG_WIDTH    = `ICACHE_T,
+		      OFFSET_WIDTH = `ICACHE_B,
+		      LINE_NUM     = `ICACHE_E
 )(
 	input  logic clk, reset, 
 	input  logic hit, state,

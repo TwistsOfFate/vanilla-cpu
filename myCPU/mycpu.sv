@@ -1,4 +1,10 @@
-module mycpu(
+`include "iCache.vh"
+`include "dCache.vh"
+
+module mycpu #(
+    parameter ICACHE_BURST_LEN = 2 ** (`ICACHE_B - 2),
+              DCACHE_BURST_LEN = 2 ** (`DCACHE_B - 2)
+)(
   input  logic         clk          ,
   input  logic         resetn       ,
   input  logic  [ 5:0] ext_int	  , 
@@ -116,6 +122,10 @@ module mycpu(
 
     logic icached, dcached;
 
+    logic dcache_wlast, data_wlast;
+    logic [7 :0] icache_burst_len, inst_burst_len;
+    logic [7 :0] dcache_burst_len, data_burst_len;
+
     logic [31:0] inst_mem_rdata, data_mem_rdata, data_mem_wdata;
 
     logic inst_cache_addr_ok, inst_cache_data_ok, inst_cache_req;
@@ -144,6 +154,9 @@ module mycpu(
     logic data_req, data_wr, data_addr_ok, data_data_ok;
     logic [ 1:0] data_size;
     logic [31:0] data_addr;
+
+    assign icache_burst_len = ICACHE_BURST_LEN - 1;
+    assign dcache_burst_len = DCACHE_BURST_LEN - 1;
 
     mypipeline mypipeline(
         .clk                (clk)               ,
@@ -193,6 +206,7 @@ module mycpu(
     mux2 #(1) i_cpu_data_ok_mux2(inst_data_ok, inst_cache_data_ok, icached, inst_cpu_data_ok);
     mux2 #(1) i_cpu_addr_ok_mux2(inst_addr_ok, inst_cache_addr_ok, icached, inst_cpu_addr_ok);
     mux2 #(32) i_cpu_rdata_mux2(inst_mem_rdata, inst_cache_rdata, icached, inst_cpu_rdata);
+    mux2 #(8) i_burst_len_mux2(8'b0, icache_burst_len, icached, inst_burst_len);
 
     dCache dcache(
         .clk                (clk)               ,
@@ -211,7 +225,8 @@ module mycpu(
         .mem_wdata          (data_cache_wdata)        ,
         .mem_rdata          (data_mem_rdata)        ,
         .mem_addr_ok        (data_addr_ok)      ,
-        .mem_data_ok        (data_data_ok)
+        .mem_data_ok        (data_data_ok)      ,
+        .wlast              (dcache_wlast)  
     );
 
     mux2 #(2) d_mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);
@@ -222,6 +237,8 @@ module mycpu(
     mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
     mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_mem_rdata, data_cache_rdata, dcached, data_cpu_rdata);
+    mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached, data_burst_len);
+    mux2 #(1) d_burst_wlast_mux2(1'b1, dcache_wlast, dcached, data_wlast);
 
     // assign data_size = data_cpu_size;
     // assign data_req = data_cpu_req;
@@ -244,9 +261,10 @@ module mycpu(
         .sram_rdata           (inst_mem_rdata)    , 
         .addr_ok              (inst_addr_ok)  , 
         .data_ok              (inst_data_ok)  ,
-        .burst_len            (8'b0),
+        .burst_len            (inst_burst_len),
         .burst_size           ({1'b0, inst_size}),
         .burst_type           (2'b01),
+        .burst_wlast          (1'b1),
 
         .arid                 (inst_arid),
         .araddr               (inst_araddr),
@@ -302,9 +320,10 @@ module mycpu(
         .sram_rdata           (data_mem_rdata)    , 
         .addr_ok              (data_addr_ok)  , 
         .data_ok              (data_data_ok)  ,
-        .burst_len            (8'b0),
+        .burst_len            (8'b0),//data_burst_len),
         .burst_size           ({1'b0, data_size}),
         .burst_type           (2'b01),
+        .burst_wlast          (1'b1),//dcache_wlast),
 
         .arid                 (data_arid),
         .araddr               (data_araddr),

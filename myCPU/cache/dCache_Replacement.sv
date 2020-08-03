@@ -1,9 +1,9 @@
 `include "dCache.vh"
 
 module dCache_Replacement#(
-    parameter TAG_WIDTH    = `CACHE_T,
-              OFFSET_WIDTH = `CACHE_B,
-              LINE_NUM     = `CACHE_E
+    parameter TAG_WIDTH    = `DCACHE_T,
+              OFFSET_WIDTH = `DCACHE_B,
+              LINE_NUM     = `DCACHE_E
 )(
     input  logic clk, reset, cpu_req,
     input  logic hit, 

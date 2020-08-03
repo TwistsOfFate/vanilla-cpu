@@ -2,19 +2,19 @@
 
 module dCache_Ram #(
     parameter DATA_WIDTH   = 32,
-              OFFSET_SIZE  = 2 ** (`CACHE_B - 2)
+              OFFSET_SIZE  = 2 ** (`DCACHE_B - 2)
 )(
     input  logic                         clk, reset,
-    input  logic [`CACHE_S - 1 : 0]      addr,
+    input  logic [`DCACHE_S - 1 : 0]      addr,
     input  logic [1 : 0]                 bit_pos,
-    input  logic [`CACHE_B - 3 : 0]      offset,
+    input  logic [`DCACHE_B - 3 : 0]      offset,
     input  logic [1 : 0]                 size,
     input  logic [DATA_WIDTH - 1 : 0]    din,
     output logic [DATA_WIDTH - 1 : 0]    wdata,
     input  logic                         wen,
     input  logic                         data_ok
 );
-    logic [DATA_WIDTH - 1 : 0] RAM[2 ** `CACHE_S - 1 : 0];
+    logic [DATA_WIDTH - 1 : 0] RAM[2 ** `DCACHE_S - 1 : 0];
 
     assign wdata = RAM[addr];
 

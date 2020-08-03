@@ -4,12 +4,12 @@ typedef logic[31:0] _int;
 
 /* SRAM */
 module iCache #(
-	parameter TAG_WIDTH    = `CACHE_T,
-		      INDEX_WIDTH  = `CACHE_S,
-		      SET_NUM      = `SET_NUM,
-		      OFFSET_WIDTH = `CACHE_B,
-		      LINE_NUM     = `CACHE_E,
-		      OFFSET_SIZE  = 2 ** (`CACHE_B - 2)
+	parameter TAG_WIDTH    = `ICACHE_T,
+		      INDEX_WIDTH  = `ICACHE_S,
+		      SET_NUM      = `ISET_NUM,
+		      OFFSET_WIDTH = `ICACHE_B,
+		      LINE_NUM     = `ICACHE_E,
+		      OFFSET_SIZE  = 2 ** (`ICACHE_B - 2)
 )(	
 	/* CPU */
 	input  logic           clk, reset, 
