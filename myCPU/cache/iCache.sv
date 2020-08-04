@@ -30,10 +30,9 @@ module iCache #(
     logic [TAG_WIDTH - 1 : 0] instr_addr_tag, instr_addr_tag_0, instr_addr_tag_1;
     logic [INDEX_WIDTH - 1 : 0] instr_addr_index, instr_addr_index_0, instr_addr_index_1;
     logic [OFFSET_WIDTH - 3 : 0] instr_addr_offset, instr_addr_offset_0, instr_addr_offset_1;
-    logic linew_en, new_valid, offset_sel, strategy_en;
+    logic linew_en, new_valid;
     logic [31 : 0] ram_data[LINE_NUM - 1 : 0];
     logic [31 : 0] instr_rdata_0;
-    logic [31 : 0] mem_data_addr;
     logic [31 : 0] replaceID;
     logic [31 : 0] ram_addr;
     logic [OFFSET_WIDTH - 3 : 0] addr_block_offset, data_block_offset;
@@ -84,7 +83,7 @@ module iCache #(
 	
 	iCache_Replacement icache_replacement(clk, reset, hit, state, replaceID);
 	
-		// getting results
+	// getting results
 	always_comb
 	   begin
 	       hit_line_num = 0;
@@ -99,12 +98,11 @@ module iCache #(
             1'b1 : instr_rdata_0 <= icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
 	       		default: instr_rdata_0 <= icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
 	   		endcase
-	
-//	assign hit_0 = |way_selector;
+
     assign hit = (|way_selector) || !cpu_req;
 	
 	iCache_Controller icache_ctrl(clk, reset, mem_addr_ok, mem_data_ok, hit, instr_addr_offset, linew_en, 
-    							  addr_block_offset, data_block_offset, offset_sel, state, mem_req,//cpu_data_ok, mem_req,
+    							  addr_block_offset, data_block_offset, state, mem_req,
     							  mem_read_data, line_data, line_data_ok);
  
     assign cpu_addr_ok = cpu_req & hit;
@@ -114,11 +112,8 @@ module iCache #(
     assign cpu_req_1 = cpu_req;  
 
     assign cpu_data_ok = hit_1 & cpu_req_1;
-        
-//    assign mem_read_addr = {instr_addr_tag_1, instr_addr_index_1, addr_block_offset, 2'b00};
-//    assign mem_data_addr = {instr_addr_tag_1, instr_addr_index_1, data_block_offset, 2'b00};
+
     assign mem_read_addr = {instr_addr_tag, instr_addr_index, addr_block_offset, 2'b00};
-    assign mem_data_addr = {instr_addr_tag, instr_addr_index, data_block_offset, 2'b00};
 
 endmodule
 

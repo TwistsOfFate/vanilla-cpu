@@ -10,7 +10,6 @@ module dCache_Controller #(
     output logic [OFFSET_WIDTH - 3 : 0]           addr_block_offset,
     output logic                      linew_en, new_valid, new_dirty, mw_en,
     output logic [ 1 : 0]             state,
-//	output logic                      cpu_data_ok,
     output logic                      mem_req,
     input  logic                      mem_data_ok,
     input  logic                      mem_addr_ok,
@@ -20,7 +19,8 @@ module dCache_Controller #(
     output logic                                  line_data_ok,
     input  logic [ 1 : 0]             size,
     output logic [ 1 : 0]             wr_size,
-    output logic                      wlast
+    output logic                      wlast,
+    output logic                      awvalid
 );
 
     logic [31 : 0] load;
@@ -49,6 +49,7 @@ module dCache_Controller #(
             end else if (cpu_req) begin
                 case (state)
                     2'b01 : begin
+                                awvalid <= 1'b0;
                                 wlast <= 1'b0;
                                 if (mem_req && mem_addr_ok) mem_req <= 1'b0;
                                 else mem_req <= mem_req;
@@ -60,16 +61,19 @@ module dCache_Controller #(
                                 line_data[load * 32 +: 32] <= mem_rdata;
                             end
                     2'b10 : begin
+                                awvalid <= 1'b0;
                                 if (load <= OFFSET_SIZE - 1) begin 
                                     state <= state; // not ready, WriteBack -> WriteBack
-                                    wlast <= 1'b0;
+                                    // wlast <= 1'b0;
+                                    if (load == OFFSET_SIZE - 2) wlast <= 1'b1; else wlast <= 1'b0;
                                     if (mem_data_ok == 1'b1) begin
                                         if (load < OFFSET_SIZE - 1) mem_req <= 1'b1;
                                         else mem_req <= 1'b0;
                                     end else if (mem_addr_ok == 1'b1) mem_req <= 1'b0;
                                     else mem_req <= mem_req;
                                 end else begin
-                                    wlast <= 1'b1;
+                                    // wlast <= 1'b1;
+                                    wlast <= 1'b0;
                                     state <= 2'b01; // WriteBack -> ReadMem
                                     mem_req <= 1'b1;
                                 end
@@ -78,6 +82,7 @@ module dCache_Controller #(
                                 state <= state; // Initial -> Initial
                                 mem_req <= 1'b0;
                                 wlast <= 1'b0;
+                                awvalid <= 1'b0;
                                 case (size)
                                     2'b00 : line_data[addr_offset * 32 + bit_pos * 8 +: 8] <= cpu_rdata[bit_pos * 8 +: 8];
                                     2'b01 : line_data[addr_offset * 32 + bit_pos * 8 +: 16] <= cpu_rdata[bit_pos * 8 +: 8];
@@ -86,8 +91,13 @@ module dCache_Controller #(
                               end else begin
                                 wlast <= 1'b0;
                                 mem_req <= 1'b1;
-                                if (dirty)	state <= 2'b10; // Initial -> WriteBack
-                                else state <= 2'b01; // Initial -> ReadMem
+                                if (dirty) begin
+                                    state <= 2'b10; // Initial -> WriteBack
+                                    awvalid <= 1'b1;
+                                end else begin
+                                    state <= 2'b01; // Initial -> ReadMem
+                                    awvalid <= 1'b0;
+                                end
                               end
                 endcase
             end

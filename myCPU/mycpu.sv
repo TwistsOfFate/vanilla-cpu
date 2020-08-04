@@ -123,6 +123,7 @@ module mycpu #(
     logic icached, dcached;
 
     logic dcache_wlast, data_burst_wlast;
+    logic data_cache_awvalid, data_mem_awvalid;
     logic [7 :0] icache_burst_len, inst_burst_len;
     logic [7 :0] dcache_burst_len, data_burst_len;
 
@@ -226,7 +227,8 @@ module mycpu #(
         .mem_rdata          (data_mem_rdata)        ,
         .mem_addr_ok        (data_addr_ok)      ,
         .mem_data_ok        (data_data_ok)      ,
-        .wlast              (dcache_wlast)  
+        .wlast              (dcache_wlast)      ,
+        .awvalid            (data_cache_awvalid)
     );
 
     mux2 #(2) d_mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);
@@ -237,8 +239,9 @@ module mycpu #(
     mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
     mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_mem_rdata, data_cache_rdata, dcached, data_cpu_rdata);
-    mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached & !data_wr, data_burst_len);
+    mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached /*& !data_wr*/, data_burst_len);
     mux2 #(1) d_burst_wlast_mux2(1'b1, dcache_wlast, dcached, data_burst_wlast);
+    mux2 #(1) d_burst_wvalid_mux2(data_req & data_wr, data_cache_awvalid, dcached, data_mem_awvalid);
 //assign data_burst_wlast = 1'b1;
     // assign data_size = data_cpu_size;
     // assign data_req = data_cpu_req;
@@ -265,6 +268,7 @@ module mycpu #(
         .burst_size           ({1'b0, inst_size}),
         .burst_type           (2'b01),
         .burst_wlast          (1'b1),
+        .addr_awvalid         (1'b0),
 
         .arid                 (inst_arid),
         .araddr               (inst_araddr),
@@ -323,7 +327,8 @@ module mycpu #(
         .burst_len            (data_burst_len),
         .burst_size           ({1'b0, data_size}),
         .burst_type           (2'b01),
-        .burst_wlast          (1'b1),//data_burst_wlast),
+        .burst_wlast          (data_burst_wlast),//1'b1),//data_burst_wlast),
+        .addr_awvalid         (data_mem_awvalid),
 
         .arid                 (data_arid),
         .araddr               (data_araddr),

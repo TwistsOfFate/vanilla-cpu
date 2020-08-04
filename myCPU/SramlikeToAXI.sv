@@ -15,6 +15,7 @@ module SramlikeToAXI
     input  logic [2 :0] burst_size,
     input  logic [1 :0] burst_type,
     input  logic        burst_wlast,
+    input  logic        addr_awvalid,
 
     //axi
     //ar
@@ -90,7 +91,7 @@ module SramlikeToAXI
     assign awlock = '0;
     assign awcache = '0;
     assign awprot = '0;
-    assign awvalid = req & wr;
+    assign awvalid = addr_awvalid;
 
     assign wid = 4'b0001;
     assign wdata = sram_wdata;

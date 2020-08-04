@@ -9,7 +9,6 @@ module iCache_Controller #(
 	output logic                                  linew_en, 
 	output logic [OFFSET_WIDTH - 3 : 0]           addr_block_offset,
 	output logic [OFFSET_WIDTH - 3 : 0]           data_block_offset,
-	output logic                                  offset_sel,
 	output logic                                  state,
 //	output logic                                  cpu_data_ok,
 	output logic                                  mem_req,
@@ -18,33 +17,21 @@ module iCache_Controller #(
 	output logic                                  line_data_ok
 );
 
-	logic [31 : 0] addr_load;
-	logic [31 : 0] data_load;
+	logic [31 : 0] load;
 	logic zero;	
-	
-	always_ff @(posedge clk)
-		begin
-			if (reset | zero) begin
-			    addr_load <= 0;
-			end else if (!mem_data_ok) begin
-			    addr_load <= addr_load;
-			end else if (addr_load <= OFFSET_SIZE - 1) begin
-			    addr_load <= addr_load + 1;
-			end
-		end
 		
 	always_ff @(posedge clk)
 		begin
 			if (reset | zero) begin
-			     data_load <= 0; line_data_ok <= 1'b0;
+			     load <= 0; line_data_ok <= 1'b0;
 			end
 			else if (!mem_data_ok) begin
-			     data_load <= data_load; line_data_ok <= 1'b0;
+			     load <= load; line_data_ok <= 1'b0;
 			end
 			else begin
-			     line_data[data_load * 32 +: 32] <= mem_rdata;
-			     if (data_load < OFFSET_SIZE - 1) line_data_ok <= 1'b0; else line_data_ok <= 1'b1;
-			     data_load <= data_load + 1;
+			     line_data[load * 32 +: 32] <= mem_rdata;
+			     if (load < OFFSET_SIZE - 1) line_data_ok <= 1'b0; else line_data_ok <= 1'b1;
+			     load <= load + 1;
 			end
 		end
 	
@@ -52,24 +39,21 @@ module iCache_Controller #(
 		begin
 			if (reset) begin
 			    state <= 1'b0; // Set Initial
-//			    cpu_data_ok <= 1'b0;
 			    mem_req <= 1'b0;
 			end else begin
 				case (state)
 					1'b0: if (hit) begin 
 							state <= state; // Initial -> Initial
-//							cpu_data_ok <= 1'b1;
 							mem_req <= 1'b0;
 						  end	
 						  else begin
 						  	state <= 1'b1; // Initial -> ReadMem
-//						  	cpu_data_ok <= 1'b0;
 						  	mem_req <= 1'b1;
 						  end
 					1'b1: begin
 							if (mem_req && mem_addr_ok) mem_req <= 1'b0;
 							else mem_req <= mem_req;
-							if (addr_load <= OFFSET_SIZE - 1 || data_load <= OFFSET_SIZE - 1) begin
+							if (load <= OFFSET_SIZE - 1) begin
 								state <= state; // not ready, ReadMem -> ReadMems
 							end
 							else begin
@@ -88,14 +72,11 @@ module iCache_Controller #(
 						data_block_offset <= addr_offset;
 						if (hit) linew_en <= 1'b1;
 						else linew_en <= 1'b0;
-				//		mem_req <= 1'b0;
 				   end 
 			2'b1 : begin
 						zero <= 1'b0;
-						addr_block_offset <= addr_load[OFFSET_WIDTH - 3 : 0];
-						data_block_offset <= data_load[OFFSET_WIDTH - 3 : 0];
-						//if (addr_load > OFFSET_SIZE - 1) mem_req <= 1'b0;
-					//	else mem_req <= 1'b1;
+						addr_block_offset <= load[OFFSET_WIDTH - 3 : 0];
+						data_block_offset <= load[OFFSET_WIDTH - 3 : 0];
 						linew_en <= 1'b1;
 				   end
 		endcase

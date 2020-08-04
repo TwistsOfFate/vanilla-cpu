@@ -29,7 +29,8 @@ module dCache #(
     input  logic [31 : 0]  mem_rdata,
     input  logic           mem_addr_ok,
     input  logic           mem_data_ok,
-    output logic           wlast
+    output logic           wlast,
+    output logic           awvalid
 );
     
     logic [TAG_WIDTH - 1 : 0] data_addr_tag;
@@ -122,7 +123,7 @@ module dCache #(
     dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replaceID] & dcache_line_dirty[replaceID], 
                                   data_addr_bit, data_addr_offset, addr_block_offset, 
                                   linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, state,
-                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, wlast);
+                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, wlast, awvalid);
     
     assign cpu_addr_ok = cpu_req & hit;
     assign cpu_data_ok = hit & cpu_req;
