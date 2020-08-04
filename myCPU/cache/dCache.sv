@@ -68,7 +68,18 @@ module dCache #(
     logic line_data_ok;
     logic [31:0] hit_line_num;
     logic [LINE_NUM - 1 : 0] dcache_line_wen;
-    
+    logic [OFFSET_SIZE * 4 -1: 0] wea, bram_wen;
+
+    always_comb begin
+        bram_wen <= '0;
+        case (wr_size)
+            2'b00 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 1] <= '1;
+            2'b01 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 2] <= '1;
+            2'b10 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 4] <= '1;
+            2'b11 : bram_wen <= '1;
+            default: bram_wen <= '0;
+        endcase 
+    end
     // access cache
     // the data in the same cacheline was organized in the same ram
     // the `data_addr_index` can be used to locate the accurate data position in both RAM 
@@ -101,12 +112,20 @@ module dCache #(
                                     {dcache_line_valid[i], dcache_line_dirty[i], dcache_line_tag[i]}, 
                                     dcache_line_wen[i], (i == replaceID) & line_data_ok);*/
         
-                        
-        dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
-                    dcache_data_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
-                                    line_wdata, 
-                                    dcache_line_data[i], 
-                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);
+//        dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
+//                    dcache_data_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
+//                                    line_wdata, 
+//                                    dcache_line_data[i], 
+//                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);
+
+        bram_dcache myblk (
+              .clka(clk),    // input wire clka
+//              .ena(1'b1),      // input wire ena
+              .wea(dcache_line_wen[i] ? bram_wen : '0),      // input wire [0 : 0] wea
+              .addra(data_addr_index),  // input wire [6 : 0] addra
+              .dina(line_wdata),    // input wire [255 : 0] dina
+              .douta(dcache_line_data[i])  // output wire [255 : 0] douta
+         );                
         
         always_comb
             if (dcache_line_valid[i] && dcache_line_tag[i] == data_addr_tag) way_selector[i] <= 1;
@@ -142,13 +161,13 @@ module dCache #(
     
     assign cpu_addr_ok = cpu_req & hit;
         
-    // flop #(2) dcache_flop(clk, reset, 1'b0, {hit  , cpu_req  },
-    //                                         {hit_1, cpu_req_1});
+     flop #(2) dcache_flop(clk, reset, 1'b0, {hit  , cpu_req  },
+                                             {hit_1, cpu_req_1});
 
-    // flop #(32) dcache_flop_2(clk, reset, 1'b0, data_rdata_0, data_rdata);
+//     flop #(32) dcache_flop_2(clk, reset, 1'b0, data_rdata_0, data_rdata);
 
-    assign hit_1 = hit;
-    assign cpu_req_1 = cpu_req;
+//    assign hit_1 = hit;
+//    assign cpu_req_1 = cpu_req;
     assign data_rdata = data_rdata_0;
 
     assign cpu_data_ok = hit_1 & cpu_req_1;
