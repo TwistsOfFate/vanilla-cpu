@@ -72,9 +72,11 @@ module SramlikeToAXI
 
     assign sram_rdata = rdata;
     
+    // always_ff @(posedge clk)
+    //     if (rready) rready <= 1'b0;
+    //     else rready <= rvalid;
     always_ff @(posedge clk)
-        if (rready) rready <= 1'b0;
-        else rready <= rvalid;
+        rready <= rvalid;
 
     // always_ff @(posedge clk)
     //     if (bready) bready <= 1'b0;

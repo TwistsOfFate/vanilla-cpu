@@ -32,31 +32,24 @@ module dCache #(
     output logic           wlast
 );
     
-    logic [TAG_WIDTH - 1 : 0] data_addr_tag, data_addr_tag_0;
-    logic [INDEX_WIDTH - 1 : 0] data_addr_index, data_addr_index_0;
-    logic [OFFSET_WIDTH - 3 : 0] data_addr_offset, data_addr_offset_0;
-    logic [OFFSET_WIDTH - 3 : 0] data_block_offset, addr_block_offset;
+    logic [TAG_WIDTH - 1 : 0] data_addr_tag;
+    logic [INDEX_WIDTH - 1 : 0] data_addr_index;
+    logic [OFFSET_WIDTH - 3 : 0] data_addr_offset;
+    logic [OFFSET_WIDTH - 3 : 0] addr_block_offset;
     logic [1 : 0] data_addr_bit, data_addr_bit_0;
-    logic linew_en, new_valid, offset_sel, strategy_en;
+    logic linew_en, new_valid, strategy_en;
     logic [OFFSET_WIDTH - 3 : 0] block_offset;
     logic [LINE_NUM - 1 : 0] ram_data[31 : 0];
     logic [31 : 0] replaceID;
-    logic [31 : 0] replace_target;
-    logic [31 : 0] data_rdata_0;
     logic [1 : 0] state;
     logic [1 : 0] wr_size;
-    logic hit, hit_1, cpu_req_1;
+    logic hit;
     logic set_dcache_valid, set_dcache_dirty;
     
-    assign data_addr_tag_0 = data_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
-    assign data_addr_index_0 = data_addr[INDEX_WIDTH + OFFSET_WIDTH - 1 : OFFSET_WIDTH];
-    assign data_addr_offset_0 = data_addr[OFFSET_WIDTH - 1 : 2];
-    assign data_addr_bit_0 = data_addr[1 : 0];
-    assign data_addr_tag = data_addr_tag_0;
-    assign data_addr_index = data_addr_index_0;
-    assign data_addr_offset = data_addr_offset_0;
-    assign data_addr_bit = data_addr_bit_0;
-    
+    assign data_addr_tag = data_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
+    assign data_addr_index = data_addr[INDEX_WIDTH + OFFSET_WIDTH - 1 : OFFSET_WIDTH];
+    assign data_addr_offset = data_addr[OFFSET_WIDTH - 1 : 2];
+    assign data_addr_bit = data_addr[1 : 0];
 
     logic [TAG_WIDTH - 1 : 0] dcache_line_tag[LINE_NUM - 1 : 0];
     logic [OFFSET_SIZE * 32 - 1 : 0] dcache_line_data[LINE_NUM - 1 : 0];
@@ -68,18 +61,7 @@ module dCache #(
     logic line_data_ok;
     logic [31:0] hit_line_num;
     logic [LINE_NUM - 1 : 0] dcache_line_wen;
-    logic [OFFSET_SIZE * 4 -1: 0] wea, bram_wen;
-
-    always_comb begin
-        bram_wen <= '0;
-        case (wr_size)
-            2'b00 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 1] <= '1;
-            2'b01 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 2] <= '1;
-            2'b10 : bram_wen[data_addr_offset * 4 + data_addr_bit +: 4] <= '1;
-            2'b11 : bram_wen <= '1;
-            default: bram_wen <= '0;
-        endcase 
-    end
+    
     // access cache
     // the data in the same cacheline was organized in the same ram
     // the `data_addr_index` can be used to locate the accurate data position in both RAM 
@@ -100,32 +82,18 @@ module dCache #(
         assign dcache_line_wen[i] = linew_en && (((i == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
     
         icache_Info_Ram #(TAG_WIDTH + 1, INDEX_WIDTH)
-        dcache_info_ram(clk, reset,// (i == replaceID) && (state == 2'b01), 
+        dcache_info_ram(clk, reset,
                         data_addr_index,
                         set_dcache_valid, {set_dcache_dirty, data_addr_tag}, 
                         dcache_line_valid[i], {dcache_line_dirty[i], dcache_line_tag[i]}, 
-//                        dcache_line_visit[i],
                         dcache_line_wen[i]);
-           /*dCache_Ram #(TAG_WIDTH + 2, OFFSET_SIZE)
-                    dcache_info_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, 2'b11,
-                                    {set_dcache_valid, set_dcache_dirty, data_addr_tag}, 
-                                    {dcache_line_valid[i], dcache_line_dirty[i], dcache_line_tag[i]}, 
-                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);*/
         
-//        dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
-//                    dcache_data_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
-//                                    line_wdata, 
-//                                    dcache_line_data[i], 
-//                                    dcache_line_wen[i], (i == replaceID) & line_data_ok);
-
-        bram_dcache myblk (
-              .clka(clk),    // input wire clka
-//              .ena(1'b1),      // input wire ena
-              .wea(dcache_line_wen[i] ? bram_wen : '0),      // input wire [0 : 0] wea
-              .addra(data_addr_index),  // input wire [6 : 0] addra
-              .dina(line_wdata),    // input wire [255 : 0] dina
-              .douta(dcache_line_data[i])  // output wire [255 : 0] douta
-         );                
+                        
+        dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
+                    dcache_data_ram(clk, reset, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
+                                    line_wdata, 
+                                    dcache_line_data[i], 
+                                    dcache_line_wen[i]);
         
         always_comb
             if (dcache_line_valid[i] && dcache_line_tag[i] == data_addr_tag) way_selector[i] <= 1;
@@ -143,39 +111,26 @@ module dCache #(
         
     always_comb
         case (hit)
-            1'b1 : data_rdata_0 <= dcache_line_data[hit_line_num][data_addr_offset * 32 +: 32];
-            default : data_rdata_0 <= dcache_line_data[replaceID][data_addr_offset * 32 +: 32];
+            1'b1 : data_rdata <= dcache_line_data[hit_line_num][data_addr_offset * 32 +: 32];
+            default : data_rdata <= dcache_line_data[replaceID][data_addr_offset * 32 +: 32];
         endcase
         
     assign hit = (state == 2'b00) && |way_selector;
         
     dCache_Replacement dcache_replacement(clk, reset, cpu_req, hit, state, replaceID);
-
-
-    assign replace_target = replaceID;
         
-    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replace_target] & dcache_line_dirty[replace_target], 
-                                  data_addr_bit, data_addr_offset, addr_block_offset, data_block_offset, 
-                                  linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, offset_sel, state, //cpu_data_ok,
+    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replaceID] & dcache_line_dirty[replaceID], 
+                                  data_addr_bit, data_addr_offset, addr_block_offset, 
+                                  linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, state,
                                   mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, wlast);
     
     assign cpu_addr_ok = cpu_req & hit;
-        
-     flop #(2) dcache_flop(clk, reset, 1'b0, {hit  , cpu_req  },
-                                             {hit_1, cpu_req_1});
-
-//     flop #(32) dcache_flop_2(clk, reset, 1'b0, data_rdata_0, data_rdata);
-
-//    assign hit_1 = hit;
-//    assign cpu_req_1 = cpu_req;
-    assign data_rdata = data_rdata_0;
-
-    assign cpu_data_ok = hit_1 & cpu_req_1;
+    assign cpu_data_ok = hit & cpu_req;
             
     mux2 #(32) maddr_mux({data_addr[31 : OFFSET_WIDTH], addr_block_offset, 2'b00},  
                          {dcache_line_tag[replaceID], data_addr_index, addr_block_offset, 2'b00}, 
                          mem_wen, mem_addr);
 
-    assign mem_wdata = dcache_line_data[replaceID][data_block_offset * 32 +: 32];
+    assign mem_wdata = dcache_line_data[replaceID][addr_block_offset * 32 +: 32];
     
 endmodule
