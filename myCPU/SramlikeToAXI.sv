@@ -76,6 +76,10 @@ module SramlikeToAXI
         if (rready) rready <= 1'b0;
         else rready <= rvalid;
 
+    // always_ff @(posedge clk)
+    //     if (bready) bready <= 1'b0;
+    //     else bready <= bvalid;
+
     assign awid = 4'b0001;
     assign awaddr = addr;
     assign awlen = burst_len;
@@ -105,4 +109,12 @@ module SramlikeToAXI
 
     assign addr_ok = wr ? awvalid & awready : arvalid & arready;
     assign data_ok = wr ? wvalid & wready : rready & rvalid;
+    // logic state;
+    // always_ff @(posedge clk) begin
+    //     if (reset) state <= 1'b0;
+    //     if (!state && wvalid & wlast) state <= 1'b1;
+    //     if (state && bvalid) state <= 1'b0;
+    //     if (!state && !wr) data_ok <= rready & rvalid;
+    //     else data_ok <= wvalid & wready & ((state && bvalid) || (!state));
+    // end 
 endmodule

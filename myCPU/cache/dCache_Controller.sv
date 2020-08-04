@@ -75,22 +75,27 @@ module dCache_Controller #(
                 case (state)
                     2'b01 : begin
                                 wlast <= 1'b0;
+                                if (mem_req && mem_addr_ok) mem_req <= 1'b0;
+                                else mem_req <= mem_req;
                                 if (addr_load <= OFFSET_SIZE - 1 || data_load <= OFFSET_SIZE - 1) begin
                                     state <= state; // not ready, ReadMem -> ReadMem
-                                    if (mem_data_ok == 1'b1) begin
-                                        if (data_load < OFFSET_SIZE - 1) mem_req <= 1'b1;
-                                        else mem_req <= 1'b0;
-                                    end else if (mem_addr_ok == 1'b1) mem_req <= 1'b0;
-                                    else mem_req <= mem_req;
+                                    // if (mem_data_ok == 1'b1) begin
+                                    //     if (data_load < OFFSET_SIZE - 1) mem_req <= 1'b1;
+                                    //     else mem_req <= 1'b0;
+                                    // end else if (mem_addr_ok == 1'b1) mem_req <= 1'b0;
+                                    // else mem_req <= mem_req;
                                 end else begin
                                     state <= 2'b00; // ReadMem -> Initial
-                                    mem_req <= 1'b0;
+                                    // mem_req <= 1'b0;
                                 end
                                 line_data[data_load * 32 +: 32] <= mem_rdata;
                             end
                     2'b10 : begin
+                                // if (mem_req && mem_addr_ok) mem_req <= 1'b0;
+                                // else mem_req <= mem_req;
                                 if  (addr_load <= OFFSET_SIZE - 1 || data_load <= OFFSET_SIZE - 1) begin
                                     state <= state; // not ready, WriteBack -> WriteBack
+                                    // if (data_load == OFFSET_SIZE - 2 && mem_data_ok) wlast <= 1'b1; else wlast <= 1'b0;
                                     wlast <= 1'b0;
                                     if (mem_data_ok == 1'b1) begin
                                         if (data_load < OFFSET_SIZE - 1) mem_req <= 1'b1;
