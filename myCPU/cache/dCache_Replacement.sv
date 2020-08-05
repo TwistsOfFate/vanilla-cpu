@@ -7,7 +7,6 @@ module dCache_Replacement#(
 )(
     input  logic clk, reset, cpu_req,
     input  logic hit, 
-    input  logic [ 1 : 0] state,
     output logic [31 : 0] replaceID 
 );
     logic [5 : 0] check;

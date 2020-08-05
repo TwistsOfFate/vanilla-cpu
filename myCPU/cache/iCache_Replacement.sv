@@ -6,7 +6,7 @@ module iCache_Replacement#(
 		      LINE_NUM     = `ICACHE_E
 )(
 	input  logic clk, reset, 
-	input  logic hit, state,
+	input  logic hit, 
 	output logic [31 : 0] replaceID 
 );
     logic [5 : 0] check;

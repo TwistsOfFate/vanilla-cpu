@@ -1,7 +1,6 @@
 module SramlikeToAXI
 (
     input  logic        clk,
-    input  logic        reset,
     input  logic [3 :0] reqType ,
     input  logic        req     ,
     input  logic        wr      ,
@@ -30,10 +29,7 @@ module SramlikeToAXI
     output logic        arvalid      ,
     input  logic        arready      ,
     //r           
-    input  logic [3 :0] rid          ,
     input  logic [31:0] rdata        ,
-    input  logic [1 :0] rresp        ,
-    input  logic        rlast        ,
     input  logic        rvalid       ,
     output logic        rready       ,
     //aw          
@@ -55,9 +51,6 @@ module SramlikeToAXI
     output logic        wvalid       ,
     input  logic        wready       ,
     //b           
-    input  logic [3 :0] bid          ,
-    input  logic [1 :0] bresp        ,
-    input  logic        bvalid       ,
     output logic        bready       
 );
 
@@ -72,16 +65,9 @@ module SramlikeToAXI
     assign arvalid = req & !wr;
 
     assign sram_rdata = rdata;
-    
-    // always_ff @(posedge clk)
-    //     if (rready) rready <= 1'b0;
-    //     else rready <= rvalid;
+
     always_ff @(posedge clk)
         rready <= rvalid;
-
-    // always_ff @(posedge clk)
-    //     if (bready) bready <= 1'b0;
-    //     else bready <= bvalid;
 
     assign awid = 4'b0001;
     assign awaddr = addr;
@@ -112,12 +98,4 @@ module SramlikeToAXI
 
     assign addr_ok = wr ? awvalid & awready : arvalid & arready;
     assign data_ok = wr ? wvalid & wready : rready & rvalid;
-    // logic state;
-    // always_ff @(posedge clk) begin
-    //     if (reset) state <= 1'b0;
-    //     if (!state && wvalid & wlast) state <= 1'b1;
-    //     if (state && bvalid) state <= 1'b0;
-    //     if (!state && !wr) data_ok <= rready & rvalid;
-    //     else data_ok <= wvalid & wready & ((state && bvalid) || (!state));
-    // end 
 endmodule

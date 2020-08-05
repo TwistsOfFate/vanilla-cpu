@@ -4,7 +4,7 @@ module dCache_Ram #(
     parameter DATA_WIDTH   = 32,
               OFFSET_SIZE  = 2 ** (`DCACHE_B - 2)
 )(
-    input  logic                         clk, reset,
+    input  logic                         clk, 
     input  logic [`DCACHE_S - 1 : 0]     addr,
     input  logic [1 : 0]                 bit_pos,
     input  logic [`DCACHE_B - 3 : 0]     offset,

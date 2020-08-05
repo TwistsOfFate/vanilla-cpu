@@ -239,7 +239,7 @@ module mycpu #(
     mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
     mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_mem_rdata, data_cache_rdata, dcached, data_cpu_rdata);
-    mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached /*& !data_wr*/, data_burst_len);
+    mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached, data_burst_len);
     mux2 #(1) d_burst_wlast_mux2(1'b1, dcache_wlast, dcached, data_burst_wlast);
     mux2 #(1) d_burst_wvalid_mux2(data_req & data_wr, data_cache_awvalid, dcached, data_mem_awvalid);
 //assign data_burst_wlast = 1'b1;
@@ -254,7 +254,6 @@ module mycpu #(
 
     SramlikeToAXI inst_axi(
         .clk                  (clk),
-        .reset                (~resetn),
         .reqType              (4'b0000),
         .req                  (inst_req)      ,
         .wr                   (inst_wr)           ,
@@ -281,10 +280,7 @@ module mycpu #(
         .arvalid              (inst_arvalid),
         .arready              (inst_arready),
         
-        .rid                  (inst_rid),
         .rdata                (inst_rdata),
-        .rresp                (inst_rresp),
-        .rlast                (inst_rlast),
         .rvalid               (inst_rvalid),
         .rready               (inst_rready),
         
@@ -306,15 +302,11 @@ module mycpu #(
         .wvalid               (inst_wvalid),
         .wready               (inst_wready),
         
-        .bid                  (inst_bid),
-        .bresp                (inst_bresp),
-        .bvalid               (inst_bvalid),
         .bready               (inst_bready)
     );
 
     SramlikeToAXI data_axi(
         .clk                  (clk)               ,
-        .reset                (~resetn)            ,
         .reqType              (4'b0001),
         .req                  (data_req)      ,
         .wr                   (data_wr)           ,
@@ -327,7 +319,7 @@ module mycpu #(
         .burst_len            (data_burst_len),
         .burst_size           ({1'b0, data_size}),
         .burst_type           (2'b01),
-        .burst_wlast          (data_burst_wlast),//1'b1),//data_burst_wlast),
+        .burst_wlast          (data_burst_wlast),
         .addr_awvalid         (data_mem_awvalid),
 
         .arid                 (data_arid),
@@ -341,10 +333,7 @@ module mycpu #(
         .arvalid              (data_arvalid),
         .arready              (data_arready),
         
-        .rid                  (data_rid),
         .rdata                (data_rdata),
-        .rresp                (data_rresp),
-        .rlast                (data_rlast),
         .rvalid               (data_rvalid),
         .rready               (data_rready),
         
@@ -366,9 +355,6 @@ module mycpu #(
         .wvalid               (data_wvalid),
         .wready               (data_wready),
         
-        .bid                  (data_bid),
-        .bresp                (data_bresp),
-        .bvalid               (data_bvalid),
         .bready               (data_bready)
     );
 
