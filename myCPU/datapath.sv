@@ -7,6 +7,8 @@ module datapath(
     
     // the instr fetched
     input  logic [31:0]   f_instr_alpha     ,
+
+    input logic           bfrome            ,
     
     // signals of the corresponding instr
     input  ctrl_reg       dsig_alpha        ,
@@ -32,6 +34,7 @@ module datapath(
         
     //compare num
     output branch_rel     dbranchcmp_alpha  ,
+    output branch_rel     ebranchcmp_alpha  ,
     
     //dmem sram-like interface
 	output logic       	  m_data_req        ,
@@ -63,8 +66,9 @@ dp_htod dp_htod_d_alpha;
 dp_htoe dp_htoe_e_alpha;
 
 logic f_in_delay_slot;
+logic d_guess_taken, e_guess_taken;
 
-logic [31:0] delayslot_addr ;
+logic [31:0] delayslot_addr, e_bpc ;
 
 logic [31:0] d_for_hi_alpha, d_for_lo_alpha;
 logic [31:0] d_for_rsdata_alpha, d_for_rtdata_alpha;
@@ -108,8 +112,12 @@ hazard hz(
     .m_alpha(dp_mtoh_m_alpha),
     .w_alpha(dp_wtoh_w_alpha),
 
+    .bfrome(bfrome & e_guess_taken),
+
     .to_d_alpha(dp_htod_d_alpha),
     .to_e_alpha(dp_htoe_e_alpha),
+
+    .d_guess_taken(d_guess_taken),
 
     .stall          (stall_alpha),
     .flush          (flush_alpha),
@@ -213,9 +221,12 @@ decode my_decode(
 
     .f_nowpc(dp_ftod_f_alpha.pc),
     .cp0_epc(cp0_epc),
+    .e_bpc(e_bpc),
     .is_valid_exc(dp_mtoh_m_alpha.is_valid_exc),
 
     .dsig(dsig_alpha),
+    .d_guess_taken(d_guess_taken),
+    .bfrome(bfrome && e_guess_taken),
     .eret(msig_alpha.eret),
 
     .ftod(dp_ftod_d_alpha),
@@ -231,7 +242,7 @@ decode my_decode(
     .dtoh(dp_dtoh_d_alpha)
 ) ;
 
-
+flop #(1) de_guess_taken(clk, ~resetn | flush_alpha.e, stall_alpha.e, d_guess_taken, e_guess_taken);
 
 pc_flop #(32) pcreg(
     .clk       (clk)       ,
@@ -262,6 +273,8 @@ ex my_ex(
     .dtoe(dp_dtoe_e_alpha),
 
 // output
+    .e_bpc(e_bpc),
+    .ebranchcmp(ebranchcmp_alpha),
     .etom(dp_etom_e_alpha),
     .etoh(dp_etoh_e_alpha)
 

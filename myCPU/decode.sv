@@ -6,9 +6,12 @@ module decode(
     input  logic[31:0] d_for_lo,
     input  logic[31:0] f_nowpc,
     input  logic[31:0] cp0_epc,
+    input  logic[31:0] e_bpc,
     input  logic       is_valid_exc ,
     input  ctrl_reg    dsig,
 
+    input  logic       d_guess_taken,
+    input  logic       bfrome,
     input  logic       eret,
     input  dp_ftod     ftod,
 
@@ -21,9 +24,10 @@ module decode(
     output dp_dtoh     dtoh
 );
 
-logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc ;
+logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc, pcbfrome ;
 logic [31:0] d_signimm, d_signimmsh ;
 logic [31:0] f_pcplus4 ;
+
 
 adder   pcadd1( 
     .add_valA   (f_nowpc)      ,
@@ -63,7 +67,7 @@ adder   pcadd2(
 mux2 #(32) pcbrmux(
     .a  		(f_pcplus4)     ,
     .b  		(d_pcbranch)    ,
-    .sel   		(dsig.pcsrc)       ,
+    .sel   		(dsig.pcsrc || d_guess_taken)       ,
     .out		(pcnextbr)      
 ) ;//next pc
 
@@ -82,8 +86,15 @@ mux2 #(32) pcjrmux(
     .out		(pcnextjr)     
 ) ;
 
+mux2 #(32) pcbfromemux(
+    .a(pcnextjr),
+    .b(ftod.pc + 32'd4),
+    .sel(bfrome),
+    .out(pcbfrome)
+);
+
 mux2 #(32) pceretmux(
-    .a          (pcnextjr)     ,
+    .a          (pcbfrome)     ,
     .b          (cp0_epc)      ,
     .sel        (eret)       ,
     .out        (pcnexteret)
@@ -124,5 +135,6 @@ assign dtoh.out_sel = dsig.out_sel ;
 assign dtoh.rs = dtoe.rs ;
 assign dtoh.rt = dtoe.rt ;
 assign dtoh.cp0_sel = dsig.cp0_sel;
+assign dtoh.jump = dsig.jump;
 
 endmodule
