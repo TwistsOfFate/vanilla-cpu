@@ -10,8 +10,10 @@ module ex(
 	input	dp_dtoe 	dtoe,
 	input	ctrl_reg 	esig,
 
-	output logic [31:0] e_bpc,
-	output branch_rel   ebranchcmp,
+	input 				e_guess_taken,
+
+	// output logic [31:0] e_bpc,
+	output 				bfrome,
 
 	output	dp_etom 	etom,
 	output	dp_etoh 	etoh
@@ -35,20 +37,26 @@ module ex(
 	wire [31:0]			div_hi;
 	wire [31:0]			div_lo;
 
-	assign e_bpc = dtoe.pc + 32'd8;
+	// assign e_bpc = dtoe.pc + 32'd8;
 
 //BRANCH COMPARE
-	eqcmp   cmpeq(
-	    .a  (e_for_rsdata)  ,
-	    .b  (e_for_rtdata)  ,
-	    .eq (ebranchcmp.equal)    
-	);
+	logic [7:0] ebranch;
+	branch_rel ecompare;
 
-	Compare cmp0(
-	    .valA    (e_for_rsdata) ,
-	    .greater (ebranchcmp.g0)   ,
-	    .equal   (ebranchcmp.e0) 
-	);
+	assign ecompare.equal = e_for_rsdata == e_for_rtdata;
+	assign ecompare.e0 = e_for_rsdata == 32'd0;
+	assign ecompare.g0 = ~e_for_rsdata[31] & ~ecompare.e0;
+
+	assign ebranch[0] = (esig.branch == 3'b000) &&  ecompare.equal  && esig.isbranch ;
+	assign ebranch[1] = (esig.branch == 3'b001) && !ecompare.equal  && esig.isbranch ;
+	assign ebranch[2] = (esig.branch == 3'b010) &&  (ecompare.g0 | ecompare.e0) && esig.isbranch ;
+	assign ebranch[3] = (esig.branch == 3'b011) &&  ecompare.g0  && esig.isbranch ;
+	assign ebranch[4] = (esig.branch == 3'b100) &&  !ecompare.g0 && esig.isbranch ;
+	assign ebranch[5] = (esig.branch == 3'b101) && (!ecompare.g0 && !ecompare.e0) && esig.isbranch ;
+	assign ebranch[6] = (esig.branch == 3'b110) && (ecompare.g0 | ecompare.e0) && esig.isbranch ;
+	assign ebranch[7] = (esig.branch == 3'b111) && (!ecompare.g0 && !ecompare.e0) && esig.isbranch ;
+
+	assign bfrome = ~(|ebranch) & e_guess_taken ;
 
 //IMMEXTEND
 	mux2 immextend(

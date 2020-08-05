@@ -11,9 +11,9 @@ module controller(
     input  stage_val_1 stall    ,
      
     input  branch_rel  dcompare     ,
-    input  branch_rel  ecompare     ,
+    // input  branch_rel  ecompare     ,
 
-    output logic       bfrome       ,
+    // output logic       bfrome       ,
      
     output ctrl_reg    dstage       ,
     output ctrl_reg    estage       ,
@@ -801,16 +801,16 @@ assign branch[7] = (dstage.branch == 3'b111) && (!dcompare.g0 && !dcompare.e0) &
 
 assign dstage.pcsrc = |branch ; 
 
-assign ebranch[0] = (estage.branch == 3'b000) &&  ecompare.equal  && estage.isbranch ;
-assign ebranch[1] = (estage.branch == 3'b001) && !ecompare.equal  && estage.isbranch ;
-assign ebranch[2] = (estage.branch == 3'b010) &&  (ecompare.g0 | ecompare.e0) && estage.isbranch ;
-assign ebranch[3] = (estage.branch == 3'b011) &&  ecompare.g0  && estage.isbranch ;
-assign ebranch[4] = (estage.branch == 3'b100) &&  !ecompare.g0 && estage.isbranch ;
-assign ebranch[5] = (estage.branch == 3'b101) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
-assign ebranch[6] = (estage.branch == 3'b110) && (ecompare.g0 | ecompare.e0) && estage.isbranch ;
-assign ebranch[7] = (estage.branch == 3'b111) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
+// assign ebranch[0] = (estage.branch == 3'b000) &&  ecompare.equal  && estage.isbranch ;
+// assign ebranch[1] = (estage.branch == 3'b001) && !ecompare.equal  && estage.isbranch ;
+// assign ebranch[2] = (estage.branch == 3'b010) &&  (ecompare.g0 | ecompare.e0) && estage.isbranch ;
+// assign ebranch[3] = (estage.branch == 3'b011) &&  ecompare.g0  && estage.isbranch ;
+// assign ebranch[4] = (estage.branch == 3'b100) &&  !ecompare.g0 && estage.isbranch ;
+// assign ebranch[5] = (estage.branch == 3'b101) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
+// assign ebranch[6] = (estage.branch == 3'b110) && (ecompare.g0 | ecompare.e0) && estage.isbranch ;
+// assign ebranch[7] = (estage.branch == 3'b111) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
 
-assign bfrome = ~(|ebranch) ; 
+// assign bfrome = ~(|ebranch) ; 
 
 
 flop #(47) regE(

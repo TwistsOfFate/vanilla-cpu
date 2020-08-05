@@ -21,7 +21,7 @@ module hazard(
     );
                
     
-logic lwstall, jrstall, hilostall, link_stall;
+logic lwstall, jrstall, hilostall, link_stall, linkr_stall;
 logic mfc0_stall, mtc0_stall, cp0_wconflict_stall;
 logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
@@ -85,6 +85,9 @@ assign d_guess_taken = d_alpha.isbranch && ((e_alpha.regwrite && (e_alpha.reg_wa
 || e_alpha.reg_waddr == d_alpha.rt)) || (m_alpha.memtoreg && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)));
 
 assign link_stall = (e_alpha.link || m_alpha.link) && (d_alpha.rs == 5'd31 || d_alpha.rt == 5'd31);
+
+assign linkr_stall = e_alpha.link && (d_alpha.rs == e_alpha.rd || d_alpha.rt == e_alpha.rd)
+|| m_alpha.link && (d_alpha.rs == m_alpha.rd || d_alpha.rt == m_alpha.rd);
     
 assign lwstall = (e_alpha.memtoreg && (e_alpha.rt == d_alpha.rs || e_alpha.rt == d_alpha.rt))
                 /*|| (m_alpha.memtoreg && (m_alpha.rt == d_alpha.rs || m_alpha.rt == d_alpha.rt))*/ ;
@@ -125,7 +128,7 @@ always_comb begin
         stall_flush = 10'b11000_00100;
     else if (bfrome)
         stall_flush = 10'b00000_01000;
-    else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall/* || mtc0_stall*/)
+    else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall || linkr_stall/* || mtc0_stall*/)
         stall_flush = 10'b11000_00100;
     else
         stall_flush = 10'b0;

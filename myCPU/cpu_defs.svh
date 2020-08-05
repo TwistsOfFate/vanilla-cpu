@@ -192,6 +192,7 @@ typedef struct packed {
 	logic		  eret;
 	logic		  is_valid_exc;
 	logic	[ 4:0]rt;
+	logic   [ 4:0]rd;
 	logic		  link;
 } dp_mtoh;
 
