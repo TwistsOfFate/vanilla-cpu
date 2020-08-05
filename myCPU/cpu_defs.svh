@@ -158,6 +158,7 @@ typedef struct packed {
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
 	logic		  cp0_sel;
+	logic   [ 1:0]jump;
 } dp_dtoh;
 
 typedef struct packed {

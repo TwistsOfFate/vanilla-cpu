@@ -5,8 +5,12 @@ module hazard(
     input  dp_mtoh     m_alpha,
     input  dp_wtoh     w_alpha,
 
+    input  logic       bfrome,
+
     output dp_htod     to_d_alpha,
     output dp_htoe     to_e_alpha,
+
+    output logic       d_guess_taken,
 
     output stage_val_1 stall,
     output stage_val_1 flush,
@@ -17,7 +21,7 @@ module hazard(
     );
                
     
-logic lwstall, branchstall, hilostall, link_stall;
+logic lwstall, jrstall, hilostall, link_stall;
 logic mfc0_stall, mtc0_stall, cp0_wconflict_stall;
 logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
@@ -77,6 +81,8 @@ always_comb
             to_e_alpha.forwardb = 2'b00 ;
     end
 
+assign d_guess_taken = d_alpha.isbranch && ((e_alpha.regwrite && (e_alpha.reg_waddr == d_alpha.rs 
+|| e_alpha.reg_waddr == d_alpha.rt)) || (m_alpha.memtoreg && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)));
 
 assign link_stall = (e_alpha.link || m_alpha.link) && (d_alpha.rs == 5'd31 || d_alpha.rt == 5'd31);
     
@@ -85,8 +91,7 @@ assign lwstall = (e_alpha.memtoreg && (e_alpha.rt == d_alpha.rs || e_alpha.rt ==
 
 assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 2'b10) || (e_alpha.lo_wen && d_alpha.out_sel == 2'b11) ;
 
-assign branchstall = ( d_alpha.isbranch || d_alpha.isjump ) && ((e_alpha.regwrite && (e_alpha.reg_waddr == d_alpha.rs 
-|| e_alpha.reg_waddr == d_alpha.rt)) || (m_alpha.memtoreg && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt))) ;
+assign jrstall = d_alpha.jump[0] && ((e_alpha.regwrite && e_alpha.reg_waddr == d_alpha.rs) || (m_alpha.memtoreg && m_alpha.reg_waddr == d_alpha.rs)) ;
 
 assign mfc0_stall = (e_alpha.cp0_sel && (e_alpha.reg_waddr == d_alpha.rs || e_alpha.reg_waddr == d_alpha.rt)) 
 || (m_alpha.cp0_sel && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)) 
@@ -114,9 +119,13 @@ always_comb begin
         stall_flush = 10'b00000_01111;
     else if (divider_stall || multiplier_stall)
         stall_flush = 10'b11111_00000;
+    else if (imem_stall && bfrome)
+        stall_flush = 10'b11111_00000;
     else if (imem_stall)
         stall_flush = 10'b11000_00100;
-    else if (lwstall || branchstall || hilostall || mfc0_stall || link_stall/* || mtc0_stall*/)
+    else if (bfrome)
+        stall_flush = 10'b00000_01000;
+    else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall/* || mtc0_stall*/)
         stall_flush = 10'b11000_00100;
     else
         stall_flush = 10'b0;

@@ -52,7 +52,8 @@ logic		 m_flush_late	   ;
 stage_val_1  flush_ext_alpha, stall_ext_alpha ;
 busy_ok      idmem ;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
-branch_rel   dcompare_alpha;
+branch_rel   dcompare_alpha, ecompare_alpha;
+logic bfrome_alpha;
 
 logic		 m_data_req;
 
@@ -83,6 +84,9 @@ controller ctrl(
     .stall              (stall_alpha)             ,
     
     .dcompare           (dcompare_alpha)          ,
+    .ecompare           (ecompare_alpha)          ,
+
+    .bfrome             (bfrome_alpha)            ,
     
     .dstage             (dstage_alpha)            ,
     .estage             (estage_alpha)            ,
@@ -97,7 +101,7 @@ datapath dp(
 
     .f_instr_alpha      (f_instr_alpha)     ,
 
-    
+    .bfrome            (bfrome_alpha)       ,
     
     .dsig_alpha        (dstage_alpha)       ,
     .esig_alpha        (estage_alpha)       ,
@@ -117,6 +121,7 @@ datapath dp(
     .stall_alpha       (stall_alpha)        ,
 
     .dbranchcmp_alpha  (dcompare_alpha)     ,
+    .ebranchcmp_alpha  (ecompare_alpha)     ,
 
    
     //dmem sram interface

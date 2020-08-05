@@ -10,13 +10,13 @@ module ex(
 	input	dp_dtoe 	dtoe,
 	input	ctrl_reg 	esig,
 
+	output logic [31:0] e_bpc,
+	output branch_rel   ebranchcmp,
+
 	output	dp_etom 	etom,
 	output	dp_etoh 	etoh
 	
 	);
-	
-//INPUT
-	
 
 //IMMEXTEND
 	wire [31:0]			e_imm_out;
@@ -34,6 +34,21 @@ module ex(
 	wire [31:0]			mul_lo;
 	wire [31:0]			div_hi;
 	wire [31:0]			div_lo;
+
+	assign e_bpc = dtoe.pc + 32'd8;
+
+//BRANCH COMPARE
+	eqcmp   cmpeq(
+	    .a  (e_for_rsdata)  ,
+	    .b  (e_for_rtdata)  ,
+	    .eq (ebranchcmp.equal)    
+	);
+
+	Compare cmp0(
+	    .valA    (e_for_rsdata) ,
+	    .greater (ebranchcmp.g0)   ,
+	    .equal   (ebranchcmp.e0) 
+	);
 
 //IMMEXTEND
 	mux2 immextend(
