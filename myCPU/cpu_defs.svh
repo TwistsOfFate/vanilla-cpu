@@ -76,6 +76,8 @@ typedef struct packed {
 	logic [ 2:0] branch;
 	logic  		 isjump;
 	logic [ 1:0] jump;
+	logic 		 cl_mode;
+	logic [ 1:0] mul_mode;
 } ctrl_reg ;
 
 typedef struct packed {

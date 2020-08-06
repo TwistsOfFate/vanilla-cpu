@@ -1,33 +1,39 @@
 `timescale 1ns / 1ps
 
-module multiplier_ip(
+module multiplier_ip #(
+	parameter CYCLES = 3
+)(
 	input clk,
 	input rst,
 	input in_valid,
 	input sign,
+	input [1:0] mode,
 	input [31:0] srca,
 	input [31:0] srcb,
+	input [31:0] in_hi,
+	input [31:0] in_lo,
 	output out_valid,
 	output [31:0] hi,
 	output [31:0] lo
 	);
 
-logic [31:0] hi0, lo0, hi1, lo1;
+logic [31:0] hi0, lo0, hi1, lo1, hi_reg, lo_reg;
+logic [31:0] hi_add_reg, hi_sub_reg, lo_add_reg, lo_sub_reg;
 logic [4:0] count;
-logic [64:0] in_reg;
+logic [128:0] in_reg;
 
 always_ff @(posedge clk) begin
 	if (rst)
-		in_reg <= 65'd0;
+		in_reg <= '0;
 	else
-		in_reg <= {sign, srca, srcb};
+		in_reg <= {sign, srca, srcb, in_hi, in_lo};
 end
 
 always_ff @(posedge clk) begin
-	if (in_reg != {sign, srca, srcb} || !in_valid || rst)
+	if (in_reg != {sign, srca, srcb, in_hi, in_lo} || !in_valid || rst)
 		count <= 5'd0;
 	else
-		count <= count < 5'd3 ? count + 5'd1 : count;
+		count <= count < 5'd31 ? count + 5'd1 : count;
 end
 
 mult_gen_0 my_mult_gen_0(
@@ -44,9 +50,38 @@ mult_gen_1 my_mult_gen_1(
     .P({hi1, lo1})
 );
 
-assign out_valid = count >= 5'd3;
-assign hi = sign ? hi1 : hi0;
-assign lo = sign ? lo1 : lo0;
+always_ff @(posedge clk) begin
+	hi_reg <= sign ? hi1 : hi0;
+	lo_reg <= sign ? lo1 : lo0;
+end
+
+always_ff @(posedge clk) begin
+	{hi_add_reg, lo_add_reg} <= {hi_reg, lo_reg} + {in_hi, in_lo};
+	{hi_sub_reg, lo_sub_reg} <= {hi_reg, lo_reg} - {in_hi, in_lo};
+end
+
+always_comb begin
+	unique case (mode)
+		2'b00:
+		begin
+			hi = hi_reg;
+			lo = lo_reg;
+			out_valid = count >= CYCLES;
+		end
+		2'b01:
+		begin
+			hi = hi_add_reg;
+			lo = lo_add_reg;
+			out_valid = count >= CYCLES + 1;
+		end
+		2'b10:
+		begin
+			hi = hi_sub_reg;
+			lo = lo_sub_reg;
+			out_valid = count >= CYCLES + 1;
+		end
+	endcase
+end
 
     
 endmodule
