@@ -121,6 +121,7 @@ module mycpu #(
 ); 
 
     logic icached, dcached;
+    logic inst_wb_ok, data_wb_ok;
 
     logic dcache_wlast, data_burst_wlast;
     logic data_cache_awvalid, data_mem_awvalid;
@@ -236,7 +237,10 @@ module mycpu #(
     mux2 #(1) d_mem_wen_mux2(data_cpu_wr, data_cache_wr, dcached, data_wr);
     mux2 #(32) d_mem_addr_mux2(data_cpu_addr, data_cache_addr, dcached, data_addr);
     mux2 #(32) d_mem_wdata_mux2(data_cpu_wdata, data_cache_wdata, dcached, data_mem_wdata);
-    mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
+    // mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
+    // mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
+
+    mux2 #(1) d_cpu_data_ok_mux2(data_wb_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
     mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_mem_rdata, data_cache_rdata, dcached, data_cpu_rdata);
     mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached, data_burst_len);
@@ -302,7 +306,10 @@ module mycpu #(
         .wvalid               (inst_wvalid),
         .wready               (inst_wready),
         
-        .bready               (inst_bready)
+        .bready               (inst_bready),
+        .bvalid               (inst_bvalid),
+
+        .wb_ok                (inst_wb_ok)
     );
 
     SramlikeToAXI data_axi(
@@ -355,7 +362,10 @@ module mycpu #(
         .wvalid               (data_wvalid),
         .wready               (data_wready),
         
-        .bready               (data_bready)
+        .bready               (data_bready),
+        .bvalid               (data_bvalid),
+
+        .wb_ok                (data_wb_ok)
     );
 
 endmodule
