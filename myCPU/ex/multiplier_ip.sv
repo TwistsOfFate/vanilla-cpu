@@ -12,9 +12,9 @@ module multiplier_ip #(
 	input [31:0] srcb,
 	input [31:0] in_hi,
 	input [31:0] in_lo,
-	output out_valid,
-	output [31:0] hi,
-	output [31:0] lo
+	output logic out_valid,
+	output logic [31:0] hi,
+	output logic [31:0] lo
 	);
 
 logic [31:0] hi0, lo0, hi1, lo1, hi_reg, lo_reg;
