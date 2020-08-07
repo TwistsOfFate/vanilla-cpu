@@ -56,8 +56,8 @@ always_ff @(posedge clk) begin
 end
 
 always_ff @(posedge clk) begin
-	{hi_add_reg, lo_add_reg} <= {hi_reg, lo_reg} + {in_hi, in_lo};
-	{hi_sub_reg, lo_sub_reg} <= {hi_reg, lo_reg} - {in_hi, in_lo};
+	{hi_add_reg, lo_add_reg} <= {in_hi, in_lo} + {hi_reg, lo_reg};
+	{hi_sub_reg, lo_sub_reg} <= {in_hi, in_lo} - {hi_reg, lo_reg};
 end
 
 always_comb begin
