@@ -51,7 +51,10 @@ module SramlikeToAXI
     output logic        wvalid       ,
     input  logic        wready       ,
     //b           
-    output logic        bready       
+    output logic        bready       ,
+    input  logic        bvalid       ,
+
+    output logic        wb_ok
 );
 
     assign arid = reqType;
@@ -98,4 +101,5 @@ module SramlikeToAXI
 
     assign addr_ok = wr ? awvalid & awready : arvalid & arready;
     assign data_ok = wr ? wvalid & wready : rready & rvalid;
+    assign wb_ok = wr ? bvalid & bready : data_ok;
 endmodule

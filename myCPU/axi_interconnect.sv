@@ -158,6 +158,10 @@ module axi_interconnect(
             if (data_arvalid) next_read_state = AXI_R1;
             else if (inst_arvalid) next_read_state = AXI_R0;
             else next_read_state = AXI_RFREE;
+        default: // AXI_RFREE
+            if (data_arvalid) next_read_state = AXI_R1;
+            else if (inst_arvalid) next_read_state = AXI_R0;
+            else next_read_state = AXI_RFREE;
     endcase
     
     // valid and ready signals
@@ -186,6 +190,19 @@ module axi_interconnect(
             data_rvalid  = rvalid;
         end
         AXI_RFREE:
+        begin
+            arvalid = inst_arvalid & !data_arvalid;
+             // If we're in RFREE state and data_arvalid == 1, then we'll go to R1 state in the next clock,
+             //  so we shouldn't maintain arvalid = 1 even if inst_arvalid == 1.
+            rready  = inst_rready & !data_arvalid;
+            
+            inst_arready = arready & !data_arvalid;
+            data_arready = 1'b0;
+            
+            inst_rvalid  = rvalid & !data_arvalid;
+            data_rvalid  = 1'b0;
+        end
+        default: // AXI_RFREE
         begin
             arvalid = inst_arvalid & !data_arvalid;
              // If we're in RFREE state and data_arvalid == 1, then we'll go to R1 state in the next clock,
