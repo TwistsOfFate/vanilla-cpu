@@ -20,9 +20,10 @@ module dCache_Ram #(
     always_ff @(posedge clk)
         if (wen)
             case (size)
-                2'b00: RAM[addr][offset * 32 + bit_pos * 8 +: 8] <= din[offset * 32 + bit_pos * 8 +: 8];
-                2'b01: RAM[addr][offset * 32 + bit_pos * 8 +: 16] <= din[offset * 32 + bit_pos * 8 +: 16];
-                2'b10: RAM[addr][offset * 32 +: 32] <= din[offset * 32 +: 32];
+                3'b00: RAM[addr][offset * 32 + bit_pos * 8 +: 8] <= din[offset * 32 + bit_pos * 8 +: 8];
+                3'b01: RAM[addr][offset * 32 + bit_pos * 8 +: 16] <= din[offset * 32 + bit_pos * 8 +: 16];
+                3'b10: RAM[addr][offset * 32 +: 32] <= din[offset * 32 +: 32];
+                3'b11 : RAM[addr][offset * 32 + bit_pos * 8 +: 24] <= din[offset * 32 + bit_pos * 8 +: 24];
                 default : RAM[addr] <= din;
             endcase
 
