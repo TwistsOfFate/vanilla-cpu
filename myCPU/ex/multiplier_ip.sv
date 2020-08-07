@@ -20,17 +20,17 @@ module multiplier_ip #(
 logic [31:0] hi0, lo0, hi1, lo1, hi_reg, lo_reg;
 logic [31:0] hi_add_reg, hi_sub_reg, lo_add_reg, lo_sub_reg;
 logic [4:0] count;
-logic [128:0] in_reg;
+logic [130:0] in_reg;
 
 always_ff @(posedge clk) begin
 	if (rst)
 		in_reg <= '0;
 	else
-		in_reg <= {sign, srca, srcb, in_hi, in_lo};
+		in_reg <= {sign, mode, srca, srcb, in_hi, in_lo};
 end
 
 always_ff @(posedge clk) begin
-	if (in_reg != {sign, srca, srcb, in_hi, in_lo} || !in_valid || rst)
+	if (in_reg != {sign, mode, srca, srcb, in_hi, in_lo} || !in_valid || rst)
 		count <= 5'd0;
 	else
 		count <= count < 5'd31 ? count + 5'd1 : count;
@@ -66,19 +66,19 @@ always_comb begin
 		begin
 			hi = hi_reg;
 			lo = lo_reg;
-			out_valid = count >= CYCLES;
+			out_valid = count >= CYCLES && in_reg == {sign, mode, srca, srcb, in_hi, in_lo};
 		end
 		2'b01:
 		begin
 			hi = hi_add_reg;
 			lo = lo_add_reg;
-			out_valid = count >= CYCLES + 1;
+			out_valid = count >= CYCLES + 1 && in_reg == {sign, mode, srca, srcb, in_hi, in_lo};
 		end
 		2'b10:
 		begin
 			hi = hi_sub_reg;
 			lo = lo_sub_reg;
-			out_valid = count >= CYCLES + 1;
+			out_valid = count >= CYCLES + 1 && in_reg == {sign, mode, srca, srcb, in_hi, in_lo};
 		end
 	endcase
 end

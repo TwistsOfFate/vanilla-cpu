@@ -796,7 +796,8 @@ assign dstage.div_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011010) ;
 
 always_comb//hi, lo
 begin
-    if(dinstr.op == 6'b000000 && (dinstr.funct == 6'b011001 || dinstr.funct == 6'b011000))
+    if(dinstr.op == 6'b000000 && (dinstr.funct == 6'b011001 || dinstr.funct == 6'b011000) || dinstr.op == 6'b011100 &&
+        (dinstr.funct == 6'b000000 || dinstr.funct == 6'b000001 || dinstr.funct == 6'b000100 || dinstr.funct == 6'b000101))
     begin
         dstage.hi_sel = 2'b00 ;
         dstage.lo_sel = 2'b00 ;
