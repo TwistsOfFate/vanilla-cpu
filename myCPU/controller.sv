@@ -26,31 +26,87 @@ logic [ 7:0] branch, ebranch ;
 
 always_comb
 begin
-    case(dinstr.op)
+    unique case(dinstr.op)
         6'b011100:
         begin
-            if (dinstr.funct == 6'b000010) // MUL
-            begin
-                dstage.alu_srcb_sel_rt <= 0;
-                dstage.sft_srcb_sel_rs <= 0;
-                dstage.out_sel <= 3'b100;
-                dstage.regwrite <= 1'b1;
-                dstage.regdst <= 2'b01;
-                dstage.reserved_instr <= 1'b0;
-            end
-            else
-            begin
-                dstage.alu_srcb_sel_rt <= 0;
-                dstage.sft_srcb_sel_rs <= 0;
-                dstage.out_sel <= 3'b000;
-                dstage.regwrite <= 1'b0;
-                dstage.regdst <= 2'b00;
-                dstage.reserved_instr <= 1'b1;
-            end
+            unique case (dinstr.funct)
+                6'b000010: // MUL
+                begin
+                    dstage.alu_srcb_sel_rt <= 0;
+                    dstage.sft_srcb_sel_rs <= 0;
+                    dstage.out_sel <= 3'b100;
+                    dstage.regwrite <= 1'b1;
+                    dstage.regdst <= 2'b01;
+                    dstage.reserved_instr <= 1'b0;
+                end
+                6'b000000: // MADD
+                begin
+                    dstage.alu_srcb_sel_rt <= 1 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b000 ; 
+                    dstage.regwrite <= 1'b0 ;
+                    dstage.regdst <= 2'b00 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                6'b000001: // MADDU
+                begin
+                    dstage.alu_srcb_sel_rt <= 1 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b000 ; 
+                    dstage.regwrite <= 1'b0 ;
+                    dstage.regdst <= 2'b00 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                6'b000100: // MSUB
+                begin
+                    dstage.alu_srcb_sel_rt <= 1 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b000 ; 
+                    dstage.regwrite <= 1'b0 ;
+                    dstage.regdst <= 2'b00 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                6'b000101: // MSUBU
+                begin
+                    dstage.alu_srcb_sel_rt <= 1 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b000 ; 
+                    dstage.regwrite <= 1'b0 ;
+                    dstage.regdst <= 2'b00 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                6'b100001: // CLO
+                begin
+                    dstage.alu_srcb_sel_rt <= 0 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b101 ;
+                    dstage.regwrite <= 1'b1 ;
+                    dstage.regdst <= 2'b01 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                6'b100000: // CLZ
+                begin
+                    dstage.alu_srcb_sel_rt <= 0 ;
+                    dstage.sft_srcb_sel_rs <= 0 ;
+                    dstage.out_sel <= 3'b101 ;
+                    dstage.regwrite <= 1'b1 ;
+                    dstage.regdst <= 2'b01 ;
+                    dstage.reserved_instr <= 1'b0 ;
+                end
+                default:
+                begin
+                    dstage.alu_srcb_sel_rt <= 0;
+                    dstage.sft_srcb_sel_rs <= 0;
+                    dstage.out_sel <= 3'b000;
+                    dstage.regwrite <= 1'b0;
+                    dstage.regdst <= 2'b00;
+                    dstage.reserved_instr <= 1'b1;
+                end
+            endcase
         end
         6'b000000: 
         begin
-            case(dinstr.funct)
+            unique case(dinstr.funct)
                 6'b100000: //ADD
                 begin
                     dstage.alu_srcb_sel_rt <= 1 ;
@@ -711,14 +767,28 @@ begin
         dstage.sft_func = 2'b00 ;
 end
 
+assign dstage.cl_mode = dinstr.op == 6'b011100 && dinstr.funct == 6'b100001; // Only when CLO
+
 assign dstage.intovf_en = ((dinstr.op == 6'b000000 && dinstr.funct == 6'b100000) || dinstr.op == 6'b001000 || (dinstr.op == 6'b000000 && dinstr.funct == 6'b100010)) ;
 
 assign dstage.imm_sign = (dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dinstr.op == 6'b001010 || dinstr.op == 6'b001011) || 
 (dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011);
 
-assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010);
+assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) 
+|| (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000010 || dinstr.funct == 6'b000000 || dinstr.funct == 6'b000001 || dinstr.funct == 6'b000100 || dinstr.funct == 6'b000101));
 
-assign dstage.mul_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011000) || (dinstr.op == 6'b011100 && dinstr.funct == 6'b000010) ;
+assign dstage.mul_sign = (dinstr.op == 6'b000000 && dinstr.funct == 6'b011000) 
+|| (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000010 || dinstr.funct == 6'b000000 || dinstr.funct == 6'b000100)) ;
+
+always_comb
+    if (dinstr.op == 6'b000000 || dinstr.op == 6'b011100 && dinstr.funct == 6'b000010)
+        dstage.mul_mode = 2'b00;
+    else if (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000000 || dinstr.funct == 6'b000001))
+        dstage.mul_mode = 2'b01;
+    else if (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000100 || dinstr.funct == 6'b000101))
+        dstage.mul_mode = 2'b10;
+    else
+        dstage.mul_mode = 2'b00;
 
 assign dstage.div_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011010 || dinstr.funct == 6'b011011));
 
@@ -801,19 +871,7 @@ assign branch[7] = (dstage.branch == 3'b111) && (!dcompare.g0 && !dcompare.e0) &
 
 assign dstage.pcsrc = |branch ; 
 
-// assign ebranch[0] = (estage.branch == 3'b000) &&  ecompare.equal  && estage.isbranch ;
-// assign ebranch[1] = (estage.branch == 3'b001) && !ecompare.equal  && estage.isbranch ;
-// assign ebranch[2] = (estage.branch == 3'b010) &&  (ecompare.g0 | ecompare.e0) && estage.isbranch ;
-// assign ebranch[3] = (estage.branch == 3'b011) &&  ecompare.g0  && estage.isbranch ;
-// assign ebranch[4] = (estage.branch == 3'b100) &&  !ecompare.g0 && estage.isbranch ;
-// assign ebranch[5] = (estage.branch == 3'b101) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
-// assign ebranch[6] = (estage.branch == 3'b110) && (ecompare.g0 | ecompare.e0) && estage.isbranch ;
-// assign ebranch[7] = (estage.branch == 3'b111) && (!ecompare.g0 && !ecompare.e0) && estage.isbranch ;
-
-// assign bfrome = ~(|ebranch) ; 
-
-
-flop #(47) regE(
+flop #(50) regE(
     .clk(clk) ,
     .rst(~resetn | flush.e) ,
     .stall(stall.e) ,
@@ -821,7 +879,7 @@ flop #(47) regE(
     .out(estage) 
 );
 
-flop #(47) regM(
+flop #(50) regM(
     .clk(clk) ,
     .rst(~resetn | flush.m) ,
     .stall(stall.m) ,
@@ -829,7 +887,7 @@ flop #(47) regM(
     .out(mstage) 
 );
 
-flop #(47) regW(
+flop #(50) regW(
     .clk(clk) ,
     .rst(~resetn | flush.w) ,
     .stall(stall.w) ,
