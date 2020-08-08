@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "../cpu_defs.svh"
+`include "cpu_defs.svh"
 
 
 module exc_handler(
@@ -29,6 +29,7 @@ module exc_handler(
 	input [31:0] cp0_cause,
 	input m_in_delay_slot,
 	input [31:0] m_pc,
+    input [31:0] m_pcminus4,
 	input [31:0] m_badvaddr,
 	
 	input [1:0] m_addr_err,
@@ -37,18 +38,34 @@ module exc_handler(
 	input m_break,
 	input m_syscall,
 	input m_eret,
+    input m_mtc0,
 	
 	//OUTPUT
 	output logic is_valid_exc,
-	output logic [31:0] m_epc_wdata,
-	output logic m_cause_bd_wdata,
-	output logic [4:0] m_cause_exccode_wdata,
+    output logic exc_cp0_wen,
+    output cp0_op_t cp0_op,
+    output exc_info_t exc_info
+	// output logic [31:0] m_epc_wdata,
+	// output logic m_cause_bd_wdata,
+	// output logic [4:0] m_cause_exccode_wdata,
 	
-	output logic m_cp0_wen,
-	output logic [4:0] m_cp0_waddr,
-	output logic [31:0] m_cp0_wdata
+	// output logic m_cp0_wen,
+	// output logic [4:0] m_cp0_waddr,
+	// output logic [31:0] m_cp0_wdata
     );
-    
+
+    logic [31:0] m_epc_wdata;
+    logic m_cause_bd_wdata;
+    logic [4:0] m_cause_exccode_wdata;
+
+    assign exc_cp0_wen = is_valid_exc || m_eret;
+    assign cp0_op = is_valid_exc ? EXC : (m_eret ? ERET : (m_mtc0 ? MTC0 : NONE));
+
+    assign exc_info.epc = m_epc_wdata;
+    assign exc_info.cause_bd = m_cause_bd_wdata;
+    assign exc_info.cause_exccode = m_cause_exccode_wdata;
+    assign exc_info.badvaddr = m_badvaddr;
+
     always_comb begin
     	if (!m_is_instr) begin
     		is_valid_exc = 1'b0;
@@ -96,20 +113,20 @@ module exc_handler(
     	end
     end
     
-    always_comb begin
-    	if (m_addr_err != 2'b00) begin
-    		m_cp0_wen = 1'b1;
-    		m_cp0_waddr = `CP0_BADVADDR;
-    		m_cp0_wdata = m_badvaddr;
-    	end else if (m_eret == 1'b1) begin
-    		m_cp0_wen = 1'b1;
-    		m_cp0_waddr = `CP0_STATUS;
-    		m_cp0_wdata = {cp0_status[31:2], 1'b0, cp0_status[0]};
-    	end else begin
-    		m_cp0_wen = 1'b0;
-    		m_cp0_waddr = 32'b0;
-    		m_cp0_wdata = 32'b0;
-    	end
-    end
+    // always_comb begin
+    // 	if (m_addr_err != 2'b00) begin
+    // 		m_cp0_wen = 1'b1;
+    // 		m_cp0_waddr = `CP0_BADVADDR;
+    // 		m_cp0_wdata = m_badvaddr;
+    // 	end else if (m_eret == 1'b1) begin
+    // 		m_cp0_wen = 1'b1;
+    // 		m_cp0_waddr = `CP0_STATUS;
+    // 		m_cp0_wdata = {cp0_status[31:2], 1'b0, cp0_status[0]};
+    // 	end else begin
+    // 		m_cp0_wen = 1'b0;
+    // 		m_cp0_waddr = 32'b0;
+    // 		m_cp0_wdata = 32'b0;
+    // 	end
+    // end
     
 endmodule

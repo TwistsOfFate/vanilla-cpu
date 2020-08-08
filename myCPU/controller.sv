@@ -854,7 +854,7 @@ assign dstage.memtoreg = (dinstr.op == 6'b100000 || dinstr.op == 6'b100001 || di
 
 assign dstage.eret = (dinstr.op == 6'b010000 && dinstr.funct == 6'b011000) ;
 
-assign dstage.cp0_sel = (dinstr.op == 6'b010000 && dinstr.c0funct == 5'b00000) ;
+assign dstage.mfc0 = (dinstr.op == 6'b010000 && dinstr.c0funct == 5'b00000) ;
 assign dstage.cp0_wen = (dinstr.op == 6'b010000 && dinstr.c0funct == 5'b00100) ;
 
 assign dstage.sft_srca_sel_imm = (dinstr.op == 6'b001111);
@@ -872,7 +872,7 @@ assign branch[7] = (dstage.branch == 3'b111) && (!dcompare.g0 && !dcompare.e0) &
 
 assign dstage.pcsrc = |branch ; 
 
-flop #(50) regE(
+flop #(53) regE(
     .clk(clk) ,
     .rst(~resetn | flush.e) ,
     .stall(stall.e) ,
@@ -880,7 +880,7 @@ flop #(50) regE(
     .out(estage) 
 );
 
-flop #(50) regM(
+flop #(53) regM(
     .clk(clk) ,
     .rst(~resetn | flush.m) ,
     .stall(stall.m) ,
@@ -888,7 +888,7 @@ flop #(50) regM(
     .out(mstage) 
 );
 
-flop #(50) regW(
+flop #(53) regW(
     .clk(clk) ,
     .rst(~resetn | flush.w) ,
     .stall(stall.w) ,

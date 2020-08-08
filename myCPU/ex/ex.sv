@@ -205,12 +205,13 @@ module ex(
 	assign etom.rd = dtoe.rd ;
 	assign etom.addr_err_if = dtoe.addr_err_if ;
 	assign etom.is_instr	= dtoe.is_instr ;
+	assign etom.pcminus4 = dtoe.pc - 32'd4;
 
 	assign etoh.reg_waddr = etom.reg_waddr ;
 	assign etoh.regwrite  = esig.regwrite ;
 	assign etoh.memtoreg  = esig.memtoreg ;
 	assign etoh.out_sel   = esig.out_sel  ;
-	assign etoh.cp0_sel   = esig.cp0_sel ;
+	assign etoh.mfc0   = esig.mfc0 ;
 	assign etoh.cp0_wen   = esig.cp0_wen ;
 	assign etoh.hi_wen    = esig.hi_wen  ;
 	assign etoh.lo_wen    = esig.lo_wen  ;

@@ -85,8 +85,8 @@ wire			cause_bd_wdata;
 wire [4:0]		cause_exccode_wdata;
 
 wire [31:0]		cp0_epc;
-wire [31:0]		cp0_status;
-wire [31:0]		cp0_cause;
+// wire [31:0]		cp0_status;
+// wire [31:0]		cp0_cause;
 wire [31:0]		cp0_rdata;
 
 wire			m_exc_cp0_wen;
@@ -285,24 +285,34 @@ ex my_ex(
 	);
 
 mem my_mem(
+    .clk(clk),
+    .rst(~resetn),
+    .ext_int(ext_int),
+
+    .m_stall(stall_alpha.m),
     .msig(msig_alpha),
     .etom(dp_etom_m_alpha),
     .mtow(dp_mtow_m_alpha),
     .mtoh(dp_mtoh_m_alpha),
 
+    .cp0_epc(cp0_epc),
+    .cp0_index(),
+    .cp0_random(),
+    .cp0_entryhi(),
+
     .data_rdata(m_data_rdata),
 
 
 	//MEM STAGE INPUT
-	.cp0_epc(cp0_epc),
-	.cp0_status(cp0_status),
-	.cp0_cause(cp0_cause),
+	// .cp0_epc(cp0_epc),
+	// .cp0_status(cp0_status),
+	// .cp0_cause(cp0_cause),
 	
 	//EXCEPTION HANDLER OUTPUT
 	.m_epc_wdata(epc_wdata),
 	.m_cause_bd_wdata(cause_bd_wdata),
 	.m_cause_exccode_wdata(cause_exccode_wdata),
-	.exc_cp0_wen(m_exc_cp0_wen),
+	// .exc_cp0_wen(m_exc_cp0_wen),
 	.m_cp0_waddr(m_exc_cp0_waddr),
 	.m_cp0_wdata(m_exc_cp0_wdata),
 	
@@ -317,7 +327,7 @@ mem my_mem(
 wb my_wb(
     .mtow(dp_mtow_w_alpha),
     .wsig(wsig_alpha),
-    .cp0_rdata(cp0_rdata),
+    // .cp0_rdata(cp0_rdata),
 
     .wtoh(dp_wtoh_w_alpha),
     .w_reg_wdata(w_reg_wdata_alpha)
@@ -326,51 +336,51 @@ wb my_wb(
 
 
 //CPO INPUT MUXES AND HAZARD HANDLING
-or cp0_src_or(
-	cp0_wen,
-	m_exc_cp0_wen,
-	wsig_alpha.cp0_wen
-);
+// or cp0_src_or(
+// 	cp0_wen,
+// 	m_exc_cp0_wen,
+// 	wsig_alpha.cp0_wen
+// );
 
-assign cp0_wsel = wsig_alpha.cp0_wen ? 1'b1 : 1'b0;
+// assign cp0_wsel = wsig_alpha.cp0_wen ? 1'b1 : 1'b0;
 
-mux2 #(5) cp0_waddr_mux2(
-	.a(m_exc_cp0_waddr),
-	.b(dp_mtow_w_alpha.rd),
-	.sel(cp0_wsel),
-	.out(cp0_waddr)
-);
+// mux2 #(5) cp0_waddr_mux2(
+// 	.a(m_exc_cp0_waddr),
+// 	.b(dp_mtow_w_alpha.rd),
+// 	.sel(cp0_wsel),
+// 	.out(cp0_waddr)
+// );
 
-mux2 #(32) cp0_wdata_mux2(
-	.a(m_exc_cp0_wdata),
-	.b(dp_mtow_w_alpha.rtdata),
-	.sel(cp0_wsel),
-	.out(cp0_wdata)
-);
+// mux2 #(32) cp0_wdata_mux2(
+// 	.a(m_exc_cp0_wdata),
+// 	.b(dp_mtow_w_alpha.rtdata),
+// 	.sel(cp0_wsel),
+// 	.out(cp0_wdata)
+// );
 
 
-//CP0 REGISTERS
-cp0_regfile my_cp0(
-	.clk				(clk),
-	.rst				(~resetn),
-	.m_stall			(stall_alpha.m),
+// //CP0 REGISTERS
+// cp0_regfile my_cp0(
+// 	.clk				(clk),
+// 	.rst				(~resetn),
+// 	.m_stall			(stall_alpha.m),
 	
-	.ext_int			(ext_int),
-	.is_valid_exc		(dp_mtoh_m_alpha.is_valid_exc),
-	.epc_wdata			(epc_wdata),
-	.cause_bd_wdata		(cause_bd_wdata),
-	.cause_exccode_wdata(cause_exccode_wdata),
+// 	.ext_int			(ext_int),
+// 	.is_valid_exc		(dp_mtoh_m_alpha.is_valid_exc),
+// 	.epc_wdata			(epc_wdata),
+// 	.cause_bd_wdata		(cause_bd_wdata),
+// 	.cause_exccode_wdata(cause_exccode_wdata),
 	
-	.wen				(cp0_wen),
-	.waddr				(cp0_waddr),
-	.wdata				(cp0_wdata),
-	.raddr				(dp_mtow_w_alpha.rd),
+// 	.wen				(cp0_wen),
+// 	.waddr				(cp0_waddr),
+// 	.wdata				(cp0_wdata),
+// 	.raddr				(dp_mtow_w_alpha.rd),
 	
-	.epc				(cp0_epc),
-	.status				(cp0_status),
-	.cause				(cp0_cause),
-	.rdata				(cp0_rdata)
-);
+// 	.epc				(cp0_epc),
+// 	.status				(cp0_status),
+// 	.cause				(cp0_cause),
+// 	.rdata				(cp0_rdata)
+// );
 
 
 
@@ -386,7 +396,7 @@ flop #(67) ftod(
     .out 		({dp_ftod_d_alpha.instr, dp_ftod_d_alpha.pc, dp_ftod_d_alpha.addr_err_if, dp_ftod_d_alpha.is_instr, dp_ftod_d_alpha.in_delay_slot})  
 ) ;
 
-flop    #(199) dtoe(
+flop_dtoe dtoe(
     .clk       	(clk),
     .rst     	(~resetn | flush_alpha.e),
     .stall		(stall_alpha.e),
@@ -394,7 +404,7 @@ flop    #(199) dtoe(
     .out 		(dp_dtoe_e_alpha)  
 ) ;
 
-flop   #(211) etom(
+flop_etom etom(
     .clk       	(clk),
     .rst     	(~resetn | flush_alpha.m),
     .stall		(stall_alpha.m),
@@ -402,7 +412,7 @@ flop   #(211) etom(
     .out 		(dp_etom_m_alpha)  
 ) ;
 
-flop   #(235) mtow(
+flop_mtow mtow(
     .clk       	(clk),
     .rst     	(~resetn | flush_alpha.w),
     .stall		(stall_alpha.w),
