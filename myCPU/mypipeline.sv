@@ -49,7 +49,7 @@ stage_val_1 flush_alpha, stall_alpha ;
 logic		 m_stall_late	   ;
 logic		 m_flush_late	   ;
 
-stage_val_1  flush_ext_alpha, stall_ext_alpha ;
+// stage_val_1  flush_ext_alpha, stall_ext_alpha ;
 busy_ok      idmem ;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
 branch_rel   dcompare_alpha, ecompare_alpha;
@@ -70,7 +70,7 @@ logic [3:0]     m_data_wen;
 
 //--------------------------------------------------------------------------
 
-assign {stall_ext_alpha.f, stall_ext_alpha.d, stall_ext_alpha.e, stall_ext_alpha.m, stall_ext_alpha.w, flush_ext_alpha.f, flush_ext_alpha.d, flush_ext_alpha.e, flush_ext_alpha.m, flush_ext_alpha.w} = 10'b0;
+// assign {stall_ext_alpha.f, stall_ext_alpha.d, stall_ext_alpha.e, stall_ext_alpha.m, stall_ext_alpha.w, flush_ext_alpha.f, flush_ext_alpha.d, flush_ext_alpha.e, flush_ext_alpha.m, flush_ext_alpha.w} = 10'b0;
 
 //--------------------------------------------------------------------------
 
@@ -102,8 +102,8 @@ datapath dp(
     // .msig_alpha        (mstage_alpha)       ,
     // .wsig_alpha        (wstage_alpha)       ,
 
-    .stall_ext_alpha   (stall_ext_alpha)    ,
-    .flush_ext_alpha   (flush_ext_alpha)    ,
+    // .stall_ext_alpha   (stall_ext_alpha)    ,
+    // .flush_ext_alpha   (flush_ext_alpha)    ,
 
     .idmem             (idmem)              ,
     .dinstrinf_alpha   (dinstrinf_alpha)    ,

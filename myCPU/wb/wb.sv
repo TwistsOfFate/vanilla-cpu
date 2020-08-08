@@ -5,7 +5,7 @@ module wb(
 	// input  logic[31:0]  cp0_rdata,
 
 	output dp_wtoh   	wtoh ,
-	output [31:0]		w_reg_wdata
+	output logic [31:0]	w_reg_wdata
 	
     );
     
@@ -22,26 +22,36 @@ module wb(
     	.out(w_rdata_out)
     );
 
-    mux2 memtoreg_mux2(
-    	.a(mtow.ex_out),
-    	.b(w_rdata_out),
-    	.sel(wsig.memtoreg),
-    	.out(w_memreg_out)
-    );
+    always_comb
+        if (wsig.mfc0)
+            w_reg_wdata = mtow.cp0_rdata;
+        else if (wsig.link)
+            w_reg_wdata = mtow.pcplus8;
+        else if (wsig.memtoreg)
+            w_reg_wdata = w_rdata_out;
+        else
+            w_reg_wdata = mtow.ex_out;
+
+    // mux2 memtoreg_mux2(
+    // 	.a(mtow.ex_out),
+    // 	.b(w_rdata_out),
+    // 	.sel(wsig.memtoreg),
+    // 	.out(w_memreg_out)
+    // );
     
-    mux2 link_mux2(
-    	.a(w_memreg_out),
-    	.b(mtow.pcplus8),
-    	.sel(wsig.link),
-    	.out(w_link_out)
-    );
+    // mux2 link_mux2(
+    // 	.a(w_memreg_out),
+    // 	.b(mtow.pcplus8),
+    // 	.sel(wsig.link),
+    // 	.out(w_link_out)
+    // );
     
-    mux2 mfc0_mux2(
-    	.a(w_link_out),
-    	.b(mtow.cp0_rdata),
-    	.sel(wsig.mfc0),
-    	.out(w_reg_wdata)
-    );
+    // mux2 mfc0_mux2(
+    // 	.a(w_link_out),
+    // 	.b(mtow.cp0_rdata),
+    // 	.sel(wsig.mfc0),
+    // 	.out(w_reg_wdata)
+    // );
     
 	assign wtoh.rd = mtow.rd ;
 	assign wtoh.reg_waddr = mtow.reg_waddr ;

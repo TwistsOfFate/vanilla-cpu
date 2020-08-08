@@ -76,8 +76,6 @@ module ex(
 		.func	(esig.alu_func),
 		.srca	(e_for_rsdata),
 		.srcb	(e_alu_srcb),
-		.zero	(),
-		.sign	(),
 		.out	(e_alu_out),
 		.intovf	(e_alu_intovf)
 	);

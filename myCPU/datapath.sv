@@ -16,8 +16,8 @@ module datapath(
     // input  ctrl_reg       msig_alpha        ,
     // input  ctrl_reg       wsig_alpha        ,
 
-    input  stage_val_1    stall_ext_alpha   ,
-    input  stage_val_1    flush_ext_alpha   ,
+    // input  stage_val_1    stall_ext_alpha   ,
+    // input  stage_val_1    flush_ext_alpha   ,
     
     input  busy_ok        idmem             ,
     
@@ -123,8 +123,8 @@ hazard hz(
 
     .stall          (stall_alpha),
     .flush          (flush_alpha),
-    .stall_ext      (stall_ext_alpha),
-    .flush_ext      (flush_ext_alpha),
+    // .stall_ext      (stall_ext_alpha),
+    // .flush_ext      (flush_ext_alpha),
     
     .idmem          (idmem)
 

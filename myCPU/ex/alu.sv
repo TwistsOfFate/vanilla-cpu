@@ -24,8 +24,6 @@ module alu(
 	input [2:0] func,
 	input [31:0] srca,
 	input [31:0] srcb,
-	output zero,
-	output sign,
 	output [31:0] out,
 	output intovf
 );
@@ -51,8 +49,6 @@ always_comb begin
 end
 
 assign out = tmp[31:0];
-assign zero = (out == 32'b0);
-assign sign = out[31];
 assign intovf = (tmp[32] != tmp[31]);
 
 endmodule

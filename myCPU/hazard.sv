@@ -14,8 +14,8 @@ module hazard(
 
     output stage_val_1 stall,
     output stage_val_1 flush,
-    input stage_val_1 stall_ext,
-    input stage_val_1 flush_ext,
+    // input stage_val_1 stall_ext,
+    // input stage_val_1 flush_ext,
 
     input busy_ok     idmem
     );
@@ -28,22 +28,21 @@ logic imem_stall, dmem_stall;
 
 logic [9:0] stall_flush;
 
-assign {stall.f, stall.d, stall.e, stall.m, stall.w, flush.f, flush.d, flush.e, flush.m, flush.w} = 
-stall_flush | {stall_ext.f, stall_ext.d, stall_ext.e, stall_ext.m, 1'b0, 1'b0, flush_ext.d, flush_ext.e, flush_ext.m, flush_ext.w};
+assign {stall.f, stall.d, stall.e, stall.m, stall.w, flush.f, flush.d, flush.e, flush.m, flush.w} = stall_flush;
 
 
 always_comb
     begin
-        if(d_alpha.out_sel == 2'b10 && m_alpha.hi_wen)//HI
+        if(d_alpha.out_sel == 3'b010 && m_alpha.hi_wen)//HI
             to_d_alpha.hi_forward = 2'b10 ;
-        else if(d_alpha.out_sel == 2'b10 && w_alpha.hi_wen)
+        else if(d_alpha.out_sel == 3'b010 && w_alpha.hi_wen)
             to_d_alpha.hi_forward = 2'b01 ;
         else
             to_d_alpha.hi_forward = 2'b00 ;
 
-        if(d_alpha.out_sel == 2'b11 && m_alpha.lo_wen)//LO
+        if(d_alpha.out_sel == 3'b011 && m_alpha.lo_wen)//LO
             to_d_alpha.lo_forward = 2'b10 ;
-        else if(d_alpha.out_sel == 2'b11 && w_alpha.lo_wen)
+        else if(d_alpha.out_sel == 3'b011 && w_alpha.lo_wen)
             to_d_alpha.lo_forward = 2'b01 ;
         else
             to_d_alpha.lo_forward = 2'b00 ;    
@@ -92,7 +91,7 @@ assign linkr_stall = e_alpha.link && (d_alpha.rs == e_alpha.rd || d_alpha.rt == 
 assign lwstall = (e_alpha.memtoreg && (e_alpha.rt == d_alpha.rs || e_alpha.rt == d_alpha.rt))
                 /*|| (m_alpha.memtoreg && (m_alpha.rt == d_alpha.rs || m_alpha.rt == d_alpha.rt))*/ ;
 
-assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 2'b10) || (e_alpha.lo_wen && d_alpha.out_sel == 2'b11) ;
+assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 3'b010) || (e_alpha.lo_wen && d_alpha.out_sel == 3'b011) ;
 
 assign jrstall = d_alpha.jump[0] && ((e_alpha.regwrite && e_alpha.reg_waddr == d_alpha.rs) || (m_alpha.memtoreg && m_alpha.reg_waddr == d_alpha.rs)) ;
 

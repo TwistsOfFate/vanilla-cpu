@@ -211,7 +211,7 @@ typedef struct packed {
 typedef struct packed {
 	logic		  isbranch;
 	logic		  isjump;
-	logic	[ 1:0]out_sel;
+	logic	[ 2:0]out_sel;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
 	logic		  mfc0;
@@ -222,7 +222,7 @@ typedef struct packed {
 	logic	[ 4:0]reg_waddr;
 	logic 	 	  regwrite ;
 	logic		  memtoreg ;
-	logic	[ 1:0]out_sel  ;
+	logic	[ 2:0]out_sel  ;
 	logic		  mfc0  ;
 	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
