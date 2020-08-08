@@ -31,7 +31,7 @@ module wb(
     
     mux2 link_mux2(
     	.a(w_memreg_out),
-    	.b(mtow.pc + 32'd8),
+    	.b(mtow.pcplus8),
     	.sel(wsig.link),
     	.out(w_link_out)
     );
@@ -50,8 +50,5 @@ module wb(
 	assign wtoh.hi_wen = wsig.hi_wen ;
 	assign wtoh.lo_wen = wsig.lo_wen ;
 	assign wtoh.cp0_wen = wsig.cp0_wen ;
-   
-//RDATA_EXTEND
-    
     
 endmodule

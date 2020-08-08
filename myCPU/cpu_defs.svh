@@ -32,39 +32,39 @@ typedef enum logic [4:0] {
 	ERROREPC, DESAVE
 } cp0_reg_t;
 
-`define CP0_INDEX		8'b00000_000
-`define CP0_RANDOM		8'b00001_000
-`define CP0_ENTRYLO0	8'b00010_000
-`define CP0_ENTRYLO1	8'b00011_000
-`define CP0_CONTEXT		8'b00100_000
-`define CP0_PAGEMASK	8'b00101_000
-`define CP0_WIRED		8'b00110_000
-`define CP0_R7			8'b00111_000 // Not implemented
-`define CP0_BADVADDR 	8'b01000_000
-`define CP0_COUNT		8'b01001_000
-`define CP0_ENTRYHI		8'b01010_000
-`define CP0_COMPARE		8'b01011_000
-`define CP0_STATUS		8'b01100_000
-`define CP0_CAUSE		8'b01101_000
-`define CP0_EPC			8'b01110_000
-`define CP0_PRID		8'b01111_000
-`define CP0_CONFIG		8'b10000_000
-`define CP0_CONFIG1		8'b10000_001
-`define CP0_LLADDR		8'b10001_000 // Not implemented
-`define CP0_WATCHLO		8'b10010_000 // Not implemented
-`define CP0_WATCHHI		8'b10011_000 // Not implemented
-`define CP0_R20			8'b10100_000 // Not implemented
-`define CP0_R21			8'b10101_000 // Not implemented
-`define CP0_R22			8'b10110_000 // Not implemented
-`define CP0_R23			8'b10111_000 // Not implemented
-`define CP0_R24			8'b11000_000 // Not implemented
-`define CP0_PERFCNT		8'b11001_000 // Not implemented
-`define CP0_ERRCTL		8'b11010_000 // Not implemented
-`define CP0_CACHEERR	8'b11011_000 // Not implemented
-`define CP0_TAGLO		8'b11100_000
-`define CP0_TAGHI		8'b11101_000 // Not implemented
-`define CP0_ERROREPC	8'b11110_000 // Not implemented
-`define CP0_R31			8'b11111_000 // Not implemented
+`define CP0_INDEX		8'b000_00000
+`define CP0_RANDOM		8'b000_00001
+`define CP0_ENTRYLO0	8'b000_00010
+`define CP0_ENTRYLO1	8'b000_00011
+`define CP0_CONTEXT		8'b000_00100
+`define CP0_PAGEMASK	8'b000_00101
+`define CP0_WIRED		8'b000_00110
+`define CP0_R7			8'b000_00111 // Not implemented
+`define CP0_BADVADDR 	8'b000_01000
+`define CP0_COUNT		8'b000_01001
+`define CP0_ENTRYHI		8'b000_01010
+`define CP0_COMPARE		8'b000_01011
+`define CP0_STATUS		8'b000_01100
+`define CP0_CAUSE		8'b000_01101
+`define CP0_EPC			8'b000_01110
+`define CP0_PRID		8'b000_01111
+`define CP0_CONFIG		8'b000_10000
+`define CP0_CONFIG1		8'b001_10000
+`define CP0_LLADDR		8'b000_10001 // Not implemented
+`define CP0_WATCHLO		8'b000_10010 // Not implemented
+`define CP0_WATCHHI		8'b000_10011 // Not implemented
+`define CP0_R20			8'b000_10100 // Not implemented
+`define CP0_R21			8'b000_10101 // Not implemented
+`define CP0_R22			8'b000_10110 // Not implemented
+`define CP0_R23			8'b000_10111 // Not implemented
+`define CP0_R24			8'b000_11000 // Not implemented
+`define CP0_PERFCNT		8'b000_11001 // Not implemented
+`define CP0_ERRCTL		8'b000_11010 // Not implemented
+`define CP0_CACHEERR	8'b000_11011 // Not implemented
+`define CP0_TAGLO		8'b000_11100
+`define CP0_TAGHI		8'b000_11101 // Not implemented
+`define CP0_ERROREPC	8'b000_11110 // Not implemented
+`define CP0_R31			8'b000_11111 // Not implemented
 
 `define EXCCODE_INT		5'h0
 `define EXCCODE_ADEL	5'h4
@@ -119,9 +119,7 @@ typedef struct packed {
 	logic		 lo_wen;
 	logic		 mfc0;
 	logic		 cp0_wen;
-	logic [ 2:0] cp0_sel;
 	logic		 eret;
-	logic		 pcsrc;
 	logic		 isbranch;
 	logic [ 2:0] branch;
 	logic  		 isjump;
@@ -172,6 +170,7 @@ typedef struct packed {
 	logic		  addr_err_if;
 	logic		  in_delay_slot;
 	logic		  is_instr	   ;
+	logic   [ 2:0]cp0_sel;
 } dp_dtoe;
 
 typedef struct packed {
@@ -189,6 +188,7 @@ typedef struct packed {
 	logic		  intovf;
 	logic		  is_instr	   ;
 	logic 	[31:0]pcminus4;
+	logic   [ 2:0]cp0_sel;
 } dp_etom;
 
 typedef struct packed {
@@ -197,13 +197,12 @@ typedef struct packed {
 	logic	[31:0]rtdata;
 	logic	[ 4:0]reg_waddr;
 	logic	[31:0]pc;
+	logic   [31:0]pcplus8;
 	logic	[31:0]hi_wdata;
 	logic	[31:0]lo_wdata;
 	logic	[ 4:0]rd;
 	logic		  is_instr;
 	logic   [31:0]data_rdata;
-	logic   	  exc_cp0_wen;
-	logic 		  is_valid_exc;
 	cp0_op_t	  cp0_op;
 	exc_info_t    exc_info;
 	logic	[31:0]cp0_rdata;

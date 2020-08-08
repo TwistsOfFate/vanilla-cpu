@@ -10,19 +10,12 @@ module controller(
     input  stage_val_1 flush    ,
     input  stage_val_1 stall    ,
      
-    input  branch_rel  dcompare     ,
-    // input  branch_rel  ecompare     ,
-
-    // output logic       bfrome       ,
+    // input  branch_rel  dcompare     ,
      
-    output ctrl_reg    dstage       ,
-    output ctrl_reg    estage       ,
-    output ctrl_reg    mstage       ,
-    output ctrl_reg    wstage
-
+    output ctrl_reg    dstage
     );
     
-logic [ 7:0] branch, ebranch ;
+// logic [ 7:0] branch, ebranch ;
 
 always_comb
 begin
@@ -463,7 +456,7 @@ begin
         end
         6'b000001:
         begin 
-            case(dinstr.branchfunct)
+            unique case(dinstr.branchfunct)
                 5'b00001: //BGEZ
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;
@@ -861,39 +854,28 @@ assign dstage.sft_srca_sel_imm = (dinstr.op == 6'b001111);
 
 
 
-assign branch[0] = (dstage.branch == 3'b000) &&  dcompare.equal  && dstage.isbranch ;
-assign branch[1] = (dstage.branch == 3'b001) && !dcompare.equal  && dstage.isbranch ;
-assign branch[2] = (dstage.branch == 3'b010) &&  (dcompare.g0 | dcompare.e0) && dstage.isbranch ;
-assign branch[3] = (dstage.branch == 3'b011) &&  dcompare.g0  && dstage.isbranch ;
-assign branch[4] = (dstage.branch == 3'b100) &&  !dcompare.g0 && dstage.isbranch ;
-assign branch[5] = (dstage.branch == 3'b101) && (!dcompare.g0 && !dcompare.e0) && dstage.isbranch ;
-assign branch[6] = (dstage.branch == 3'b110) && (dcompare.g0 | dcompare.e0) && dstage.isbranch ;
-assign branch[7] = (dstage.branch == 3'b111) && (!dcompare.g0 && !dcompare.e0) && dstage.isbranch ;
+// flop_ctrl regE(
+//     .clk(clk) ,
+//     .rst(~resetn | flush.e) ,
+//     .stall(stall.e) ,
+//     .in(dstage) ,
+//     .out(estage) 
+// );
 
-assign dstage.pcsrc = |branch ; 
+// flop_ctrl regM(
+//     .clk(clk) ,
+//     .rst(~resetn | flush.m) ,
+//     .stall(stall.m) ,
+//     .in(estage) ,
+//     .out(mstage) 
+// );
 
-flop #(53) regE(
-    .clk(clk) ,
-    .rst(~resetn | flush.e) ,
-    .stall(stall.e) ,
-    .in(dstage) ,
-    .out(estage) 
-);
-
-flop #(53) regM(
-    .clk(clk) ,
-    .rst(~resetn | flush.m) ,
-    .stall(stall.m) ,
-    .in(estage) ,
-    .out(mstage) 
-);
-
-flop #(53) regW(
-    .clk(clk) ,
-    .rst(~resetn | flush.w) ,
-    .stall(stall.w) ,
-    .in(mstage) ,
-    .out(wstage) 
-);
+// flop_ctrl regW(
+//     .clk(clk) ,
+//     .rst(~resetn | flush.w) ,
+//     .stall(stall.w) ,
+//     .in(mstage) ,
+//     .out(wstage) 
+// );
 
 endmodule

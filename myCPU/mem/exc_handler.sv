@@ -59,7 +59,6 @@ module exc_handler(
     logic [4:0] m_cause_exccode_wdata;
 
     assign exc_cp0_wen = is_valid_exc || m_eret;
-    assign cp0_op = is_valid_exc ? EXC : (m_eret ? ERET : (m_mtc0 ? MTC0 : NONE));
 
     assign exc_info.epc = m_epc_wdata;
     assign exc_info.cause_bd = m_cause_bd_wdata;
@@ -70,33 +69,51 @@ module exc_handler(
     	if (!m_is_instr) begin
     		is_valid_exc = 1'b0;
     		m_cause_exccode_wdata = 5'b0;
+            cp0_op = NONE;
     	end else if (((cp0_cause[15:8] & cp0_status[15:8]) != 8'b0) && cp0_status[0] && !cp0_status[1]) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_INT;
+            cp0_op = EXC;
     	end else if (m_addr_err == 2'b01) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_ADEL;
+            cp0_op = BADVA;
     	end else if (m_reserved_instr == 1'b1) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_RI;
+            cp0_op = EXC;
     	end else if (m_intovf == 1'b1) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_OV;
+            cp0_op = EXC;
     	end else if (m_break == 1'b1) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_BP;
+            cp0_op = EXC;
     	end else if (m_syscall == 1'b1) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_SYS;
+            cp0_op = EXC;
     	end else if (m_addr_err == 2'b10) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_ADEL;
+            cp0_op = BADVA;
     	end else if (m_addr_err == 2'b11) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_ADES;
+            cp0_op = BADVA;
+        end else if (m_eret) begin
+            is_valid_exc = 1'b0;
+            m_cause_exccode_wdata = 5'b0;
+            cp0_op = ERET;
+        end else if (m_mtc0) begin
+            is_valid_exc = 1'b0;
+            m_cause_exccode_wdata = 5'b0;
+            cp0_op = MTC0;
     	end else begin
     		is_valid_exc = 1'b0;
     		m_cause_exccode_wdata = 5'b0;
+            cp0_op = NONE;
     	end
     end
     
@@ -105,7 +122,7 @@ module exc_handler(
     		m_epc_wdata = cp0_epc;
     		m_cause_bd_wdata = cp0_cause[31];
     	end else if (m_in_delay_slot == 1'b1) begin
-    		m_epc_wdata = m_pc - 32'd4;
+    		m_epc_wdata = m_pcminus4;
     		m_cause_bd_wdata = 1'b1;
     	end else begin
     		m_epc_wdata = m_pc;

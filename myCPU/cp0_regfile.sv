@@ -39,10 +39,9 @@ module cp0_regfile #(
 	input 				rst,
 	input [5:0] 		ext_int,
 	
-	input 				wen,		// && !m_stall
+	input 				ren,
+	input 				wen,
 	input cp0_op_t 		wtype,
-	
-	// input 				is_valid_exc,
 	input exc_info_t	exc_info,
 
 	input [4:0] 		waddr,
@@ -51,7 +50,7 @@ module cp0_regfile #(
 	input [4:0] 		raddr,
 	input [2:0]			rsel,
 
-	output logic 		rready,
+	output logic 		ready,
 	output logic [31:0] rdata,
 
 	output logic [31:0] epc,
@@ -64,14 +63,15 @@ module cp0_regfile #(
 	output logic [31:0] entryhi
     );
     
-    logic [7:0][31:0] regs, regs_new;
+    logic [255:0][31:0] regs, regs_new;
     logic [7:0] windex, rindex;
     logic cnt;
-    logic [2:0] ready_cnt;
+    logic [2:0] wen_cnt, ren_cnt;
+    logic w_done, r_done;
     logic [5:0] tlb_size_m1;
 
-    assign windex = {waddr, wsel};
-    assign rindex = {raddr, rsel};
+    assign windex = {wsel, waddr};
+    assign rindex = {rsel, raddr};
     assign tlb_size_m1 = TLB_SIZE - 1;
 
     always_ff @(posedge clk)
@@ -93,7 +93,7 @@ module cp0_regfile #(
     				`CP0_WIRED: regs_new[windex][INDEX_WIDTH-1:0] = wdata[INDEX_WIDTH-1:0];
     				`CP0_BADVADDR: ;
     				`CP0_COUNT: regs_new[windex] = wdata;
-    				`CP0_ENTRYHI: regs_new[windex] = {wdata[31:13], regs[12:8], wdata[7:0]};
+    				`CP0_ENTRYHI: regs_new[windex] = {wdata[31:13], regs[windex][12:8], wdata[7:0]};
     				`CP0_COMPARE: regs_new[windex] = wdata;
     				`CP0_STATUS: regs_new[windex] = {regs[windex][31:16], wdata[15:8], regs[windex][7:2], wdata[1:0]};
     				`CP0_CAUSE: regs_new[windex][9:8] = wdata[9:8];
@@ -101,7 +101,7 @@ module cp0_regfile #(
     				`CP0_PRID: ;
     				`CP0_CONFIG: regs_new[windex][2:0] = wdata[2:0];
     				`CP0_CONFIG1: ;
-    				`CP0_TAGLO: regs_new [windex] = wdata;
+    				`CP0_TAGLO: regs_new[windex] = wdata;
     				default: ; // Do nothing for reserved registers
     			endcase
     		end
@@ -169,26 +169,41 @@ module cp0_regfile #(
     end
 
     always_ff @(posedge clk) begin
-		epc <= regs[`CP0_EPC];
-		status <= regs[`CP0_STATUS];
-		cause <= regs[`CP0_CAUSE];
-		rdata <= regs[rindex];
-		index <= regs[`CP0_INDEX];
-		random <= regs[`CP0_RANDOM];
-		entryhi <= regs[`CP0_ENTRYHI];
+    	if (!wen) begin						// Never read the new value
+			epc <= regs[`CP0_EPC];
+			status <= regs[`CP0_STATUS];
+			cause <= regs[`CP0_CAUSE];
+			rdata <= regs[rindex];
+			index <= regs[`CP0_INDEX];
+			random <= regs[`CP0_RANDOM];
+			entryhi <= regs[`CP0_ENTRYHI];
+		end
 	end
 
 	always_ff @(posedge clk)
-		if (rst) ready_cnt <= '0;
+		if (rst) wen_cnt <= '0;
 		else begin
-			unique case (ready_cnt)
-				3'd0: ready_cnt <= wen;
-				3'd1: ready_cnt <= 3'd2;
-				3'd2: ready_cnt <= 3'd0;
+			unique case (wen_cnt)
+				3'd0: wen_cnt <= wen;
+				3'd1: wen_cnt <= 3'd2;
+				3'd2: wen_cnt <= 3'd0;
 			endcase
 		end
 
-	assign rready = ready_cnt == 3'd0 && !wen || ready_cnt == 3'd2;
+	assign w_done = wen_cnt == 3'd2;
+
+	always_ff @(posedge clk)
+		if (rst) ren_cnt <= '0;
+		else begin
+			unique case (ren_cnt)
+				3'd0: ren_cnt <= ren;
+				3'd1: ren_cnt <= 3'd0;
+			endcase
+		end
+
+	assign r_done = ren_cnt == 3'd1;
+
+	assign ready = wen && w_done || ren && r_done || !wen && !ren;
     
     // integer i;
     

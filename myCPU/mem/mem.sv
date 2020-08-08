@@ -105,17 +105,18 @@ module mem(
 		.ext_int(ext_int),
 
 		//INPUT
+		.ren(msig.mfc0 || cp0_op != NONE && cp0_op != MTC0),
 		.wen(cp0_op != NONE),
 		.wtype(cp0_op),	
 		.exc_info(exc_info),
 		.waddr(etom.rd),
-		.wsel(msig.cp0_sel),
+		.wsel(etom.cp0_sel),
 		.wdata(etom.rtdata),
 		.raddr(etom.rd),
-		.rsel(msig.cp0_sel),
+		.rsel(etom.cp0_sel),
 
 		//OUTPUT
-		.rready(cp0_ready),
+		.ready(cp0_ready),
 		.rdata(mtow.cp0_rdata),
 		.epc(cp0_epc),
 		.status(cp0_status),
@@ -149,6 +150,7 @@ module mem(
 	assign mtow.rtdata = etom.rtdata ;
 	assign mtow.reg_waddr = etom.reg_waddr ;
 	assign mtow.pc = etom.pc ;
+	assign mtow.pcplus8 = etom.pc + 32'd8;
 	assign mtow.hi_wdata = etom.hi_wdata ;
 	assign mtow.lo_wdata = etom.lo_wdata ;
 	assign mtow.rd = etom.rd ;

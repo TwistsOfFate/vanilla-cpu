@@ -83,15 +83,9 @@ controller ctrl(
     .flush              (flush_alpha)             ,
     .stall              (stall_alpha)             ,
     
-    .dcompare           (dcompare_alpha)          ,
-    // .ecompare           (ecompare_alpha)          ,
-
-    // .bfrome             (bfrome_alpha)            ,
+    // .dcompare           (dcompare_alpha)          ,
     
-    .dstage             (dstage_alpha)            ,
-    .estage             (estage_alpha)            ,
-    .mstage             (mstage_alpha)            ,
-    .wstage             (wstage_alpha)            
+    .dstage             (dstage_alpha)        
 );
     
 datapath dp(
@@ -104,9 +98,9 @@ datapath dp(
     // .bfrome            (bfrome_alpha)       ,
     
     .dsig_alpha        (dstage_alpha)       ,
-    .esig_alpha        (estage_alpha)       ,
-    .msig_alpha        (mstage_alpha)       ,
-    .wsig_alpha        (wstage_alpha)       ,
+    // .esig_alpha        (estage_alpha)       ,
+    // .msig_alpha        (mstage_alpha)       ,
+    // .wsig_alpha        (wstage_alpha)       ,
 
     .stall_ext_alpha   (stall_ext_alpha)    ,
     .flush_ext_alpha   (flush_ext_alpha)    ,
@@ -120,7 +114,7 @@ datapath dp(
     .flush_alpha       (flush_alpha)        ,
     .stall_alpha       (stall_alpha)        ,
 
-    .dbranchcmp_alpha  (dcompare_alpha)     ,
+    // .dbranchcmp_alpha  (dcompare_alpha)     ,
     // .ebranchcmp_alpha  (ecompare_alpha)     ,
 
    

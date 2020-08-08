@@ -206,6 +206,7 @@ module ex(
 	assign etom.addr_err_if = dtoe.addr_err_if ;
 	assign etom.is_instr	= dtoe.is_instr ;
 	assign etom.pcminus4 = dtoe.pc - 32'd4;
+	assign etom.cp0_sel = dtoe.cp0_sel;
 
 	assign etoh.reg_waddr = etom.reg_waddr ;
 	assign etoh.regwrite  = esig.regwrite ;

@@ -12,9 +12,9 @@ module datapath(
     
     // signals of the corresponding instr
     input  ctrl_reg       dsig_alpha        ,
-    input  ctrl_reg       esig_alpha        ,
-    input  ctrl_reg       msig_alpha        ,
-    input  ctrl_reg       wsig_alpha        ,
+    // input  ctrl_reg       esig_alpha        ,
+    // input  ctrl_reg       msig_alpha        ,
+    // input  ctrl_reg       wsig_alpha        ,
 
     input  stage_val_1    stall_ext_alpha   ,
     input  stage_val_1    flush_ext_alpha   ,
@@ -33,7 +33,7 @@ module datapath(
     output stage_val_1    stall_alpha       ,
         
     //compare num
-    output branch_rel     dbranchcmp_alpha  ,
+    // output branch_rel     dbranchcmp_alpha  ,
     // output branch_rel     ebranchcmp_alpha  ,
     
     //dmem sram-like interface
@@ -65,7 +65,8 @@ dp_wtoh dp_wtoh_w_alpha;
 dp_htod dp_htod_d_alpha;
 dp_htoe dp_htoe_e_alpha;
 
-logic f_in_delay_slot;
+ctrl_reg esig_alpha, msig_alpha, wsig_alpha;
+
 logic d_guess_taken, e_guess_taken;
 
 logic [31:0] delayslot_addr, e_bpc ;
@@ -234,8 +235,8 @@ decode my_decode(
 
     .f_nextpc(f_nextpc_alpha),
 
-    .dbranchcmp(dbranchcmp_alpha),
-    .f_indelayslot(f_in_delay_slot),
+    // .dbranchcmp(dbranchcmp_alpha),
+    .f_indelayslot(dp_ftod_f_alpha.in_delay_slot),
 
     .dtoe(dp_dtoe_d_alpha),
     .dinstrinf(dinstrinf_alpha),
@@ -258,7 +259,6 @@ assign m_pc_alpha = dp_etom_m_alpha.pc ;
 assign dp_ftod_f_alpha.is_instr = 1'b1;
 assign dp_ftod_f_alpha.addr_err_if = (f_pc_alpha[1:0] != 2'b00) ;
 assign dp_ftod_f_alpha.instr = f_instr_alpha ;
-//EX to WB Stages
 
 ex my_ex(
 // input
@@ -388,12 +388,12 @@ wb my_wb(
 
 // transfer the data 
 
-flop #(67) ftod(
+flop_ftod ftod(
     .clk       	(clk),
     .rst     	(~resetn | flush_alpha.d),
     .stall		(stall_alpha.d),
-    .in			({dp_ftod_f_alpha.instr, dp_ftod_f_alpha.pc, dp_ftod_f_alpha.addr_err_if, dp_ftod_f_alpha.is_instr, f_in_delay_slot}) ,
-    .out 		({dp_ftod_d_alpha.instr, dp_ftod_d_alpha.pc, dp_ftod_d_alpha.addr_err_if, dp_ftod_d_alpha.is_instr, dp_ftod_d_alpha.in_delay_slot})  
+    .in			(dp_ftod_f_alpha) ,
+    .out 		(dp_ftod_d_alpha)  
 ) ;
 
 flop_dtoe dtoe(
@@ -420,9 +420,29 @@ flop_mtow mtow(
     .out 		(dp_mtow_w_alpha)  
 ) ;
 
+flop_ctrl desig(
+    .clk(clk) ,
+    .rst(~resetn | flush_alpha.e) ,
+    .stall(stall_alpha.e) ,
+    .in(dsig_alpha) ,
+    .out(esig_alpha) 
+);
 
+flop_ctrl emsig(
+    .clk(clk) ,
+    .rst(~resetn | flush_alpha.m) ,
+    .stall(stall_alpha.m) ,
+    .in(esig_alpha) ,
+    .out(msig_alpha) 
+);
 
-
+flop_ctrl mwsig(
+    .clk(clk) ,
+    .rst(~resetn | flush_alpha.w) ,
+    .stall(stall_alpha.w) ,
+    .in(msig_alpha) ,
+    .out(wsig_alpha) 
+);
 
 
 

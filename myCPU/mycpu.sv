@@ -186,8 +186,8 @@ module mycpu #(
         .debug_wb_rf_wen    (debug_wb_rf_wen)   , 
         .debug_wb_rf_wnum   (debug_wb_rf_wnum)  , 
         .debug_wb_rf_wdata  (debug_wb_rf_wdata) ,
-        .icached            (icached)           ,
-        .dcached            (dcached)
+        .icached            ()           ,
+        .dcached            ()
     );
 
     mmu immu(inst_cpu_vaddr, inst_cpu_paddr, icached);
