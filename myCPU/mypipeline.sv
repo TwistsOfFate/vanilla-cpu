@@ -140,8 +140,10 @@ datapath dp(
  
 ); 
 
-mmu immu(f_inst_addr, inst_addr, icached);
-mmu dmmu(m_data_addr, data_addr, dcached);
+// mmu immu(f_inst_addr, inst_addr, icached);
+// mmu dmmu(m_data_addr, data_addr, dcached);
+assign inst_addr = f_inst_addr;
+assign data_addr = m_data_addr;
 
 assign inst_wr = 1'b0;
 assign inst_size = 2'b10;
