@@ -7,17 +7,9 @@ module datapath(
     
     // the instr fetched
     input  logic [31:0]   f_instr_alpha     ,
-
-    // input logic           bfrome            ,
     
     // signals of the corresponding instr
     input  ctrl_reg       dsig_alpha        ,
-    // input  ctrl_reg       esig_alpha        ,
-    // input  ctrl_reg       msig_alpha        ,
-    // input  ctrl_reg       wsig_alpha        ,
-
-    // input  stage_val_1    stall_ext_alpha   ,
-    // input  stage_val_1    flush_ext_alpha   ,
     
     input  busy_ok        idmem             ,
     
@@ -31,10 +23,6 @@ module datapath(
     // whether choose to flush 
     output stage_val_1    flush_alpha       ,
     output stage_val_1    stall_alpha       ,
-        
-    //compare num
-    // output branch_rel     dbranchcmp_alpha  ,
-    // output branch_rel     ebranchcmp_alpha  ,
     
     //dmem sram-like interface
 	output logic       	  m_data_req        ,
@@ -81,23 +69,7 @@ logic [31:0] f_nextpc_alpha ;
 
 //-----------------------------EX to WB stages output wires---------------------------
 
-wire [31:0]		epc_wdata;
-wire			cause_bd_wdata;
-wire [4:0]		cause_exccode_wdata;
-
 wire [31:0]		cp0_epc;
-// wire [31:0]		cp0_status;
-// wire [31:0]		cp0_cause;
-wire [31:0]		cp0_rdata;
-
-wire			m_exc_cp0_wen;
-wire [4:0]		m_exc_cp0_waddr;
-wire [31:0]		m_exc_cp0_wdata;
-
-wire			cp0_wsel;
-wire			cp0_wen;
-wire [4:0]		cp0_waddr;
-wire [31:0]		cp0_wdata;
 
 //-----------------------------debug signals-----------------------------------
 assign debug_wb_pc 		= dp_mtow_w_alpha.pc ;
@@ -123,12 +95,8 @@ hazard hz(
 
     .stall          (stall_alpha),
     .flush          (flush_alpha),
-    // .stall_ext      (stall_ext_alpha),
-    // .flush_ext      (flush_ext_alpha),
     
     .idmem          (idmem)
-
-    
 );
 logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 
@@ -224,7 +192,6 @@ decode my_decode(
     .f_nowpc(dp_ftod_f_alpha.pc),
     .f_pcplus4(dp_ftod_f_alpha.pcplus4),
     .cp0_epc(cp0_epc),
-    // .e_bpc(e_bpc),
     .is_valid_exc(dp_mtoh_m_alpha.is_valid_exc),
 
     .dsig(dsig_alpha),
@@ -235,8 +202,6 @@ decode my_decode(
     .ftod(dp_ftod_d_alpha),
 
     .f_nextpc(f_nextpc_alpha),
-
-    // .dbranchcmp(dbranchcmp_alpha),
     .f_indelayslot(dp_ftod_f_alpha.in_delay_slot),
 
     .dtoe(dp_dtoe_d_alpha),
@@ -278,8 +243,6 @@ ex my_ex(
     .e_guess_taken(e_guess_taken),
 
 // output
-    // .e_bpc(e_bpc),
-    // .ebranchcmp(ebranchcmp_alpha),
     .bfrome(bfrome),
     .etom(dp_etom_e_alpha),
     .etoh(dp_etoh_e_alpha)
@@ -301,9 +264,12 @@ mem my_mem(
 
     .data_rdata(m_data_rdata),
 
+    .tlb_ok(),
+    .tlb_exc_mem(),
     .read_tlb(),
     .write_tlb(),
 
+    .m_tlb_req(),
 	
 	//SRAM INTERFACE
 	.m_data_req(m_data_req),
@@ -316,63 +282,10 @@ mem my_mem(
 wb my_wb(
     .mtow(dp_mtow_w_alpha),
     .wsig(wsig_alpha),
-    // .cp0_rdata(cp0_rdata),
 
     .wtoh(dp_wtoh_w_alpha),
     .w_reg_wdata(w_reg_wdata_alpha)
-
     );
-
-
-//CPO INPUT MUXES AND HAZARD HANDLING
-// or cp0_src_or(
-// 	cp0_wen,
-// 	m_exc_cp0_wen,
-// 	wsig_alpha.cp0_wen
-// );
-
-// assign cp0_wsel = wsig_alpha.cp0_wen ? 1'b1 : 1'b0;
-
-// mux2 #(5) cp0_waddr_mux2(
-// 	.a(m_exc_cp0_waddr),
-// 	.b(dp_mtow_w_alpha.rd),
-// 	.sel(cp0_wsel),
-// 	.out(cp0_waddr)
-// );
-
-// mux2 #(32) cp0_wdata_mux2(
-// 	.a(m_exc_cp0_wdata),
-// 	.b(dp_mtow_w_alpha.rtdata),
-// 	.sel(cp0_wsel),
-// 	.out(cp0_wdata)
-// );
-
-
-// //CP0 REGISTERS
-// cp0_regfile my_cp0(
-// 	.clk				(clk),
-// 	.rst				(~resetn),
-// 	.m_stall			(stall_alpha.m),
-	
-// 	.ext_int			(ext_int),
-// 	.is_valid_exc		(dp_mtoh_m_alpha.is_valid_exc),
-// 	.epc_wdata			(epc_wdata),
-// 	.cause_bd_wdata		(cause_bd_wdata),
-// 	.cause_exccode_wdata(cause_exccode_wdata),
-	
-// 	.wen				(cp0_wen),
-// 	.waddr				(cp0_waddr),
-// 	.wdata				(cp0_wdata),
-// 	.raddr				(dp_mtow_w_alpha.rd),
-	
-// 	.epc				(cp0_epc),
-// 	.status				(cp0_status),
-// 	.cause				(cp0_cause),
-// 	.rdata				(cp0_rdata)
-// );
-
-
-
 
 
 // transfer the data 

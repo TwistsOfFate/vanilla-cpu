@@ -33,8 +33,12 @@ typedef enum logic [4:0] {
 } cp0_reg_t;
 
 typedef enum logic [2:0] {
-	REFILL_L, REFILL_S, INVALID_L, INVALID_S, MODIFIED
+	NONE, REFILL_L, REFILL_S, INVALID_L, INVALID_S, MODIFIED
 } tlb_exc_t;
+
+typedef enum logic [2:0] {
+	NONE, TLBWI, TLBWR, TLBR, TLBP
+} tlb_req_t;
 
 `define CP0_INDEX		8'b000_00000
 `define CP0_RANDOM		8'b000_00001
@@ -71,6 +75,9 @@ typedef enum logic [2:0] {
 `define CP0_R31			8'b000_11111 // Not implemented
 
 `define EXCCODE_INT		5'h0
+`define EXCCODE_MOD		5'h1
+`define EXCCODE_TLBL	5'h2
+`define EXCCODE_TLBS	5'h3
 `define EXCCODE_ADEL	5'h4
 `define EXCCODE_ADES	5'h5
 `define EXCCODE_SYS		5'h8
@@ -139,6 +146,7 @@ typedef struct packed {
 	logic [ 1:0] jump;
 	logic 		 cl_mode;
 	logic [ 1:0] mul_mode;
+	tlb_req_t	 tlb_req;
 } ctrl_reg ;
 
 typedef struct packed {
@@ -218,6 +226,7 @@ typedef struct packed {
 	logic		  is_instr;
 	logic   [31:0]data_rdata;
 	logic	[31:0]cp0_rdata;
+	logic  	[31:0]rdata_out;
 } dp_mtow;
 
 typedef struct packed {

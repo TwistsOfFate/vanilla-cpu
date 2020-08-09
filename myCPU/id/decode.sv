@@ -43,42 +43,7 @@ assign branch[5] = (dsig.branch == 3'b101) && (!dbranchcmp.g0 && !dbranchcmp.e0)
 assign branch[6] = (dsig.branch == 3'b110) && (dbranchcmp.g0 | dbranchcmp.e0) && dsig.isbranch ;
 assign branch[7] = (dsig.branch == 3'b111) && (!dbranchcmp.g0 && !dbranchcmp.e0) && dsig.isbranch ;
 
-assign pcsrc = |branch ; 
-
-// adder   pcadd1( 
-//     .add_valA   (f_nowpc)      ,
-//     .add_valB   (32'b100)   ,
-//     .add_result (f_pcplus4) 
-// ) ; //add 4 to get the pc in the delay slot
-
-// eqcmp   cmpeq(
-//     .a  (d_for_rsdata)  ,
-//     .b  (d_for_rtdata)  ,
-//     .eq (dbranchcmp.equal)    
-// );
-
-
-// Compare cmp0(
-//     .valA    (d_for_rsdata) ,
-//     .greater (dbranchcmp.g0)   ,
-//     .equal   (dbranchcmp.e0) 
-// );
-
-// signext se(
-//     .ext_valA   (ftod.instr[15:0]) ,
-//     .ext_result (d_signimm)     
-// ) ; //imm extends to 32 bits
-
-// sl2     immsh(
-//     .sl2_valA   (d_signimm)     ,
-//     .sl2_result (d_signimmsh)   
-// ) ; //imm shifts left 2
-
-// adder   pcadd2(
-//     .add_valA   (ftod.pc + 32'd4)     ,
-//     .add_valB   (d_signimmsh)   ,
-//     .add_result (d_pcbranch)    
-// ) ; //add pc in the delay slot and imm
+assign pcsrc = |branch ;
 
 assign d_signimm = {{16{ftod.instr[15]}}, ftod.instr[15:0]};
 assign d_signimmsh = {d_signimm[29:0], 2'b00};

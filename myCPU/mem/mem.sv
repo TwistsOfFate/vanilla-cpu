@@ -15,8 +15,12 @@ module mem(
 
 	input [31:0]	data_rdata,
 
+	input 			tlb_ok,
+	input tlb_exc_t tlb_exc_mem,
 	input  tlb_t 	read_tlb,
 	output tlb_t	write_tlb,
+
+	output tlb_req_t m_tlb_req,
 	
 	//SRAM-LIKE INTERFACE
 	output         	m_data_req,
@@ -25,7 +29,6 @@ module mem(
     output [31:0] 	m_data_addr,
     output [31:0] 	m_data_wdata
     );
-    
 
     wire [31:0]		m_badvaddr;
     wire [1:0]		m_addr_err;
@@ -37,6 +40,8 @@ module mem(
     exc_info_t		exc_info;
     wire [31:0]		cp0_status;
     wire [31:0]		cp0_cause;
+
+    wire 			tlb_busy;
         
 //DATA_ADDR_CHECK
 	data_addr_check my_data_addr_check(
@@ -50,6 +55,18 @@ module mem(
 		.addr_err(m_addr_err),
 		.m_req(m_req)
 	);
+
+//TLB_REQUESTOR
+	tlb_requestor my_tlb_req(
+		.in_req(msig.tlb_req),
+		.addr_err(m_addr_err),		// "Address error - Data access" comes before TLB data access exceptions
+		.reserved_instr(msig.reserved_instr),
+		.intovf(etom.intovf),
+		.tlb_exc_if(),
+		.out_req(m_tlb_req)
+	);
+
+	assign tlb_busy = m_tlb_req != NONE && !tlb_ok;
 	
 //EXC_HANDLER
 	exc_handler my_exc_handler(
@@ -70,10 +87,9 @@ module mem(
 		.m_syscall(msig.syscall),
 		.m_eret(msig.eret),
 		.m_mtc0(msig.cp0_wen),
-		.m_tlbw(),
-		.m_tlbr(),
-		.m_tlbp(),
-		.m_tlb_exc(),
+		.m_tlb_req(m_tlb_req),
+		.tlb_exc_if(),
+		.tlb_exc_mem(),
 		
 		//OUTPUT
 		.is_valid_exc(mtoh.is_valid_exc),
@@ -89,7 +105,7 @@ module mem(
 
 		//INPUT
 		.ren(msig.mfc0 || cp0_op != NONE && cp0_op != MTC0),
-		.wen(cp0_op != NONE),
+		.wen(cp0_op != NONE && !tlb_busy),
 		.wtype(cp0_op),	
 		.exc_info(exc_info),
 		.read_tlb(read_tlb),
@@ -125,6 +141,14 @@ module mem(
 	assign			m_data_wr = msig.memwr;
 	assign			m_data_size = msig.size;
 	assign			m_data_addr = etom.ex_out;
+
+	rdata_extend m_rdata_extend(
+    	.sign(msig.rdata_sign),
+    	.rdata(data_rdata),
+    	.size(msig.size),
+    	.memoffset(mtow.ex_out[1:0]),
+    	.out(mtow.rdata_out)
+    );
 
 // MtoW and MtoH signals
 	assign mtow.ex_out = etom.ex_out ;

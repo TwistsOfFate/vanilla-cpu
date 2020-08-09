@@ -642,6 +642,42 @@ begin
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b0 ;
             end
+            else if(dinstr.funct == 6'b000001)//TLBR
+            begin
+                dstage.alu_srcb_sel_rt <= 0 ;
+                dstage.sft_srcb_sel_rs <= 0 ;
+                dstage.out_sel <= 3'b000 ;
+                dstage.regwrite <= 1'b0 ;
+                dstage.regdst <= 2'b00 ;
+                dstage.reserved_instr <= 1'b0 ;
+            end
+            else if(dinstr.funct == 6'b000010)//TLBWI
+            begin
+                dstage.alu_srcb_sel_rt <= 0 ;
+                dstage.sft_srcb_sel_rs <= 0 ;
+                dstage.out_sel <= 3'b000 ;
+                dstage.regwrite <= 1'b0 ;
+                dstage.regdst <= 2'b00 ;
+                dstage.reserved_instr <= 1'b0 ;
+            end
+            else if(dinstr.funct == 6'b000110)//TLBWR
+            begin
+                dstage.alu_srcb_sel_rt <= 0 ;
+                dstage.sft_srcb_sel_rs <= 0 ;
+                dstage.out_sel <= 3'b000 ;
+                dstage.regwrite <= 1'b0 ;
+                dstage.regdst <= 2'b00 ;
+                dstage.reserved_instr <= 1'b0 ;
+            end
+            else if(dinstr.funct == 6'b001000)//TLBP
+            begin
+                dstage.alu_srcb_sel_rt <= 0 ;
+                dstage.sft_srcb_sel_rs <= 0 ;
+                dstage.out_sel <= 3'b000 ;
+                dstage.regwrite <= 1'b0 ;
+                dstage.regdst <= 2'b00 ;
+                dstage.reserved_instr <= 1'b0 ;
+            end
             else
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
@@ -852,30 +888,16 @@ assign dstage.cp0_wen = (dinstr.op == 6'b010000 && dinstr.c0funct == 5'b00100) ;
 
 assign dstage.sft_srca_sel_imm = (dinstr.op == 6'b001111);
 
-
-
-// flop_ctrl regE(
-//     .clk(clk) ,
-//     .rst(~resetn | flush.e) ,
-//     .stall(stall.e) ,
-//     .in(dstage) ,
-//     .out(estage) 
-// );
-
-// flop_ctrl regM(
-//     .clk(clk) ,
-//     .rst(~resetn | flush.m) ,
-//     .stall(stall.m) ,
-//     .in(estage) ,
-//     .out(mstage) 
-// );
-
-// flop_ctrl regW(
-//     .clk(clk) ,
-//     .rst(~resetn | flush.w) ,
-//     .stall(stall.w) ,
-//     .in(mstage) ,
-//     .out(wstage) 
-// );
+always_comb
+    if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000001)
+        dstage.tlb_req = TLBR;
+    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000010)
+        dstage.tlb_req = TLBWI;
+    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000110)
+        dstage.tlb_req = TLBWR;
+    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b001000)
+        dstage.tlb_req = TLBP;
+    else
+        dstage.tlb_req = NONE;
 
 endmodule

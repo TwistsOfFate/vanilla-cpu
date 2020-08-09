@@ -133,7 +133,11 @@ module cp0_regfile #(
     		end
     		TLBW:
     		begin
-    			
+
+    		end
+    		TLBP:
+    		begin
+
     		end
     	endcase
     end

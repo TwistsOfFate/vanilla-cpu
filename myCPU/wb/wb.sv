@@ -13,14 +13,15 @@ module wb(
 	wire [31:0]		w_memreg_out;
 	wire [31:0]		w_link_out;
 
+    assign w_rdata_out = mtow.rdata_out;
 
-	rdata_extend w_rdata_extend(
-    	.sign(wsig.rdata_sign),
-    	.rdata(mtow.data_rdata),
-    	.size(wsig.size),
-    	.memoffset(mtow.ex_out[1:0]),
-    	.out(w_rdata_out)
-    );
+	// rdata_extend w_rdata_extend(
+ //    	.sign(wsig.rdata_sign),
+ //    	.rdata(mtow.data_rdata),
+ //    	.size(wsig.size),
+ //    	.memoffset(mtow.ex_out[1:0]),
+ //    	.out(w_rdata_out)
+ //    );
 
     always_comb
         if (wsig.mfc0)
