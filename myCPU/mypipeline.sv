@@ -2,26 +2,26 @@
 module mypipeline(
     input  logic         clk          ,
     input  logic         resetn       ,
-    input  logic  [ 5:0] ext_int	  , 
+    input  logic  [ 5:0] ext_int	  ,
 
-    //inst sram-like 
+    //inst sram-like
     output logic         inst_req     ,
     output logic         inst_wr      ,
     output logic  [ 1:0] inst_size    ,
     output logic  [31:0] inst_addr    ,
     output logic  [31:0] inst_wdata   ,
-    
+
     input  logic  [31:0] inst_rdata   ,
     input  logic         inst_addr_ok ,
     input  logic         inst_data_ok ,
-    
-    //data sram-like 
+
+    //data sram-like
     output logic         data_req     ,
     output logic         data_wr      ,
     output logic  [ 1:0] data_size    ,
     output logic  [31:0] data_addr    ,
     output logic  [31:0] data_wdata   ,
-    
+
     input  logic  [31:0] data_rdata   ,
     input  logic         data_addr_ok ,
     input  logic         data_data_ok ,
@@ -32,23 +32,23 @@ module mypipeline(
     input  tlb_t          m_read_tlb        ,
     output tlb_t          m_write_tlb       ,
     output tlb_req_t      tlb_req           ,
-    input logic           m_tlb_ok          ,  
-    
+    input logic           m_tlb_ok          ,
+
     //debug signals
     output logic [31:0]  debug_wb_pc	,
 	output logic [ 3:0]  debug_wb_rf_wen,
 	output logic [ 4:0]  debug_wb_rf_wnum,
     output logic [31:0]  debug_wb_rf_wdata,
-    
+
     //cache signals
     output logic         icached      ,
     output logic         dcached
-    ); 
-    
+    );
+
 logic [31:0] f_instr_alpha, f_inst_addr_tmp;
 logic [31:0] m_pc, m_pc_tmp;
 logic [31:0] m_data_rdata;
-    
+
 instr_inf dinstrinf_alpha ;
 //--------------------------------------------------------------------------
 stage_val_1 flush_alpha, stall_alpha ;
@@ -58,7 +58,7 @@ logic		 m_flush_late	   ;
 
 busy_ok      idmem ;
 logic        m_tlb_busy, tlb_req_logic;
-tlb_req_t    m_tlb_req;        
+tlb_req_t    m_tlb_req;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
 branch_rel   dcompare_alpha, ecompare_alpha;
 
@@ -76,22 +76,22 @@ logic [31:0]	m_data_addr;
 controller ctrl(
     .clk                (clk)               ,
     .resetn             (resetn)            ,
-    
+
     .dinstr             (dinstrinf_alpha)         ,
-    
+
     .flush              (flush_alpha)             ,
     .stall              (stall_alpha)             ,
-        
-    .dstage             (dstage_alpha)        
+
+    .dstage             (dstage_alpha)
 );
-    
+
 datapath dp(
     .clk                (clk)               ,
     .resetn             (resetn)            ,
     .ext_int            (ext_int)           ,
 
     .f_instr_alpha      (f_instr_alpha)     ,
-    
+
     .dsig_alpha        (dstage_alpha)       ,
 
     .idmem             (idmem)              ,
@@ -102,7 +102,7 @@ datapath dp(
 
     .flush_alpha       (flush_alpha)        ,
     .stall_alpha       (stall_alpha)        ,
-   
+
     //dmem sram interface
 	.m_data_req			(m_data_req)		,
     .m_data_wr			(data_wr)			,
@@ -118,14 +118,14 @@ datapath dp(
     .m_write_tlb        (m_write_tlb)       ,
     .m_tlb_req          (m_tlb_req)         ,
     .m_tlb_busy         (m_tlb_busy)        ,
-    
+
 	//debug
     .debug_wb_pc        (debug_wb_pc)       ,
     .debug_wb_rf_wen    (debug_wb_rf_wen)   ,
     .debug_wb_rf_wnum   (debug_wb_rf_wnum)  ,
-    .debug_wb_rf_wdata  (debug_wb_rf_wdata)                  
- 
-); 
+    .debug_wb_rf_wdata  (debug_wb_rf_wdata)
+
+);
 
 assign inst_addr = f_inst_addr;
 assign data_addr = m_data_addr;

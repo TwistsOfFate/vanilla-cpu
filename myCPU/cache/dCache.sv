@@ -43,7 +43,7 @@ module dCache #(
     logic [LINE_NUM - 1 : 0] ram_data[31 : 0];
     logic [31 : 0] replaceID;
     logic [1 : 0] state;
-    logic [1 : 0] wr_size;
+    logic [2 : 0] wr_size;
     logic hit;
     logic set_dcache_valid, set_dcache_dirty;
     
