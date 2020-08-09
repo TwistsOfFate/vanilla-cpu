@@ -889,13 +889,13 @@ assign dstage.cp0_wen = (dinstr.op == 6'b010000 && dinstr.c0funct == 5'b00100) ;
 assign dstage.sft_srca_sel_imm = (dinstr.op == 6'b001111);
 
 always_comb
-    if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000001)
+    if (dinstr.op == 6'b010000 && dinstr.funct == 6'b000001)
         dstage.tlb_req = TLBR;
-    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000010)
+    else if (dinstr.op == 6'b010000 && dinstr.funct == 6'b000010)
         dstage.tlb_req = TLBWI;
-    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b000110)
+    else if (dinstr.op == 6'b010000 && dinstr.funct == 6'b000110)
         dstage.tlb_req = TLBWR;
-    else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b001000)
+    else if (dinstr.op == 6'b010000 && dinstr.funct == 6'b001000)
         dstage.tlb_req = TLBP;
     else
         dstage.tlb_req = NO_REQ;
