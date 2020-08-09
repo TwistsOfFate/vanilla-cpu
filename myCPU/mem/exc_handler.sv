@@ -39,19 +39,16 @@ module exc_handler(
 	input m_syscall,
 	input m_eret,
     input m_mtc0,
+    input m_tlbw,
+    input m_tlbr,
+    input m_tlbp,
+    input tlb_exc_t m_tlb_exc,
 	
 	//OUTPUT
 	output logic is_valid_exc,
     output logic exc_cp0_wen,
     output cp0_op_t cp0_op,
     output exc_info_t exc_info
-	// output logic [31:0] m_epc_wdata,
-	// output logic m_cause_bd_wdata,
-	// output logic [4:0] m_cause_exccode_wdata,
-	
-	// output logic m_cp0_wen,
-	// output logic [4:0] m_cp0_waddr,
-	// output logic [31:0] m_cp0_wdata
     );
 
     logic [31:0] m_epc_wdata;
@@ -78,6 +75,10 @@ module exc_handler(
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_ADEL;
             cp0_op = BADVA;
+        // end else if (m_addr_err == 2'b01) begin
+        //     is_valid_exc = 1'b1;
+        //     m_cause_exccode_wdata = `EXCCODE_ADEL;
+        //     cp0_op = BADVA;
     	end else if (m_reserved_instr == 1'b1) begin
     		is_valid_exc = 1'b1;
     		m_cause_exccode_wdata = `EXCCODE_RI;
@@ -110,6 +111,18 @@ module exc_handler(
             is_valid_exc = 1'b0;
             m_cause_exccode_wdata = 5'b0;
             cp0_op = MTC0;
+        end else if (m_tlbw) begin
+            is_valid_exc = 1'b0;
+            m_cause_exccode_wdata = 5'b0;
+            cp0_op = TLBW;
+        end else if (m_tlbr) begin
+            is_valid_exc = 1'b0;
+            m_cause_exccode_wdata = 5'b0;
+            cp0_op = TLBR;
+        end else if (m_tlbp) begin
+            is_valid_exc = 1'b0;
+            m_cause_exccode_wdata = 5'b0;
+            cp0_op = TLBP;
     	end else begin
     		is_valid_exc = 1'b0;
     		m_cause_exccode_wdata = 5'b0;
@@ -129,21 +142,5 @@ module exc_handler(
     		m_cause_bd_wdata = 1'b0;
     	end
     end
-    
-    // always_comb begin
-    // 	if (m_addr_err != 2'b00) begin
-    // 		m_cp0_wen = 1'b1;
-    // 		m_cp0_waddr = `CP0_BADVADDR;
-    // 		m_cp0_wdata = m_badvaddr;
-    // 	end else if (m_eret == 1'b1) begin
-    // 		m_cp0_wen = 1'b1;
-    // 		m_cp0_waddr = `CP0_STATUS;
-    // 		m_cp0_wdata = {cp0_status[31:2], 1'b0, cp0_status[0]};
-    // 	end else begin
-    // 		m_cp0_wen = 1'b0;
-    // 		m_cp0_waddr = 32'b0;
-    // 		m_cp0_wdata = 32'b0;
-    // 	end
-    // end
     
 endmodule

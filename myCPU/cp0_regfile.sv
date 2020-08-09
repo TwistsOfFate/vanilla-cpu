@@ -43,6 +43,7 @@ module cp0_regfile #(
 	input 				wen,
 	input cp0_op_t 		wtype,
 	input exc_info_t	exc_info,
+	input tlb_t			read_tlb,
 
 	input [4:0] 		waddr,
 	input [2:0]			wsel,
@@ -57,10 +58,7 @@ module cp0_regfile #(
 	output logic [31:0] status,
 	output logic [31:0] cause,
 
-	// TLB outputs
-	output logic [31:0] index,
-	output logic [31:0] random,
-	output logic [31:0] entryhi
+	output tlb_t		write_tlb
     );
     
     logic [255:0][31:0] regs, regs_new;
@@ -124,7 +122,7 @@ module cp0_regfile #(
     		begin
     			regs_new[`CP0_STATUS][1] = 1'b0;
     		end
-    		TLB:
+    		TLB_EXC:
     		begin
     			regs_new[`CP0_EPC] = exc_info.epc;
     			regs_new[`CP0_CAUSE][31] = exc_info.cause_bd;
@@ -132,6 +130,10 @@ module cp0_regfile #(
     			regs_new[`CP0_CAUSE][6:2] = exc_info.cause_exccode;
     			regs_new[`CP0_BADVADDR] = exc_info.badvaddr;
     			regs_new[`CP0_ENTRYHI][31:13] = exc_info.badvaddr[31:13];
+    		end
+    		TLBW:
+    		begin
+    			
     		end
     	endcase
     end
@@ -175,9 +177,12 @@ module cp0_regfile #(
 			status <= regs[`CP0_STATUS];
 			cause <= regs[`CP0_CAUSE];
 			rdata <= regs[rindex];
-			index <= regs[`CP0_INDEX];
-			random <= regs[`CP0_RANDOM];
-			entryhi <= regs[`CP0_ENTRYHI];
+			write_tlb.index <= regs[`CP0_INDEX];
+			write_tlb.random <= regs[`CP0_RANDOM];
+			write_tlb.entryhi <= regs[`CP0_ENTRYHI];
+			write_tlb.pagemask <= regs[`CP0_PAGEMASK];
+			write_tlb.entrylo0 <= regs[`CP0_ENTRYLO0];
+			write_tlb.entrylo1 <= regs[`CP0_ENTRYLO1];
 		end
 	end
 

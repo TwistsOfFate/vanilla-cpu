@@ -298,25 +298,12 @@ mem my_mem(
     .mtoh(dp_mtoh_m_alpha),
 
     .cp0_epc(cp0_epc),
-    .cp0_index(),
-    .cp0_random(),
-    .cp0_entryhi(),
 
     .data_rdata(m_data_rdata),
 
+    .read_tlb(),
+    .write_tlb(),
 
-	//MEM STAGE INPUT
-	// .cp0_epc(cp0_epc),
-	// .cp0_status(cp0_status),
-	// .cp0_cause(cp0_cause),
-	
-	//EXCEPTION HANDLER OUTPUT
-	// .m_epc_wdata(epc_wdata),
-	// .m_cause_bd_wdata(cause_bd_wdata),
-	// .m_cause_exccode_wdata(cause_exccode_wdata),
-	// .exc_cp0_wen(m_exc_cp0_wen),
-	// .m_cp0_waddr(m_exc_cp0_waddr),
-	// .m_cp0_wdata(m_exc_cp0_wdata),
 	
 	//SRAM INTERFACE
 	.m_data_req(m_data_req),

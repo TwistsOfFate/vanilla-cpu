@@ -18,7 +18,7 @@ module dCache_Controller #(
     output logic [OFFSET_SIZE * 32 - 1 : 0]       line_data,
     output logic                                  line_data_ok,
     input  logic [ 1 : 0]             size,
-    output logic [ 2 : 0]             wr_size,
+    output logic [ 1 : 0]             wr_size,
     output logic                      wlast,
     output logic                      awvalid
 );
@@ -85,8 +85,7 @@ module dCache_Controller #(
                                 awvalid <= 1'b0;
                                 case (size)
                                     2'b00 : line_data[addr_offset * 32 + bit_pos * 8 +: 8] <= cpu_rdata[bit_pos * 8 +: 8];
-                                    2'b01 : line_data[addr_offset * 32 + bit_pos * 8 +: 16] <= cpu_rdata[bit_pos * 8 +: 16];
-                                    2'b11 : line_data[addr_offset * 32 + bit_pos * 8 +: 24] <= cpu_rdata[bit_pos * 8 +: 24];
+                                    2'b01 : line_data[addr_offset * 32 + bit_pos * 8 +: 16] <= cpu_rdata[bit_pos * 8 +: 8];
                                     default : line_data[addr_offset * 32 +: 32] <= cpu_rdata;
                                 endcase
                               end else begin
@@ -112,7 +111,7 @@ module dCache_Controller #(
                         mw_en <= 1'b0;
                         {new_valid, new_dirty} <= 2'b10;
                         linew_en <= 1'b1;
-                        wr_size <= 3'b100;
+                        wr_size <= 2'b11;
                     end
             2'b10 : begin
 						if (load > OFFSET_SIZE - 1) zero <= 1'b1;
@@ -121,7 +120,7 @@ module dCache_Controller #(
 						mw_en <= 1'b1;
                         {new_valid, new_dirty} <= 2'b00;
                         linew_en <= 1'b0;
-                        wr_size <= 3'b100;
+                        wr_size <= 2'b11;
                     end
             default : begin
                 zero <= 1'b1;
@@ -132,7 +131,7 @@ module dCache_Controller #(
                 mw_en <= 1'b0;
                 if (hit && w_en) linew_en <= 1'b1;
                 else linew_en <= 1'b0;
-                wr_size <= {1'b0, size};
+                wr_size <= size;
             end 
         endcase
 endmodule

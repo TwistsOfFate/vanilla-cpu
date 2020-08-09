@@ -12,24 +12,11 @@ module mem(
 
 	output 			cp0_ready,
 	output [31:0] 	cp0_epc,
-	output [31:0] 	cp0_index,
-	output [31:0] 	cp0_random,
-	output [31:0]	cp0_entryhi,
 
 	input [31:0]	data_rdata,
-	
-	//MEM STAGE INPUT
-	// input [31:0]	cp0_epc,
-	// input [31:0]	cp0_status,
-	// input [31:0]	cp0_cause,
 
-	//EXCEPTION HANDLER OUTPUT
-	// output [31:0]	m_epc_wdata,
-	// output			m_cause_bd_wdata,
-	// output [4:0]	m_cause_exccode_wdata,
-	// output			exc_cp0_wen,
-	// output [4:0]	m_cp0_waddr,
-	// output [31:0]	m_cp0_wdata,
+	input  tlb_t 	read_tlb,
+	output tlb_t	write_tlb,
 	
 	//SRAM-LIKE INTERFACE
 	output         	m_data_req,
@@ -83,19 +70,15 @@ module mem(
 		.m_syscall(msig.syscall),
 		.m_eret(msig.eret),
 		.m_mtc0(msig.cp0_wen),
+		.m_tlbw(),
+		.m_tlbr(),
+		.m_tlbp(),
+		.m_tlb_exc(),
 		
 		//OUTPUT
 		.is_valid_exc(mtoh.is_valid_exc),
-		// .exc_cp0_wen(exc_cp0_wen),
 		.cp0_op(cp0_op),
 		.exc_info(exc_info)
-		// .m_epc_wdata(m_epc_wdata),
-		// .m_cause_bd_wdata(m_cause_bd_wdata),
-		// .m_cause_exccode_wdata(m_cause_exccode_wdata),
-		
-		// .m_cp0_wen(exc_cp0_wen),
-		// .m_cp0_waddr(m_cp0_waddr),
-		// .m_cp0_wdata(m_cp0_wdata)
 	);
 
 //CP0_REGFILE
@@ -109,6 +92,7 @@ module mem(
 		.wen(cp0_op != NONE),
 		.wtype(cp0_op),	
 		.exc_info(exc_info),
+		.read_tlb(read_tlb),
 		.waddr(etom.rd),
 		.wsel(etom.cp0_sel),
 		.wdata(etom.rtdata),
@@ -121,9 +105,7 @@ module mem(
 		.epc(cp0_epc),
 		.status(cp0_status),
 		.cause(cp0_cause),
-		.index(cp0_index),
-		.random(cp0_random),
-		.entryhi(cp0_entryhi)
+		.write_tlb(write_tlb)
 	);
 
 //WDATA_ADJUST

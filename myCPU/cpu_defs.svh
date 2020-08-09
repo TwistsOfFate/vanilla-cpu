@@ -18,8 +18,8 @@ typedef enum logic [6:0] {
 	OP_ERET, OP_MFC0, OP_MTC0
 } op_t;
 
-typedef enum logic [2:0] {
-	NONE, MTC0, EXC, BADVA, ERET, TLB
+typedef enum logic [3:0] {
+	NONE, MTC0, EXC, BADVA, ERET, TLB_EXC, TLBW, TLBR, TLBP
 } cp0_op_t;
 
 typedef enum logic [4:0] {
@@ -31,6 +31,10 @@ typedef enum logic [4:0] {
 	PERFCNT, ERRCTL, CACHEERR, TAGLO, TAGHI,
 	ERROREPC, DESAVE
 } cp0_reg_t;
+
+typedef enum logic [2:0] {
+	REFILL_L, REFILL_S, INVALID_L, INVALID_S, MODIFIED
+} tlb_exc_t;
 
 `define CP0_INDEX		8'b000_00000
 `define CP0_RANDOM		8'b000_00001
@@ -88,6 +92,15 @@ typedef struct packed {
 	logic [4:0] cause_exccode;
 	logic [31:0] badvaddr;
 } exc_info_t;
+
+typedef struct packed {
+	logic [31:0] index;
+	logic [31:0] random;
+	logic [31:0] entryhi;
+	logic [31:0] pagemask;
+	logic [31:0] entrylo0;
+	logic [31:0] entrylo1;
+} tlb_t;
 
 typedef struct packed {
 	logic 	 	 memtoreg ;
