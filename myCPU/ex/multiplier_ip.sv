@@ -33,8 +33,10 @@ logic [4:0] count;
 always_ff @(posedge clk) begin
 	if (!in_valid || rst)
 		count <= 5'd0;
+	else if (mode == 2'b00)
+		count <= count < CYCLES ? count + 5'd1 : 5'd0;
 	else
-		count <= count < CYCLES + 1 ? count + 5'd1 : 5'd0;
+		count <= count < CYCLES + 2 ? count + 5'd1 : 5'd0;
 end
 
 mult_gen_0 my_mult_gen_0(
@@ -73,15 +75,15 @@ always_comb begin
 	unique case (mode)
 		2'b00:
 		begin
-			hi = hi_reg;
-			lo = lo_reg;
+			hi = sign ? hi1 : hi0;
+			lo = sign ? lo1 : lo0;
 			out_valid = count >= CYCLES;
 		end
 		default:
 		begin
 			hi = hi_addsub_reg;
 			lo = lo_addsub_reg;
-			out_valid = count >= CYCLES + 1;
+			out_valid = count >= CYCLES + 2;
 		end
 	endcase
 end

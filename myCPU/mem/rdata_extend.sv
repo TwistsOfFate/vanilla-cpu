@@ -31,11 +31,11 @@ module rdata_extend(
     logic [31:0] tmp;
     
     always_comb begin
-    	case (size)
+    	unique case (size)
     		// 8b->32b
     		2'b00:
     		begin
-    			case (memoffset)
+    			unique case (memoffset)
     				2'b00:		tmp = sign ? {{24{rdata[7]}}, rdata[7:0]} : {24'b0, rdata[7:0]};
     				2'b01:		tmp = sign ? {{24{rdata[15]}}, rdata[15:8]} : {24'b0, rdata[15:8]};
     				2'b10:		tmp = sign ? {{24{rdata[23]}}, rdata[23:16]} : {24'b0, rdata[23:16]};
@@ -45,15 +45,13 @@ module rdata_extend(
     		// 16b->32b
     		2'b01:
     		begin
-    			case (memoffset)
+    			unique case (memoffset)
     				2'b00:		tmp = sign ? {{16{rdata[15]}}, rdata[15:0]} : {16'b0, rdata[15:0]};
     				2'b10:		tmp = sign ? {{16{rdata[31]}}, rdata[31:16]} : {16'b0, rdata[31:16]};
-    				default:	tmp = rdata;
     			endcase
     		end
     		// 32b->32b
     		2'b10:		tmp = rdata;
-    		default:	tmp = rdata;
     	endcase
     end
     

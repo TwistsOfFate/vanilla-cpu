@@ -28,9 +28,16 @@ module mux4 #(
 	input [WIDTH-1:0] c,
 	input [WIDTH-1:0] d,
 	input [1:0]	sel,
-	output [WIDTH-1:0] out
+	output logic [WIDTH-1:0] out
     );
     
-    assign out = sel[1] ? (sel[0] ? d : c) : (sel[0] ? b : a);
+    always_comb
+    	unique case (sel)
+    		2'b00:	out = a;
+    		2'b01:	out = b;
+    		2'b10:	out = c;
+    		2'b11:  out = d;
+    	endcase
+    // assign out = sel[1] ? (sel[0] ? d : c) : (sel[0] ? b : a);
     
 endmodule

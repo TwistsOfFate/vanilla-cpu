@@ -135,8 +135,8 @@ logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 regfile rf(
     .clk           (clk)         ,
     .reset         (~resetn)      ,
-    .w_stall	   (stall_alpha.w)	  ,
-    .regwrite_en   (wsig_alpha.regwrite)   ,
+    // .w_stall	   (stall_alpha.w)	  ,
+    .regwrite_en   (wsig_alpha.regwrite & ~stall_alpha.w)   ,
     .regwrite_addr (dp_mtow_w_alpha.reg_waddr)   ,
     .regwrite_data (w_reg_wdata_alpha) ,
     .rs_addr       (dp_dtoe_d_alpha.rs)        ,
@@ -222,6 +222,7 @@ decode my_decode(
     .d_for_lo(d_for_lo_alpha),
 
     .f_nowpc(dp_ftod_f_alpha.pc),
+    .f_pcplus4(dp_ftod_f_alpha.pcplus4),
     .cp0_epc(cp0_epc),
     // .e_bpc(e_bpc),
     .is_valid_exc(dp_mtoh_m_alpha.is_valid_exc),
@@ -256,6 +257,7 @@ pc_flop #(32) pcreg(
 
 assign f_pc_alpha = dp_ftod_f_alpha.pc ;
 assign m_pc_alpha = dp_etom_m_alpha.pc ;
+assign dp_ftod_f_alpha.pcplus4 = dp_ftod_f_alpha.pc + 32'd4;
 assign dp_ftod_f_alpha.is_instr = 1'b1;
 assign dp_ftod_f_alpha.addr_err_if = (f_pc_alpha[1:0] != 2'b00) ;
 assign dp_ftod_f_alpha.instr = f_instr_alpha ;
@@ -309,12 +311,12 @@ mem my_mem(
 	// .cp0_cause(cp0_cause),
 	
 	//EXCEPTION HANDLER OUTPUT
-	.m_epc_wdata(epc_wdata),
-	.m_cause_bd_wdata(cause_bd_wdata),
-	.m_cause_exccode_wdata(cause_exccode_wdata),
+	// .m_epc_wdata(epc_wdata),
+	// .m_cause_bd_wdata(cause_bd_wdata),
+	// .m_cause_exccode_wdata(cause_exccode_wdata),
 	// .exc_cp0_wen(m_exc_cp0_wen),
-	.m_cp0_waddr(m_exc_cp0_waddr),
-	.m_cp0_wdata(m_exc_cp0_wdata),
+	// .m_cp0_waddr(m_exc_cp0_waddr),
+	// .m_cp0_wdata(m_exc_cp0_wdata),
 	
 	//SRAM INTERFACE
 	.m_data_req(m_data_req),

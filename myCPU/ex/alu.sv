@@ -35,7 +35,7 @@ assign a = {srca[31], srca};
 assign b = {srcb[31], srcb};
 
 always_comb begin
-	case (func)
+	unique case (func)
 		3'b000:		tmp = a + b;
 		3'b001:		tmp = a - b;
 		3'b010:		tmp = ($signed(srca) < $signed(srcb) ? 32'b1 : 32'b0);
@@ -44,7 +44,6 @@ always_comb begin
 		3'b101:		tmp = ~(a | b);
 		3'b110:		tmp = a | b;
 		3'b111:		tmp = a ^ b;
-		default:	tmp = a + b;
 	endcase
 end
 

@@ -5,6 +5,7 @@ module decode(
     input  logic[31:0] d_for_hi,
     input  logic[31:0] d_for_lo,
     input  logic[31:0] f_nowpc,
+    input  logic[31:0] f_pcplus4,
     input  logic[31:0] cp0_epc,
     input  logic       is_valid_exc ,
     input  ctrl_reg    dsig,
@@ -25,12 +26,9 @@ module decode(
 
 logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc, pcbfrome ;
 logic [31:0] d_signimm, d_signimmsh ;
-logic [31:0] f_pcplus4 ;
 branch_rel dbranchcmp;
 logic pcsrc;
 logic [7:0] branch;
-
-assign f_pcplus4 = f_nowpc + 32'd4;
 
 assign dbranchcmp.equal = d_for_rsdata == d_for_rtdata;
 assign dbranchcmp.e0 = d_for_rsdata == 32'd0;
@@ -66,21 +64,25 @@ assign pcsrc = |branch ;
 //     .equal   (dbranchcmp.e0) 
 // );
 
-signext se(
-    .ext_valA   (ftod.instr[15:0]) ,
-    .ext_result (d_signimm)     
-) ; //imm extends to 32 bits
+// signext se(
+//     .ext_valA   (ftod.instr[15:0]) ,
+//     .ext_result (d_signimm)     
+// ) ; //imm extends to 32 bits
 
-sl2     immsh(
-    .sl2_valA   (d_signimm)     ,
-    .sl2_result (d_signimmsh)   
-) ; //imm shifts left 2
+// sl2     immsh(
+//     .sl2_valA   (d_signimm)     ,
+//     .sl2_result (d_signimmsh)   
+// ) ; //imm shifts left 2
 
-adder   pcadd2(
-    .add_valA   (ftod.pc + 32'd4)     ,
-    .add_valB   (d_signimmsh)   ,
-    .add_result (d_pcbranch)    
-) ; //add pc in the delay slot and imm
+// adder   pcadd2(
+//     .add_valA   (ftod.pc + 32'd4)     ,
+//     .add_valB   (d_signimmsh)   ,
+//     .add_result (d_pcbranch)    
+// ) ; //add pc in the delay slot and imm
+
+assign d_signimm = {{16{ftod.instr[15]}}, ftod.instr[15:0]};
+assign d_signimmsh = {d_signimm[29:0], 2'b00};
+assign d_pcbranch = ftod.pcplus4 + d_signimmsh;
 
 mux2 #(32) pcbrmux(
     .a  		(f_pcplus4)     ,
@@ -106,7 +108,7 @@ mux2 #(32) pcjrmux(
 
 mux2 #(32) pcbfromemux(
     .a(pcnextjr),
-    .b(ftod.pc + 32'd4),
+    .b(ftod.pcplus4),
     .sel(bfrome),
     .out(pcbfrome)
 );

@@ -145,10 +145,11 @@ module cp0_regfile #(
     		regs[`CP0_CONFIG] <= {1'b1, 21'b0, 3'b1, 4'b0, 3'd3};
     		regs[`CP0_CONFIG1] <= {1'b0, tlb_size_m1[5:0], C1_IS[2:0], C1_IL[2:0], C1_IA[2:0], C1_DS[2:0], C1_DL[2:0], C1_DA[2:0], 7'b0};
     	end
-    	else if (wen) begin
+    	else begin
 
     		// Update written registers
-    		regs <= regs_new;
+    		if (wen)
+    			regs <= regs_new;
 
     		// Update Random register
     		if (wen && wtype == MTC0 && windex == `CP0_WIRED)

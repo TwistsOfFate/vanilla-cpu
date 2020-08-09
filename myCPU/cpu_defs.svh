@@ -151,6 +151,7 @@ typedef struct packed {
 typedef struct packed {
 	logic [31:0] instr         ;
 	logic [31:0] pc 	 	   ;
+	logic [31:0] pcplus4	   ;
 	logic        addr_err_if   ;
 	logic		 is_instr	   ;
 	logic 		 in_delay_slot ;
@@ -203,8 +204,6 @@ typedef struct packed {
 	logic	[ 4:0]rd;
 	logic		  is_instr;
 	logic   [31:0]data_rdata;
-	cp0_op_t	  cp0_op;
-	exc_info_t    exc_info;
 	logic	[31:0]cp0_rdata;
 } dp_mtow;
 

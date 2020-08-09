@@ -24,12 +24,12 @@ module mem(
 	// input [31:0]	cp0_cause,
 
 	//EXCEPTION HANDLER OUTPUT
-	output [31:0]	m_epc_wdata,
-	output			m_cause_bd_wdata,
-	output [4:0]	m_cause_exccode_wdata,
+	// output [31:0]	m_epc_wdata,
+	// output			m_cause_bd_wdata,
+	// output [4:0]	m_cause_exccode_wdata,
 	// output			exc_cp0_wen,
-	output [4:0]	m_cp0_waddr,
-	output [31:0]	m_cp0_wdata,
+	// output [4:0]	m_cp0_waddr,
+	// output [31:0]	m_cp0_wdata,
 	
 	//SRAM-LIKE INTERFACE
 	output         	m_data_req,
