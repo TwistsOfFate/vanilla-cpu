@@ -63,8 +63,6 @@ module mem(
 		.tlb_exc_if(etom.tlb_exc_if),
 		.out_req(tlb_req)
 	);
-
-	// assign tlb_busy = tlb_req != NONE && !tlb_ok;
 	
 //EXC_HANDLER
 	exc_handler my_exc_handler(
@@ -102,8 +100,8 @@ module mem(
 		.ext_int(ext_int),
 
 		//INPUT
-		.ren(msig.mfc0 || cp0_op != NONE && cp0_op != MTC0),
-		.wen(cp0_op != NONE && !tlb_busy),
+		.ren(msig.mfc0 || cp0_op != OP_NONE && cp0_op != OP_MTC0),
+		.wen(cp0_op != OP_NONE && !tlb_busy),
 		.wtype(cp0_op),	
 		.exc_info(exc_info),
 		.read_tlb(read_tlb),

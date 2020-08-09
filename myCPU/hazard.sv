@@ -14,8 +14,6 @@ module hazard(
 
     output stage_val_1 stall,
     output stage_val_1 flush,
-    // input stage_val_1 stall_ext,
-    // input stage_val_1 flush_ext,
 
     input busy_ok     idmem
     );

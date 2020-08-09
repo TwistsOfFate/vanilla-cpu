@@ -30,7 +30,7 @@ module exc_handler(
 	input m_in_delay_slot,
 	input [31:0] m_pc,
     input [31:0] m_pcminus4,
-	input [31:0] exc_info.badvaddr,
+	input [31:0] m_badvaddr,
 	
 	input [1:0] m_addr_err,
 	input m_reserved_instr,
@@ -55,91 +55,91 @@ module exc_handler(
     	if (!m_is_instr) begin
     		is_valid_exc = 1'b0;
     		exc_info.cause_exccode = 5'b0;
-            cp0_op = NONE;
+            cp0_op = OP_NONE;
     	end else if (((cp0_cause[15:8] & cp0_status[15:8]) != 8'b0) && cp0_status[0] && !cp0_status[1]) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_INT;
-            cp0_op = EXC;
+            cp0_op = OP_EXC;
     	end else if (m_addr_err == 2'b01) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_ADEL;
-            cp0_op = BADVA;
+            cp0_op = OP_BADVA;
         end else if (tlb_exc_if == REFILL_L) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBL;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (tlb_exc_if == INVALID_L) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBL;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
     	end else if (m_reserved_instr == 1'b1) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_RI;
-            cp0_op = EXC;
+            cp0_op = OP_EXC;
     	end else if (m_intovf == 1'b1) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_OV;
-            cp0_op = EXC;
+            cp0_op = OP_EXC;
     	end else if (m_break == 1'b1) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_BP;
-            cp0_op = EXC;
+            cp0_op = OP_EXC;
     	end else if (m_syscall == 1'b1) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_SYS;
-            cp0_op = EXC;
+            cp0_op = OP_EXC;
     	end else if (m_addr_err == 2'b10) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_ADEL;
-            cp0_op = BADVA;
+            cp0_op = OP_BADVA;
     	end else if (m_addr_err == 2'b11) begin
     		is_valid_exc = 1'b1;
     		exc_info.cause_exccode = `EXCCODE_ADES;
-            cp0_op = BADVA;
+            cp0_op = OP_BADVA;
         end else if (tlb_exc_mem == REFILL_L) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBL;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (tlb_exc_mem == REFILL_S) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBS;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (tlb_exc_mem == INVALID_L) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBL;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (tlb_exc_mem == INVALID_S) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_TLBS;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (tlb_exc_mem == MODIFIED) begin
             is_valid_exc = 1'b1;
             exc_info.cause_exccode = `EXCCODE_MOD;
-            cp0_op = TLB_EXC;
+            cp0_op = OP_TLB_EXC;
         end else if (m_eret) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
-            cp0_op = ERET;
+            cp0_op = OP_ERET;
         end else if (m_mtc0) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
-            cp0_op = MTC0;
+            cp0_op = OP_MTC0;
         end else if (m_tlb_req == TLBWI || m_tlb_req == TLBWR) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
-            cp0_op = TLBW;
+            cp0_op = OP_TLBW;
         end else if (m_tlb_req == TLBR) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
-            cp0_op = TLBR;
+            cp0_op = OP_TLBR;
         end else if (m_tlb_req == TLBP) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
-            cp0_op = TLBP;
+            cp0_op = OP_TLBP;
     	end else begin
     		is_valid_exc = 1'b0;
     		exc_info.cause_exccode = 5'b0;
-            cp0_op = NONE;
+            cp0_op = OP_NONE;
     	end
     end
     

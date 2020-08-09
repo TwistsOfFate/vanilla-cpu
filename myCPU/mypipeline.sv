@@ -199,7 +199,7 @@ sram_like_handshake tlb_handshake(
     .clk(clk),
     .rst(~resetn),
     .unique_id(m_instr_count),
-    .need_req(m_tlb_req != NONE),
+    .need_req(m_tlb_req != NO_REQ),
     .busy(m_tlb_busy),
 
     .addr_ok(1'b1),
@@ -207,6 +207,6 @@ sram_like_handshake tlb_handshake(
     .req(tlb_req_logic)
     );
 
-assign tlb_req = tlb_req_logic ? m_tlb_req : NONE;
+assign tlb_req = tlb_req_logic ? m_tlb_req : NO_REQ;
 
 endmodule

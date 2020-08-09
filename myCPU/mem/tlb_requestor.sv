@@ -12,9 +12,9 @@ module tlb_requestor(
 );
 
 always_comb
-	if (addr_err != 2'b00 || reserved_instr || intovf || tlb_exc_if != NONE)
+	if (addr_err != 2'b00 || reserved_instr || intovf || tlb_exc_if != NO_REQ)
 		out_req = in_req;
 	else
-		out_req = NONE;
+		out_req = NO_REQ;
 
 endmodule

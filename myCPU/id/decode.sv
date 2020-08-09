@@ -108,6 +108,7 @@ assign dtoe.addr_err_if = ftod.addr_err_if ;
 assign dtoe.in_delay_slot = ftod.in_delay_slot ;
 assign dtoe.is_instr = ftod.is_instr ;
 assign dtoe.cp0_sel = ftod.instr[2:0];
+assign dtoe.tlb_exc_if = ftod.tlb_exc_if;
 
 assign dinstrinf.branchfunct       = ftod.instr[20:16] ;
 assign dinstrinf.c0funct           = ftod.instr[25:21] ;

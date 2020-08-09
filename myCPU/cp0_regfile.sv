@@ -78,8 +78,8 @@ module cp0_regfile #(
     always_comb begin
     	regs_new = regs;
     	unique case (wtype)
-    		NONE: ;
-    		MTC0:
+    		OP_NONE: ;
+    		OP_MTC0:
     		begin
     			unique case (windex)
     				`CP0_INDEX: regs_new[windex][INDEX_WIDTH-1:0] = wdata[INDEX_WIDTH-1:0];
@@ -103,14 +103,14 @@ module cp0_regfile #(
     				default: ; // Do nothing for reserved registers
     			endcase
     		end
-    		EXC:
+    		OP_EXC:
     		begin
     			regs_new[`CP0_EPC] = exc_info.epc;
     			regs_new[`CP0_CAUSE][31] = exc_info.cause_bd;
     			regs_new[`CP0_STATUS][1] = 1'b1;
     			regs_new[`CP0_CAUSE][6:2] = exc_info.cause_exccode;
     		end
-    		BADVA:
+    		OP_BADVA:
     		begin
     			regs_new[`CP0_EPC] = exc_info.epc;
     			regs_new[`CP0_CAUSE][31] = exc_info.cause_bd;
@@ -118,11 +118,11 @@ module cp0_regfile #(
     			regs_new[`CP0_CAUSE][6:2] = exc_info.cause_exccode;
     			regs_new[`CP0_BADVADDR] = exc_info.badvaddr;
     		end
-    		ERET:
+    		OP_ERET:
     		begin
     			regs_new[`CP0_STATUS][1] = 1'b0;
     		end
-    		TLB_EXC:
+    		OP_TLB_EXC:
     		begin
     			regs_new[`CP0_EPC] = exc_info.epc;
     			regs_new[`CP0_CAUSE][31] = exc_info.cause_bd;
@@ -131,11 +131,11 @@ module cp0_regfile #(
     			regs_new[`CP0_BADVADDR] = exc_info.badvaddr;
     			regs_new[`CP0_ENTRYHI][31:13] = exc_info.badvaddr[31:13];
     		end
-    		TLBW:
+    		OP_TLBW:
     		begin
 
     		end
-    		TLBP:
+    		OP_TLBP:
     		begin
 
     		end
@@ -158,13 +158,13 @@ module cp0_regfile #(
     			regs <= regs_new;
 
     		// Update Random register
-    		if (wen && wtype == MTC0 && windex == `CP0_WIRED)
+    		if (wen && wtype == OP_MTC0 && windex == `CP0_WIRED)
     			regs[`CP0_RANDOM] <= RANDOM_MAX;
     		else
     			regs[`CP0_RANDOM] <= regs[`CP0_RANDOM] < RANDOM_MAX ? regs[`CP0_RANDOM] + 32'd1 : regs[`CP0_WIRED];
 
     		// Update Count register
-    		if (wen && wtype == MTC0 && windex == `CP0_COUNT)
+    		if (wen && wtype == OP_MTC0 && windex == `CP0_COUNT)
     			;
     		else
     			regs[`CP0_COUNT] <= regs[`CP0_COUNT] + {31'b0, cnt};
@@ -214,43 +214,5 @@ module cp0_regfile #(
 	assign r_done = ren_cnt == 3'd1;
 
 	assign ready = wen && w_done || ren && r_done || !wen && !ren;
-    
-    // integer i;
-    
-    // always_ff @(posedge clk) begin
-    // 	if (rst) begin
-    // 		cnt <= 1'b0;
-    // 		regs[`CP0_STATUS] <= {9'b0, 1'b1, 22'b0};
-    // 		for (i = 0; i < 32; i = i + 1) begin
-    // 		    if (i != `CP0_STATUS) regs[i] <= 32'b0;
-    // 		end
-    // 	end else begin
-    // 		regs[`CP0_CAUSE][15:10] <= ext_int;
-	   //  	if (is_valid_exc && !m_stall) begin
-	   //  		regs[`CP0_EPC] <= epc_wdata;
-	   //  		regs[`CP0_CAUSE][31] <= cause_bd_wdata;
-	   //  		regs[`CP0_STATUS][1] <= 1'b1;
-	   //  		regs[`CP0_CAUSE][6:2] <= cause_exccode_wdata;
-	   //  		if (wen && waddr == `CP0_BADVADDR) begin
-	   //  			regs[`CP0_BADVADDR] <= wdata;
-	   //  		end
-	   //  	end else if (wen && !is_valid_exc || is_valid_exc && !m_stall) begin
-	   //  		case (waddr)
-	   //  			`CP0_CAUSE:		regs[waddr][9:8] <= wdata[9:8];
-	   //  			`CP0_EPC:		regs[waddr] <= wdata;
-	   //  			`CP0_STATUS:	regs[waddr] <= {regs[waddr][31:16], wdata[15:8], regs[waddr][7:2], wdata[1:0]};
-	   //  			`CP0_COUNT:		begin regs[waddr] <= wdata; cnt <= 0; end
-	   //  		endcase
-	   //  	end else begin
-	   //  		cnt <= ~cnt;
-	   //  		regs[`CP0_COUNT] <= regs[`CP0_COUNT] + {31'b0, cnt};
-	   //  	end
-	   //  end
-    // end
-    
-    // assign epc = regs[`CP0_EPC];
-    // assign status = regs[`CP0_STATUS];
-    // assign cause = regs[`CP0_CAUSE];
-    // assign rdata = regs[raddr];
     
 endmodule

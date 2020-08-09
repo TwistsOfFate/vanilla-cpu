@@ -898,6 +898,6 @@ always_comb
     else if (dinstr.op == 6'b010000 || dinstr.funct == 6'b001000)
         dstage.tlb_req = TLBP;
     else
-        dstage.tlb_req = NONE;
+        dstage.tlb_req = NO_REQ;
 
 endmodule

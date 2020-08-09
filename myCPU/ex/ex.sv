@@ -205,6 +205,7 @@ module ex(
 	assign etom.is_instr	= dtoe.is_instr ;
 	assign etom.pcminus4 = dtoe.pc - 32'd4;
 	assign etom.cp0_sel = dtoe.cp0_sel;
+	assign etom.tlb_exc_if = dtoe.tlb_exc_if;
 
 	assign etoh.reg_waddr = etom.reg_waddr ;
 	assign etoh.regwrite  = esig.regwrite ;
