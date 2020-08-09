@@ -31,6 +31,14 @@ module datapath(
     output logic [31:0]   m_data_addr       ,
     output logic [31:0]   m_data_wdata      ,
     input  logic [31:0]   m_data_rdata      ,
+
+    // TLB interface
+    input  tlb_exc_t      f_tlb_exc_if      ,
+    input  tlb_exc_t      m_tlb_exc_mem     ,
+    input  tlb_t          m_read_tlb        ,
+    output tlb_t          m_write_tlb       ,
+    output tlb_req_t      m_tlb_req         ,
+    input  logic          m_tlb_busy        ,
     
 	//debug signals
     output logic [31:0]   debug_wb_pc       ,
@@ -226,6 +234,7 @@ assign dp_ftod_f_alpha.pcplus4 = dp_ftod_f_alpha.pc + 32'd4;
 assign dp_ftod_f_alpha.is_instr = 1'b1;
 assign dp_ftod_f_alpha.addr_err_if = (f_pc_alpha[1:0] != 2'b00) ;
 assign dp_ftod_f_alpha.instr = f_instr_alpha ;
+assign dp_ftod_f_alpha.tlb_exc_if = f_tlb_exc_if;
 
 ex my_ex(
 // input
@@ -264,12 +273,12 @@ mem my_mem(
 
     .data_rdata(m_data_rdata),
 
-    .tlb_ok(),
-    .tlb_exc_mem(),
-    .read_tlb(),
-    .write_tlb(),
+    .tlb_busy(m_tlb_busy),
+    .tlb_exc_mem(m_tlb_exc_mem),
+    .read_tlb(m_read_tlb),
+    .write_tlb(m_write_tlb),
 
-    .m_tlb_req(),
+    .tlb_req(m_tlb_req),
 	
 	//SRAM INTERFACE
 	.m_data_req(m_data_req),

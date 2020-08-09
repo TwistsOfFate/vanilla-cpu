@@ -15,7 +15,6 @@ module mypipeline(
     input  logic         inst_addr_ok ,
     input  logic         inst_data_ok ,
     
-    
     //data sram-like 
     output logic         data_req     ,
     output logic         data_wr      ,
@@ -26,6 +25,14 @@ module mypipeline(
     input  logic  [31:0] data_rdata   ,
     input  logic         data_addr_ok ,
     input  logic         data_data_ok ,
+
+    //TLB signals
+    input  tlb_exc_t      f_tlb_exc_if      ,
+    input  tlb_exc_t      m_tlb_exc_mem     ,
+    input  tlb_t          m_read_tlb        ,
+    output tlb_t          m_write_tlb       ,
+    output tlb_req_t      tlb_req           ,
+    input logic           m_tlb_ok          ,  
     
     //debug signals
     output logic [31:0]  debug_wb_pc	,
@@ -49,11 +56,11 @@ stage_val_1 flush_alpha, stall_alpha ;
 logic		 m_stall_late	   ;
 logic		 m_flush_late	   ;
 
-// stage_val_1  flush_ext_alpha, stall_ext_alpha ;
 busy_ok      idmem ;
+logic        m_tlb_busy, tlb_req_logic;
+tlb_req_t    m_tlb_req;        
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
 branch_rel   dcompare_alpha, ecompare_alpha;
-// logic bfrome_alpha;
 
 logic		 m_data_req;
 
@@ -65,14 +72,6 @@ assign idmem.data_data_ok = data_data_ok ;
 logic [31:0]	f_inst_addr;
 logic [31:0]	m_data_addr;
 
-logic [3:0]     m_data_wen;
-
-
-//--------------------------------------------------------------------------
-
-// assign {stall_ext_alpha.f, stall_ext_alpha.d, stall_ext_alpha.e, stall_ext_alpha.m, stall_ext_alpha.w, flush_ext_alpha.f, flush_ext_alpha.d, flush_ext_alpha.e, flush_ext_alpha.m, flush_ext_alpha.w} = 10'b0;
-
-//--------------------------------------------------------------------------
 
 controller ctrl(
     .clk                (clk)               ,
@@ -82,9 +81,7 @@ controller ctrl(
     
     .flush              (flush_alpha)             ,
     .stall              (stall_alpha)             ,
-    
-    // .dcompare           (dcompare_alpha)          ,
-    
+        
     .dstage             (dstage_alpha)        
 );
     
@@ -94,16 +91,8 @@ datapath dp(
     .ext_int            (ext_int)           ,
 
     .f_instr_alpha      (f_instr_alpha)     ,
-
-    // .bfrome            (bfrome_alpha)       ,
     
     .dsig_alpha        (dstage_alpha)       ,
-    // .esig_alpha        (estage_alpha)       ,
-    // .msig_alpha        (mstage_alpha)       ,
-    // .wsig_alpha        (wstage_alpha)       ,
-
-    // .stall_ext_alpha   (stall_ext_alpha)    ,
-    // .flush_ext_alpha   (flush_ext_alpha)    ,
 
     .idmem             (idmem)              ,
     .dinstrinf_alpha   (dinstrinf_alpha)    ,
@@ -113,10 +102,6 @@ datapath dp(
 
     .flush_alpha       (flush_alpha)        ,
     .stall_alpha       (stall_alpha)        ,
-
-    // .dbranchcmp_alpha  (dcompare_alpha)     ,
-    // .ebranchcmp_alpha  (ecompare_alpha)     ,
-
    
     //dmem sram interface
 	.m_data_req			(m_data_req)		,
@@ -125,6 +110,14 @@ datapath dp(
     .m_data_addr		(m_data_addr)		,
     .m_data_wdata		(data_wdata)		,
     .m_data_rdata		(m_data_rdata)		,
+
+    //TLB interface
+    .f_tlb_exc_if       (f_tlb_exc_if)      ,
+    .m_tlb_exc_mem      (m_tlb_exc_mem)     ,
+    .m_read_tlb         (m_read_tlb)        ,
+    .m_write_tlb        (m_write_tlb)       ,
+    .m_tlb_req          (m_tlb_req)         ,
+    .m_tlb_busy         (m_tlb_busy)        ,
     
 	//debug
     .debug_wb_pc        (debug_wb_pc)       ,
@@ -134,8 +127,6 @@ datapath dp(
  
 ); 
 
-// mmu immu(f_inst_addr, inst_addr, icached);
-// mmu dmmu(m_data_addr, data_addr, dcached);
 assign inst_addr = f_inst_addr;
 assign data_addr = m_data_addr;
 
@@ -203,5 +194,19 @@ sram_like_handshake dmem_handshake(
     .data_ok(data_data_ok),
     .req(data_req)
     );
+
+sram_like_handshake tlb_handshake(
+    .clk(clk),
+    .rst(~resetn),
+    .unique_id(m_instr_count),
+    .need_req(m_tlb_req != NONE),
+    .busy(m_tlb_busy),
+
+    .addr_ok(1'b1),
+    .data_ok(m_tlb_ok),
+    .req(tlb_req_logic)
+    );
+
+assign tlb_req = tlb_req_logic ? m_tlb_req : NONE;
 
 endmodule
