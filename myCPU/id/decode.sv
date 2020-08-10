@@ -5,8 +5,8 @@ module decode(
     input  logic[31:0] d_for_hi,
     input  logic[31:0] d_for_lo,
     input  logic[31:0] f_nowpc,
+    input  logic[31:0] f_pcplus4,
     input  logic[31:0] cp0_epc,
-    input  logic[31:0] e_bpc,
     input  logic       is_valid_exc ,
     input  ctrl_reg    dsig,
 
@@ -16,7 +16,7 @@ module decode(
     input  dp_ftod     ftod,
 
     output logic[31:0] f_nextpc,
-    output branch_rel  dbranchcmp,
+    // output branch_rel  dbranchcmp,
     output logic       f_indelayslot,
 
     output dp_dtoe     dtoe ,
@@ -26,48 +26,33 @@ module decode(
 
 logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc, pcbfrome ;
 logic [31:0] d_signimm, d_signimmsh ;
-logic [31:0] f_pcplus4 ;
+branch_rel dbranchcmp;
+logic pcsrc;
+logic [7:0] branch;
 
+assign dbranchcmp.equal = d_for_rsdata == d_for_rtdata;
+assign dbranchcmp.e0 = d_for_rsdata == 32'd0;
+assign dbranchcmp.g0 = ~d_for_rsdata[31] & ~dbranchcmp.e0;
 
-adder   pcadd1( 
-    .add_valA   (f_nowpc)      ,
-    .add_valB   (32'b100)   ,
-    .add_result (f_pcplus4) 
-) ; //add 4 to get the pc in the delay slot
+assign branch[0] = (dsig.branch == 3'b000) &&  dbranchcmp.equal  && dsig.isbranch ;
+assign branch[1] = (dsig.branch == 3'b001) && !dbranchcmp.equal  && dsig.isbranch ;
+assign branch[2] = (dsig.branch == 3'b010) &&  (dbranchcmp.g0 | dbranchcmp.e0) && dsig.isbranch ;
+assign branch[3] = (dsig.branch == 3'b011) &&  dbranchcmp.g0  && dsig.isbranch ;
+assign branch[4] = (dsig.branch == 3'b100) &&  !dbranchcmp.g0 && dsig.isbranch ;
+assign branch[5] = (dsig.branch == 3'b101) && (!dbranchcmp.g0 && !dbranchcmp.e0) && dsig.isbranch ;
+assign branch[6] = (dsig.branch == 3'b110) && (dbranchcmp.g0 | dbranchcmp.e0) && dsig.isbranch ;
+assign branch[7] = (dsig.branch == 3'b111) && (!dbranchcmp.g0 && !dbranchcmp.e0) && dsig.isbranch ;
 
-eqcmp   cmpeq(
-    .a  (d_for_rsdata)  ,
-    .b  (d_for_rtdata)  ,
-    .eq (dbranchcmp.equal)    
-);
+assign pcsrc = |branch ;
 
-
-Compare cmp0(
-    .valA    (d_for_rsdata) ,
-    .greater (dbranchcmp.g0)   ,
-    .equal   (dbranchcmp.e0) 
-);
-
-signext se(
-    .ext_valA   (ftod.instr[15:0]) ,
-    .ext_result (d_signimm)     
-) ; //imm extends to 32 bits
-
-sl2     immsh(
-    .sl2_valA   (d_signimm)     ,
-    .sl2_result (d_signimmsh)   
-) ; //imm shifts left 2
-
-adder   pcadd2(
-    .add_valA   (ftod.pc + 32'd4)     ,
-    .add_valB   (d_signimmsh)   ,
-    .add_result (d_pcbranch)    
-) ; //add pc in the delay slot and imm
+assign d_signimm = {{16{ftod.instr[15]}}, ftod.instr[15:0]};
+assign d_signimmsh = {d_signimm[29:0], 2'b00};
+assign d_pcbranch = ftod.pcplus4 + d_signimmsh;
 
 mux2 #(32) pcbrmux(
     .a  		(f_pcplus4)     ,
     .b  		(d_pcbranch)    ,
-    .sel   		(dsig.pcsrc || d_guess_taken)       ,
+    .sel   		(pcsrc || d_guess_taken)       ,
     .out		(pcnextbr)      
 ) ;//next pc
 
@@ -88,7 +73,7 @@ mux2 #(32) pcjrmux(
 
 mux2 #(32) pcbfromemux(
     .a(pcnextjr),
-    .b(ftod.pc + 32'd4),
+    .b(ftod.pcplus4),
     .sel(bfrome),
     .out(pcbfrome)
 );
@@ -122,6 +107,8 @@ assign dtoe.pc          = ftod.pc ;
 assign dtoe.addr_err_if = ftod.addr_err_if ;
 assign dtoe.in_delay_slot = ftod.in_delay_slot ;
 assign dtoe.is_instr = ftod.is_instr ;
+assign dtoe.cp0_sel = ftod.instr[2:0];
+assign dtoe.tlb_exc_if = ftod.tlb_exc_if;
 
 assign dinstrinf.branchfunct       = ftod.instr[20:16] ;
 assign dinstrinf.c0funct           = ftod.instr[25:21] ;
@@ -134,7 +121,7 @@ assign dtoh.isjump = dsig.isjump ;
 assign dtoh.out_sel = dsig.out_sel ;
 assign dtoh.rs = dtoe.rs ;
 assign dtoh.rt = dtoe.rt ;
-assign dtoh.cp0_sel = dsig.cp0_sel;
+assign dtoh.mfc0 = dsig.mfc0;
 assign dtoh.jump = dsig.jump;
 
 endmodule

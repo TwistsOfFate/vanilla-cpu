@@ -38,15 +38,15 @@ module mux8 #(
 logic [31:0] tmp;
 
 always_comb
-	case (sel)
-		'b000:		tmp = a;
-		'b001:		tmp = b;
-		'b010:		tmp = c;
-		'b011:		tmp = d;
-		'b100:		tmp = e;
-		'b101:		tmp = f;
-		'b110:		tmp = g;
-		'b111:		tmp = h;
+	unique case (sel)
+		3'b000:		tmp = a;
+		3'b001:		tmp = b;
+		3'b010:		tmp = c;
+		3'b011:		tmp = d;
+		3'b100:		tmp = e;
+		3'b101:		tmp = f;
+		3'b110:		tmp = g;
+		3'b111:		tmp = h;
 	endcase
     
 assign out = tmp;

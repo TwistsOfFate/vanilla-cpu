@@ -14,36 +14,33 @@ module hazard(
 
     output stage_val_1 stall,
     output stage_val_1 flush,
-    input stage_val_1 stall_ext,
-    input stage_val_1 flush_ext,
 
     input busy_ok     idmem
     );
                
     
 logic lwstall, jrstall, hilostall, link_stall, linkr_stall;
-logic mfc0_stall, mtc0_stall, cp0_wconflict_stall;
+logic mfc0_stall, cp0_busy_stall;
 logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
 
 logic [9:0] stall_flush;
 
-assign {stall.f, stall.d, stall.e, stall.m, stall.w, flush.f, flush.d, flush.e, flush.m, flush.w} = 
-stall_flush | {stall_ext.f, stall_ext.d, stall_ext.e, stall_ext.m, 1'b0, 1'b0, flush_ext.d, flush_ext.e, flush_ext.m, flush_ext.w};
+assign {stall.f, stall.d, stall.e, stall.m, stall.w, flush.f, flush.d, flush.e, flush.m, flush.w} = stall_flush;
 
 
 always_comb
     begin
-        if(d_alpha.out_sel == 2'b10 && m_alpha.hi_wen)//HI
+        if(d_alpha.out_sel == 3'b010 && m_alpha.hi_wen)//HI
             to_d_alpha.hi_forward = 2'b10 ;
-        else if(d_alpha.out_sel == 2'b10 && w_alpha.hi_wen)
+        else if(d_alpha.out_sel == 3'b010 && w_alpha.hi_wen)
             to_d_alpha.hi_forward = 2'b01 ;
         else
             to_d_alpha.hi_forward = 2'b00 ;
 
-        if(d_alpha.out_sel == 2'b11 && m_alpha.lo_wen)//LO
+        if(d_alpha.out_sel == 3'b011 && m_alpha.lo_wen)//LO
             to_d_alpha.lo_forward = 2'b10 ;
-        else if(d_alpha.out_sel == 2'b11 && w_alpha.lo_wen)
+        else if(d_alpha.out_sel == 3'b011 && w_alpha.lo_wen)
             to_d_alpha.lo_forward = 2'b01 ;
         else
             to_d_alpha.lo_forward = 2'b00 ;    
@@ -92,17 +89,15 @@ assign linkr_stall = e_alpha.link && (d_alpha.rs == e_alpha.rd || d_alpha.rt == 
 assign lwstall = (e_alpha.memtoreg && (e_alpha.rt == d_alpha.rs || e_alpha.rt == d_alpha.rt))
                 /*|| (m_alpha.memtoreg && (m_alpha.rt == d_alpha.rs || m_alpha.rt == d_alpha.rt))*/ ;
 
-assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 2'b10) || (e_alpha.lo_wen && d_alpha.out_sel == 2'b11) ;
+assign hilostall = (e_alpha.hi_wen && d_alpha.out_sel == 3'b010) || (e_alpha.lo_wen && d_alpha.out_sel == 3'b011) ;
 
 assign jrstall = d_alpha.jump[0] && ((e_alpha.regwrite && e_alpha.reg_waddr == d_alpha.rs) || (m_alpha.memtoreg && m_alpha.reg_waddr == d_alpha.rs)) ;
 
-assign mfc0_stall = (e_alpha.cp0_sel && (e_alpha.reg_waddr == d_alpha.rs || e_alpha.reg_waddr == d_alpha.rt)) 
-|| (m_alpha.cp0_sel && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)) 
-|| (w_alpha.cp0_sel && (w_alpha.reg_waddr == d_alpha.rs || w_alpha.reg_waddr == d_alpha.rt));
+assign mfc0_stall = (e_alpha.mfc0 && (e_alpha.reg_waddr == d_alpha.rs || e_alpha.reg_waddr == d_alpha.rt)) 
+|| (m_alpha.mfc0 && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)) 
+|| (w_alpha.mfc0 && (w_alpha.reg_waddr == d_alpha.rs || w_alpha.reg_waddr == d_alpha.rt));
 
-assign mtc0_stall = d_alpha.cp0_sel && (e_alpha.cp0_wen || m_alpha.cp0_wen || w_alpha.cp0_wen);
-
-assign cp0_wconflict_stall = m_alpha.exc_cp0_wen && w_alpha.cp0_wen ;
+assign cp0_busy_stall = !m_alpha.cp0_ready;
 
 assign divider_stall = e_alpha.div_en && !e_alpha.div_ready;
 assign multiplier_stall = e_alpha.mul_en && !e_alpha.mul_ready;
@@ -112,12 +107,10 @@ assign dmem_stall = idmem.dmem_busy;
 
 
 always_comb begin
-    if (dmem_stall)
+    if (dmem_stall || cp0_busy_stall)
         stall_flush = 10'b11111_00000;
     else if (imem_stall && (m_alpha.is_valid_exc || m_alpha.eret))
         stall_flush = 10'b11111_00000;
-    else if (cp0_wconflict_stall)
-        stall_flush = 10'b11110_00001;
     else if (m_alpha.is_valid_exc || m_alpha.eret)
         stall_flush = 10'b00000_01111;
     else if (divider_stall || multiplier_stall)
