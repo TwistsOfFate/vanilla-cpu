@@ -148,6 +148,8 @@ typedef struct packed {
 	logic 		 cl_mode;
 	logic [ 1:0] mul_mode;
 	tlb_req_t	 tlb_req;
+	logic [ 1:0] swlr;
+	logic [ 1:0] lwlr;
 } ctrl_reg ;
 
 typedef struct packed {

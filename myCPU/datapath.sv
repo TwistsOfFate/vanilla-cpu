@@ -63,6 +63,7 @@ ctrl_reg esig_alpha, msig_alpha, wsig_alpha;
 
 logic d_guess_taken, e_guess_taken;
 
+logic [31:0] exc_addr;
 logic [31:0] delayslot_addr, e_bpc ;
 logic bfrome;
 
@@ -199,6 +200,7 @@ decode my_decode(
     .f_pcplus4(dp_ftod_f_alpha.pcplus4),
     .cp0_epc(cp0_epc),
     .is_valid_exc(dp_mtoh_m_alpha.is_valid_exc),
+    .exc_addr(exc_addr),
 
     .dsig(dsig_alpha),
     .d_guess_taken(d_guess_taken),
@@ -268,6 +270,7 @@ mem my_mem(
     .mtoh(dp_mtoh_m_alpha),
 
     .cp0_epc(cp0_epc),
+    .exc_addr(exc_addr),
 
     .data_rdata(m_data_rdata),
 

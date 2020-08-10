@@ -38,6 +38,7 @@ module cp0_regfile #(
 	input 				clk,
 	input 				rst,
 	input [5:0] 		ext_int,
+	input 				m_stall,
 	
 	input 				ren,
 	input 				wen,
@@ -180,7 +181,7 @@ module cp0_regfile #(
     end
 
     always_ff @(posedge clk) begin
-    	if (!wen) begin	// Never read the new value
+    	if (!m_stall) begin	// Never read the new value
 			epc <= regs[`CP0_EPC];
 			status <= regs[`CP0_STATUS];
 			cause <= regs[`CP0_CAUSE];
@@ -220,6 +221,6 @@ module cp0_regfile #(
 
 	assign r_done = ren_cnt == 3'd1;
 
-	assign ready = wen && w_done || ren && r_done || !wen && !ren;
+	assign ready = wen && w_done || !wen;
     
 endmodule

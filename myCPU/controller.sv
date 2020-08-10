@@ -612,6 +612,24 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
+        6'b101010://SWL
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b0 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
+        6'b101110://SWR
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b0 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
 
         6'b010000:
         begin
@@ -754,11 +772,13 @@ begin
         dstage.jump = 2'b00 ;
 end
 
-assign dstage.memreq = ((dinstr.op == 6'b100000) || (dinstr.op == 6'b100100)
+assign dstage.memreq = (dinstr.op == 6'b100000) || (dinstr.op == 6'b100100)
     || (dinstr.op == 6'b100001) || (dinstr.op == 6'b100101) || (dinstr.op == 6'b100011)
-    || (dinstr.op == 6'b101000) || (dinstr.op == 6'b101001) || (dinstr.op == 6'b101011)) ;
+    || (dinstr.op == 6'b101000) || (dinstr.op == 6'b101001) || (dinstr.op == 6'b101011)
+    || dinstr.op == 6'b101010 || dinstr.op == 6'b101110 ;
 
-assign dstage.memwr =  ((dinstr.op == 6'b101000) || (dinstr.op == 6'b101001) || (dinstr.op == 6'b101011)) ;  
+assign dstage.memwr =  dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011
+    || dinstr.op == 6'b101010 || dinstr.op == 6'b101110 ;  
 
 always_comb//alu_func
 begin
@@ -801,7 +821,8 @@ assign dstage.cl_mode = dinstr.op == 6'b011100 && dinstr.funct == 6'b100001; // 
 assign dstage.intovf_en = ((dinstr.op == 6'b000000 && dinstr.funct == 6'b100000) || dinstr.op == 6'b001000 || (dinstr.op == 6'b000000 && dinstr.funct == 6'b100010)) ;
 
 assign dstage.imm_sign = (dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dinstr.op == 6'b001010 || dinstr.op == 6'b001011) || 
-(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011);
+(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011)
+|| dinstr.op == 6'b101010 || dinstr.op == 6'b101110;
 
 assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) 
 || (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000010 || dinstr.funct == 6'b000000 || dinstr.funct == 6'b000001 || dinstr.funct == 6'b000100 || dinstr.funct == 6'b000101));
@@ -865,7 +886,7 @@ end
 
 always_comb
 begin
-    if(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b101000)
+    if(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b101000 || dinstr.op == 6'b101010 || dinstr.op == 6'b101110)
         dstage.size = 2'b00 ;
     else if(dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b101001)
         dstage.size = 2'b01 ;
@@ -899,5 +920,15 @@ always_comb
         dstage.tlb_req = TLBP;
     else
         dstage.tlb_req = NO_REQ;
+
+always_comb
+    if (dinstr.op == 6'b101010 || dinstr.op == 6'b101110)
+        dstage.swlr = 2'b01;
+    else if (0)
+        dstage.swlr = 2'b10;
+    else
+        dstage.swlr = 2'b00;
+
+assign dstage.lwlr = 2'b00;
 
 endmodule
