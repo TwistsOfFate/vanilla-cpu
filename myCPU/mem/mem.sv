@@ -10,8 +10,8 @@ module mem(
 	output dp_mtow  mtow,
 	output dp_mtoh  mtoh,
 
-	output 			cp0_ready,
 	output [31:0] 	cp0_epc,
+	output [31:0]	exc_addr,
 
 	input [31:0]	data_rdata,
 
@@ -19,7 +19,6 @@ module mem(
 	input tlb_exc_t tlb_exc_mem,
 	input  tlb_t 	read_tlb,
 	output tlb_t	write_tlb,
-
 	output tlb_req_t tlb_req,
 	
 	//SRAM-LIKE INTERFACE
@@ -30,12 +29,16 @@ module mem(
     output [31:0] 	m_data_wdata
     );
 
+	wire [1:0] 		real_size;
+	wire [1:0]		real_offset;
+
     wire [31:0]		m_badvaddr;
     wire [1:0]		m_addr_err;
     wire			m_addr_err_if;
     wire			m_req;
     wire			m_intovf;
 
+    wire 			cp0_ready;
     cp0_op_t 		cp0_op;
     exc_info_t		exc_info;
     wire [31:0]		cp0_status;
@@ -45,8 +48,8 @@ module mem(
 	data_addr_check my_data_addr_check(
 		.memreq(msig.memreq),
 		.wr(msig.memwr),
-		.addr(etom.ex_out),
-		.size(msig.size),
+		.addr({etom.ex_out[31:2], real_offset}),
+		.size(real_size),
 		.addr_err_if(etom.addr_err_if),
 		.badvaddr_if(etom.pc),
 		.badvaddr(m_badvaddr),
@@ -90,6 +93,7 @@ module mem(
 		
 		//OUTPUT
 		.is_valid_exc(mtoh.is_valid_exc),
+		.exc_addr(exc_addr),
 		.cp0_op(cp0_op),
 		.exc_info(exc_info)
 	);
@@ -99,6 +103,7 @@ module mem(
 		.clk(clk),
 		.rst(rst),
 		.ext_int(ext_int),
+		.m_stall(m_stall),
 
 		//INPUT
 		.ren(msig.mfc0 || cp0_op != OP_NONE && cp0_op != OP_MTC0),
@@ -121,29 +126,33 @@ module mem(
 		.write_tlb(write_tlb)
 	);
 
-//WDATA_ADJUST
-	sram_wsig_adjust sram_wsig_adjust(
+//MEMSIG_ADJUST
+	memsig_adjust memsig_adjust(
 		.req(m_req),
 		.wr(msig.memwr),
 		.in(etom.rtdata),
 		.size(msig.size),
 		.memoffset(etom.ex_out[1:0]),
+		.swlr(msig.swlr),
+		.lwlr(msig.lwlr),
 		.out(m_data_wdata),
-		.wen()
-//		.wen(m_data_wen)
+		.real_size(real_size),
+		.real_offset(real_offset)		// real_offset and real_size only changes at SWL/SWR
 	);
 	
 //SRAM-LIKE INTERFACE
 	assign 			m_data_req = m_req;
 	assign			m_data_wr = msig.memwr;
-	assign			m_data_size = msig.size;
-	assign			m_data_addr = etom.ex_out;
+	assign			m_data_size = real_size;
+	assign			m_data_addr = {etom.ex_out[31:2], real_offset};
 
 	rdata_extend m_rdata_extend(
     	.sign(msig.rdata_sign),
     	.rdata(data_rdata),
+    	.rtdata(etom.rtdata),
     	.size(msig.size),
     	.memoffset(mtow.ex_out[1:0]),
+    	.lwlr(msig.lwlr),
     	.out(mtow.rdata_out)
     );
 

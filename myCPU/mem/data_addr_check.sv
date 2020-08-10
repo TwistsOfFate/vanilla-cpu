@@ -36,7 +36,7 @@ module data_addr_check(
     logic addr_err_mem;
     
     always_comb begin
-    	if (memreq == 1'b1 && (size == 2'b01 && addr[0] != 1'b0 || size == 2'b10 && addr[1:0] != 2'b00)) begin
+    	if (memreq == 1'b1 && (size == 2'b01 && addr[0] != 1'b0 || size == 2'b10 && addr[1:0] != 2'b00 || size == 2'b11 && addr[1] != 1'b0)) begin
     		addr_err_mem = 1'b1;
     	end else begin
     		addr_err_mem = 1'b0;

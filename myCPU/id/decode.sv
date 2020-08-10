@@ -8,6 +8,7 @@ module decode(
     input  logic[31:0] f_pcplus4,
     input  logic[31:0] cp0_epc,
     input  logic       is_valid_exc ,
+    input  logic[31:0] exc_addr,
     input  ctrl_reg    dsig,
 
     input  logic       d_guess_taken,
@@ -87,7 +88,7 @@ mux2 #(32) pceretmux(
 
 mux2 #(32) pcexcmux(
     .a          (pcnexteret)   ,
-    .b          (32'hBFC00380) ,         
+    .b          (exc_addr) ,         
     .sel        (is_valid_exc) ,
     .out        (f_nextpc)
 ) ;
