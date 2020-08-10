@@ -9,6 +9,7 @@ module TLB #(
     output tlb_t        inst_res,
     output tlb_exc_t    inst_err,
     output logic [31:0] inst_paddr,
+    output logic        inst_TLB_done,
 
     input  logic [31:0]	data_vaddr,
     input  tlb_t        data_info,
@@ -16,6 +17,7 @@ module TLB #(
     output tlb_t        data_res,
     output tlb_exc_t    data_err,
     output logic [31:0] data_paddr,
+    output logic        data_TLB_done
     // input  logic [26:0] inst_EntryHi,
     // output logic [24:0] inst_EntryLo0,
     // output logic [24:0] inst_EntryLo1,
@@ -27,7 +29,6 @@ module TLB #(
     // output logic        inst_TLBInvalid,
     // output logic        inst_TLBModified,
     // output logic        inst_TLBMiss,
-    output logic        inst_TLB_done,
 
     // input  logic [31:0]	data_vaddr,
     // input  logic [26:0] data_EntryHi,
@@ -41,7 +42,6 @@ module TLB #(
     // output logic        data_TLBInvalid,
     // output logic        data_TLBModified,
     // output logic        data_TLBMiss,
-    output logic        data_TLB_done
     
 );
 
