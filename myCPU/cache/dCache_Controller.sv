@@ -112,7 +112,7 @@ module dCache_Controller #(
                         mw_en <= 1'b0;
                         {new_valid, new_dirty} <= 2'b10;
                         linew_en <= 1'b1;
-                        wr_size <= 3'b100;
+                        wr_size <= 3'b111;
                     end
             2'b10 : begin
 						if (load > OFFSET_SIZE - 1) zero <= 1'b1;
@@ -121,7 +121,7 @@ module dCache_Controller #(
 						mw_en <= 1'b1;
                         {new_valid, new_dirty} <= 2'b00;
                         linew_en <= 1'b0;
-                        wr_size <= 3'b100;
+                        wr_size <= 3'b111;
                     end
             default : begin
                 zero <= 1'b1;

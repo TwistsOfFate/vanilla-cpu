@@ -122,6 +122,7 @@ module mycpu #(
 
     logic icached, dcached;
     logic inst_wb_ok, data_wb_ok;
+    logic inst_cpu_cache_req, data_cpu_cache_req;
 
     logic dcache_wlast, data_burst_wlast;
     logic data_cache_awvalid, data_mem_awvalid;
@@ -159,6 +160,14 @@ module mycpu #(
     logic [ 1:0] data_size;
     logic [31:0] data_addr;
 
+    logic [31:0] inst_EntryHi, inst_EntryLo0, inst_EntryLo1;
+    logic [31:0] data_EntryHi, data_EntryLo0, data_EntryLo1;
+
+    logic inst_unmapped_uncached, inst_unmapped_cached, inst_unmapped;
+    logic data_unmapped_uncached, data_unmapped_cached, data_unmapped;
+    logic inst_TLBInvalid, inst_TLBModified, inst_TLBMiss, inst_TLB_done;
+    logic data_TLBInvalid, data_TLBModified, data_TLBMiss, data_TLB_done;
+
     assign icache_burst_len = ICACHE_BURST_LEN - 1;
     assign dcache_burst_len = DCACHE_BURST_LEN - 1;
 
@@ -190,13 +199,54 @@ module mycpu #(
         .dcached            (dcached)
     );
 
-    mmu immu(inst_cpu_vaddr, inst_cpu_paddr, icached);
-    mmu dmmu(data_cpu_vaddr, data_cpu_paddr, dcached);
+    // mmu immu(inst_cpu_vaddr, inst_cpu_paddr, icached);
+    // mmu dmmu(data_cpu_vaddr, data_cpu_paddr, dcached);
+
+    TLB TLB(
+        .clk                      (clk)                     ,
+
+        .inst_vaddr               (inst_cpu_vaddr)          ,
+        .inst_EntryHi             (inst_EntryHi)            ,
+        .inst_EntryLo0            (inst_EntryLo0)           ,
+        .inst_EntryLo1            (inst_EntryLo1)           ,
+        .inst_wr                  (inst_cpu_wr)             ,
+        .inst_paddr               (inst_cpu_paddr)              ,
+        .inst_unmapped_uncached   (inst_unmapped_uncached)  ,
+        .inst_unmapped_cached     (inst_unmapped_cached)    ,
+        .inst_unmapped            (inst_unmapped)           ,
+        .inst_TLBInvalid          (inst_TLBInvalid)         ,
+        .inst_TLBModified         (inst_TLBModified)        ,
+        .inst_TLBMiss             (inst_TLBMiss)            ,
+        .inst_TLB_done            (inst_TLB_done)           ,
+
+        .data_vaddr               (data_cpu_vaddr)          ,
+        .data_EntryHi             (data_EntryHi)            ,
+        .data_EntryLo0            (data_EntryLo0)           ,
+        .data_EntryLo1            (data_EntryLo1)           ,
+        .data_wr                  (data_cpu_wr)             ,
+        .data_paddr               (data_cpu_paddr)              ,
+        .data_unmapped_uncached   (data_unmapped_uncached)  ,
+        .data_unmapped_cached     (data_unmapped_cached)    ,
+        .data_unmapped            (data_unmapped)           ,
+        .data_TLBInvalid          (data_TLBInvalid)         ,
+        .data_TLBModified         (data_TLBModified)        ,
+        .data_TLBMiss             (data_TLBMiss)            ,
+        .data_TLB_done            (data_TLB_done)
+    );
+
+    assign icached = ~inst_unmapped_uncached;
+    assign dcached = ~data_unmapped_uncached;
+
+    assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || inst_TLB_done);
+    assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || data_TLB_done);
+
+    assign inst_cpu_cache_req = inst_cpu_req & icached;
+    assign data_cpu_cache_req = data_cpu_req & dcached;
 
     iCache icache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (inst_cpu_req && icached)      ,
+        .cpu_req            (inst_cpu_cache_req)      ,
         .instr_addr         (inst_cpu_paddr)     ,
         .instr_rdata        (inst_cache_rdata)    ,
         .cpu_addr_ok        (inst_cache_addr_ok)  ,
@@ -218,7 +268,7 @@ module mycpu #(
     dCache dcache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (data_cpu_req & dcached)      ,
+        .cpu_req            (data_cpu_cache_req)      ,
         .wr                 (data_cpu_wr)       ,
         .size               (data_cpu_size)     ,
         .data_addr          (data_cpu_paddr)     ,
