@@ -1,7 +1,7 @@
 module regfile(
     input  logic        clk           ,
     input  logic        reset         ,
-    input  logic		w_stall		  ,
+    // input  logic		w_stall		  ,
     
     input  logic        regwrite_en   ,
     input  logic [ 4:0] regwrite_addr ,
@@ -22,7 +22,7 @@ module regfile(
             if(reset)
                 for(i = 0; i < 32; i = i + 1)
                     RAM[i] <= 0;
-            else if (regwrite_en && !w_stall)
+            else if (regwrite_en)
                 RAM[regwrite_addr] <= regwrite_data ;
         end
         

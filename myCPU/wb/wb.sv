@@ -2,10 +2,10 @@
 module wb(
 	input  dp_mtow   	mtow ,
 	input  ctrl_reg  	wsig ,
-	input  logic[31:0]  cp0_rdata,
+	// input  logic[31:0]  cp0_rdata,
 
 	output dp_wtoh   	wtoh ,
-	output [31:0]		w_reg_wdata
+	output logic [31:0]	w_reg_wdata
 	
     );
     
@@ -13,45 +13,53 @@ module wb(
 	wire [31:0]		w_memreg_out;
 	wire [31:0]		w_link_out;
 
+    assign w_rdata_out = mtow.rdata_out;
 
-	rdata_extend w_rdata_extend(
-    	.sign(wsig.rdata_sign),
-    	.rdata(mtow.data_rdata),
-    	.size(wsig.size),
-    	.memoffset(mtow.ex_out[1:0]),
-    	.out(w_rdata_out)
-    );
+	// rdata_extend w_rdata_extend(
+ //    	.sign(wsig.rdata_sign),
+ //    	.rdata(mtow.data_rdata),
+ //    	.size(wsig.size),
+ //    	.memoffset(mtow.ex_out[1:0]),
+ //    	.out(w_rdata_out)
+ //    );
 
-    mux2 memtoreg_mux2(
-    	.a(mtow.ex_out),
-    	.b(w_rdata_out),
-    	.sel(wsig.memtoreg),
-    	.out(w_memreg_out)
-    );
+    always_comb
+        if (wsig.mfc0)
+            w_reg_wdata = mtow.cp0_rdata;
+        else if (wsig.link)
+            w_reg_wdata = mtow.pcplus8;
+        else if (wsig.memtoreg)
+            w_reg_wdata = w_rdata_out;
+        else
+            w_reg_wdata = mtow.ex_out;
+
+    // mux2 memtoreg_mux2(
+    // 	.a(mtow.ex_out),
+    // 	.b(w_rdata_out),
+    // 	.sel(wsig.memtoreg),
+    // 	.out(w_memreg_out)
+    // );
     
-    mux2 link_mux2(
-    	.a(w_memreg_out),
-    	.b(mtow.pc + 32'd8),
-    	.sel(wsig.link),
-    	.out(w_link_out)
-    );
+    // mux2 link_mux2(
+    // 	.a(w_memreg_out),
+    // 	.b(mtow.pcplus8),
+    // 	.sel(wsig.link),
+    // 	.out(w_link_out)
+    // );
     
-    mux2 cp0_sel_mux2(
-    	.a(w_link_out),
-    	.b(cp0_rdata),
-    	.sel(wsig.cp0_sel),
-    	.out(w_reg_wdata)
-    );
+    // mux2 mfc0_mux2(
+    // 	.a(w_link_out),
+    // 	.b(mtow.cp0_rdata),
+    // 	.sel(wsig.mfc0),
+    // 	.out(w_reg_wdata)
+    // );
     
 	assign wtoh.rd = mtow.rd ;
 	assign wtoh.reg_waddr = mtow.reg_waddr ;
 	assign wtoh.regwrite = wsig.regwrite ;
-	assign wtoh.cp0_sel = wsig.cp0_sel ;
+	assign wtoh.mfc0 = wsig.mfc0 ;
 	assign wtoh.hi_wen = wsig.hi_wen ;
 	assign wtoh.lo_wen = wsig.lo_wen ;
 	assign wtoh.cp0_wen = wsig.cp0_wen ;
-   
-//RDATA_EXTEND
-    
     
 endmodule
