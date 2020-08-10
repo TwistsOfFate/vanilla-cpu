@@ -1,5 +1,6 @@
 `include "iCache.vh"
 `include "dCache.vh"
+`include "cpu_defs.svh"
 
 module mycpu #(
     parameter ICACHE_BURST_LEN = 2 ** (`ICACHE_B - 2),
@@ -163,10 +164,15 @@ module mycpu #(
     logic [31:0] inst_EntryHi, inst_EntryLo0, inst_EntryLo1;
     logic [31:0] data_EntryHi, data_EntryLo0, data_EntryLo1;
 
-    logic inst_unmapped_uncached, inst_unmapped_cached, inst_unmapped;
-    logic data_unmapped_uncached, data_unmapped_cached, data_unmapped;
+    logic inst_unmapped_uncached, inst_unmapped_cached, inst_unmapped, inst_TLB_cached, inst_TLB_uncached;
+    logic data_unmapped_uncached, data_unmapped_cached, data_unmapped, data_TLB_cached, data_TLB_uncached;
     logic inst_TLBInvalid, inst_TLBModified, inst_TLBMiss, inst_TLB_done;
     logic data_TLBInvalid, data_TLBModified, data_TLBMiss, data_TLB_done;
+
+    tlb_exc_t inst_err, data_err;
+    tlb_t inst_info, data_info, inst_res, data_res;
+    tlb_req_t tlb_req;
+    logic tlb_ok;
 
     assign icache_burst_len = ICACHE_BURST_LEN - 1;
     assign dcache_burst_len = DCACHE_BURST_LEN - 1;
@@ -191,6 +197,12 @@ module mycpu #(
         .data_rdata         (data_cpu_rdata)    , 
         .data_addr_ok       (data_cpu_addr_ok)  , 
         .data_data_ok       (data_cpu_data_ok)  ,
+        .f_tlb_exc_if       (inst_err)          ,
+        .m_tlb_exc_mem      (data_err),
+        .m_read_tlb         (data_res),
+        .m_write_tlb        (data_info),
+        .tlb_req            (tlb_req),
+        .m_tlb_ok           (tlb_ok),
         .debug_wb_pc        (debug_wb_pc)       , 
         .debug_wb_rf_wen    (debug_wb_rf_wen)   , 
         .debug_wb_rf_wnum   (debug_wb_rf_wnum)  , 
@@ -206,39 +218,40 @@ module mycpu #(
         .clk                      (clk)                     ,
 
         .inst_vaddr               (inst_cpu_vaddr)          ,
-        .inst_EntryHi             (inst_EntryHi)            ,
-        .inst_EntryLo0            (inst_EntryLo0)           ,
-        .inst_EntryLo1            (inst_EntryLo1)           ,
-        .inst_wr                  (inst_cpu_wr)             ,
-        .inst_paddr               (inst_cpu_paddr)              ,
+        .inst_info                (inst_info)               ,
+        .inst_req                 (inst_req)                ,
+        .inst_res                 (inst_res)                ,
+        .inst_err                 (inst_err)                ,
+        .inst_paddr               (inst_cpu_paddr)          ,
         .inst_unmapped_uncached   (inst_unmapped_uncached)  ,
         .inst_unmapped_cached     (inst_unmapped_cached)    ,
         .inst_unmapped            (inst_unmapped)           ,
-        .inst_TLBInvalid          (inst_TLBInvalid)         ,
-        .inst_TLBModified         (inst_TLBModified)        ,
-        .inst_TLBMiss             (inst_TLBMiss)            ,
+        .inst_TLB_cached          (inst_TLB_cached)         ,
+        .inst_TLB_uncached        (inst_TLB_uncached)       ,
         .inst_TLB_done            (inst_TLB_done)           ,
 
         .data_vaddr               (data_cpu_vaddr)          ,
-        .data_EntryHi             (data_EntryHi)            ,
-        .data_EntryLo0            (data_EntryLo0)           ,
-        .data_EntryLo1            (data_EntryLo1)           ,
+        .data_info                (data_info)               ,
+        .data_req                 (data_cpu_req)            ,
         .data_wr                  (data_cpu_wr)             ,
-        .data_paddr               (data_cpu_paddr)              ,
+        .data_res                 (data_res)                ,
+        .data_err                 (data_err)                ,
+        .data_paddr               (data_cpu_paddr)          ,
         .data_unmapped_uncached   (data_unmapped_uncached)  ,
         .data_unmapped_cached     (data_unmapped_cached)    ,
         .data_unmapped            (data_unmapped)           ,
-        .data_TLBInvalid          (data_TLBInvalid)         ,
-        .data_TLBModified         (data_TLBModified)        ,
-        .data_TLBMiss             (data_TLBMiss)            ,
-        .data_TLB_done            (data_TLB_done)
+        .data_TLB_cached          (data_TLB_cached)         ,
+        .data_TLB_uncached        (data_TLB_uncached)       ,
+        .data_TLB_done            (data_TLB_done)           ,
+        .tlb_ok                   (tlb_ok)                  ,
+        .tlb_req                  (tlb_req)
     );
 
-    assign icached = ~inst_unmapped_uncached;
-    assign dcached = ~data_unmapped_uncached;
+    assign icached = inst_unmapped_cached || inst_TLB_cached;
+    assign dcached = data_unmapped_cached || data_TLB_cached;
 
-    assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || inst_TLB_done);
-    assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || data_TLB_done);
+    assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || inst_TLB_cached);
+    assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || data_TLB_cached);
 
     assign inst_cpu_cache_req = inst_cpu_req & icached;
     assign data_cpu_cache_req = data_cpu_req & dcached;

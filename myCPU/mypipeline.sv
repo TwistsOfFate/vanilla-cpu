@@ -202,7 +202,7 @@ sram_like_handshake tlb_handshake(
     .need_req(m_tlb_req != NO_REQ),
     .busy(m_tlb_busy),
 
-    .addr_ok(1'b1),
+    .addr_ok(m_tlb_ok),
     .data_ok(m_tlb_ok),
     .req(tlb_req_logic)
     );
