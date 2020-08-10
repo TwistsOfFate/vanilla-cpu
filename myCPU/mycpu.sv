@@ -1,5 +1,6 @@
 `include "iCache.vh"
 `include "dCache.vh"
+`include "cpu_defs.svh"
 
 module mycpu #(
     parameter ICACHE_BURST_LEN = 2 ** (`ICACHE_B - 2),
@@ -122,6 +123,7 @@ module mycpu #(
 
     logic icached, dcached;
     logic inst_wb_ok, data_wb_ok;
+    logic inst_cpu_cache_req, data_cpu_cache_req;
 
     logic dcache_wlast, data_burst_wlast;
     logic data_cache_awvalid, data_mem_awvalid;
@@ -159,6 +161,19 @@ module mycpu #(
     logic [ 1:0] data_size;
     logic [31:0] data_addr;
 
+    logic [31:0] inst_EntryHi, inst_EntryLo0, inst_EntryLo1;
+    logic [31:0] data_EntryHi, data_EntryLo0, data_EntryLo1;
+
+    logic inst_unmapped_uncached, inst_unmapped_cached, inst_unmapped, inst_TLB_cached, inst_TLB_uncached;
+    logic data_unmapped_uncached, data_unmapped_cached, data_unmapped, data_TLB_cached, data_TLB_uncached;
+    logic inst_TLBInvalid, inst_TLBModified, inst_TLBMiss, inst_TLB_done;
+    logic data_TLBInvalid, data_TLBModified, data_TLBMiss, data_TLB_done;
+
+    tlb_exc_t inst_err, data_err;
+    tlb_t inst_info, data_info, inst_res, data_res;
+    tlb_req_t tlb_req;
+    logic tlb_ok;
+
     assign icache_burst_len = ICACHE_BURST_LEN - 1;
     assign dcache_burst_len = DCACHE_BURST_LEN - 1;
 
@@ -182,6 +197,12 @@ module mycpu #(
         .data_rdata         (data_cpu_rdata)    , 
         .data_addr_ok       (data_cpu_addr_ok)  , 
         .data_data_ok       (data_cpu_data_ok)  ,
+        .f_tlb_exc_if       (inst_err)          ,
+        .m_tlb_exc_mem      (data_err),
+        .m_read_tlb         (data_res),
+        .m_write_tlb        (data_info),
+        .tlb_req            (tlb_req),
+        .m_tlb_ok           (tlb_ok),
         .debug_wb_pc        (debug_wb_pc)       , 
         .debug_wb_rf_wen    (debug_wb_rf_wen)   , 
         .debug_wb_rf_wnum   (debug_wb_rf_wnum)  , 
@@ -190,13 +211,55 @@ module mycpu #(
         .dcached            ()
     );
 
-    mmu immu(inst_cpu_vaddr, inst_cpu_paddr, icached);
-    mmu dmmu(data_cpu_vaddr, data_cpu_paddr, dcached);
+    // mmu immu(inst_cpu_vaddr, inst_cpu_paddr, icached);
+    // mmu dmmu(data_cpu_vaddr, data_cpu_paddr, dcached);
+
+    TLB TLB(
+        .clk                      (clk)                     ,
+
+        .inst_vaddr               (inst_cpu_vaddr)          ,
+        .inst_info                (inst_info)               ,
+        .inst_req                 (inst_req)                ,
+        .inst_res                 (inst_res)                ,
+        .inst_err                 (inst_err)                ,
+        .inst_paddr               (inst_cpu_paddr)          ,
+        .inst_unmapped_uncached   (inst_unmapped_uncached)  ,
+        .inst_unmapped_cached     (inst_unmapped_cached)    ,
+        .inst_unmapped            (inst_unmapped)           ,
+        .inst_TLB_cached          (inst_TLB_cached)         ,
+        .inst_TLB_uncached        (inst_TLB_uncached)       ,
+        .inst_TLB_done            (inst_TLB_done)           ,
+
+        .data_vaddr               (data_cpu_vaddr)          ,
+        .data_info                (data_info)               ,
+        .data_req                 (data_cpu_req)            ,
+        .data_wr                  (data_cpu_wr)             ,
+        .data_res                 (data_res)                ,
+        .data_err                 (data_err)                ,
+        .data_paddr               (data_cpu_paddr)          ,
+        .data_unmapped_uncached   (data_unmapped_uncached)  ,
+        .data_unmapped_cached     (data_unmapped_cached)    ,
+        .data_unmapped            (data_unmapped)           ,
+        .data_TLB_cached          (data_TLB_cached)         ,
+        .data_TLB_uncached        (data_TLB_uncached)       ,
+        .data_TLB_done            (data_TLB_done)           ,
+        .tlb_ok                   (tlb_ok)                  ,
+        .tlb_req                  (tlb_req)
+    );
+
+    assign icached = inst_unmapped_cached || inst_TLB_cached;
+    assign dcached = data_unmapped_cached || data_TLB_cached;
+
+    assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || inst_TLB_cached);
+    assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || data_TLB_cached);
+
+    assign inst_cpu_cache_req = inst_cpu_req & icached;
+    assign data_cpu_cache_req = data_cpu_req & dcached;
 
     iCache icache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (inst_cpu_req && icached)      ,
+        .cpu_req            (inst_cpu_cache_req)      ,
         .instr_addr         (inst_cpu_paddr)     ,
         .instr_rdata        (inst_cache_rdata)    ,
         .cpu_addr_ok        (inst_cache_addr_ok)  ,
@@ -218,7 +281,7 @@ module mycpu #(
     dCache dcache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (data_cpu_req & dcached)      ,
+        .cpu_req            (data_cpu_cache_req)      ,
         .wr                 (data_cpu_wr)       ,
         .size               (data_cpu_size)     ,
         .data_addr          (data_cpu_paddr)     ,

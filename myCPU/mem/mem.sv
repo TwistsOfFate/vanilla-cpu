@@ -64,7 +64,7 @@ module mem(
 		.reserved_instr(msig.reserved_instr),
 		.intovf(etom.intovf),
 		.tlb_exc_if(etom.tlb_exc_if),
-		.cp0_ready(cp0_ready),
+		.cp0_ready(1'b1),
 		.out_req(tlb_req)
 	);
 	
