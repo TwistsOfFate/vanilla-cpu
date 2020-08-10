@@ -61,6 +61,7 @@ module mem(
 		.reserved_instr(msig.reserved_instr),
 		.intovf(etom.intovf),
 		.tlb_exc_if(etom.tlb_exc_if),
+		.cp0_ready(cp0_ready),
 		.out_req(tlb_req)
 	);
 	
@@ -85,7 +86,7 @@ module mem(
 		.m_mtc0(msig.cp0_wen),
 		.m_tlb_req(tlb_req),
 		.tlb_exc_if(etom.tlb_exc_if),
-		.tlb_exc_mem(),
+		.tlb_exc_mem(tlb_exc_mem),
 		
 		//OUTPUT
 		.is_valid_exc(mtoh.is_valid_exc),

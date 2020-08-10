@@ -131,13 +131,17 @@ module cp0_regfile #(
     			regs_new[`CP0_BADVADDR] = exc_info.badvaddr;
     			regs_new[`CP0_ENTRYHI][31:13] = exc_info.badvaddr[31:13];
     		end
-    		OP_TLBW:
+    		OP_TLBW: ;
+    		OP_TLBR:
     		begin
-
+    			regs_new[`CP0_ENTRYHI] = read_tlb.entryhi;
+    			regs_new[`CP0_PAGEMASK] = read_tlb.pagemask;
+    			regs_new[`CP0_ENTRYLO0] = read_tlb.entrylo0;
+    			regs_new[`CP0_ENTRYLO1] = read_tlb.entrylo1;
     		end
     		OP_TLBP:
     		begin
-
+    			regs_new[`CP0_INDEX] = read_tlb.index;
     		end
     	endcase
     end
@@ -176,18 +180,21 @@ module cp0_regfile #(
     end
 
     always_ff @(posedge clk) begin
-    	if (!wen) begin						// Never read the new value
+    	if (!wen) begin	// Never read the new value
 			epc <= regs[`CP0_EPC];
 			status <= regs[`CP0_STATUS];
 			cause <= regs[`CP0_CAUSE];
 			rdata <= regs[rindex];
-			write_tlb.index <= regs[`CP0_INDEX];
-			write_tlb.random <= regs[`CP0_RANDOM];
-			write_tlb.entryhi <= regs[`CP0_ENTRYHI];
-			write_tlb.pagemask <= regs[`CP0_PAGEMASK];
-			write_tlb.entrylo0 <= regs[`CP0_ENTRYLO0];
-			write_tlb.entrylo1 <= regs[`CP0_ENTRYLO1];
 		end
+	end
+
+	always_ff @(posedge clk) begin
+		write_tlb.index <= regs[`CP0_INDEX];
+		write_tlb.random <= regs[`CP0_RANDOM];
+		write_tlb.entryhi <= regs[`CP0_ENTRYHI];
+		write_tlb.pagemask <= regs[`CP0_PAGEMASK];
+		write_tlb.entrylo0 <= regs[`CP0_ENTRYLO0];
+		write_tlb.entrylo1 <= regs[`CP0_ENTRYLO1];
 	end
 
 	always_ff @(posedge clk)
