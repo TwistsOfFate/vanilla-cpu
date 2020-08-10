@@ -106,7 +106,7 @@ module mem(
 		.m_stall(m_stall),
 
 		//INPUT
-		.ren(msig.mfc0 || cp0_op != OP_NONE && cp0_op != OP_MTC0),
+		.ren(msig.mfc0),
 		.wen(cp0_op != OP_NONE && !tlb_busy),
 		.wtype(cp0_op),	
 		.exc_info(exc_info),

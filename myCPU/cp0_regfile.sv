@@ -185,11 +185,11 @@ module cp0_regfile #(
 			epc <= regs[`CP0_EPC];
 			status <= regs[`CP0_STATUS];
 			cause <= regs[`CP0_CAUSE];
-			rdata <= regs[rindex];
 		end
 	end
 
 	always_ff @(posedge clk) begin
+	    rdata <= regs[rindex];
 		write_tlb.index <= regs[`CP0_INDEX];
 		write_tlb.random <= regs[`CP0_RANDOM];
 		write_tlb.entryhi <= regs[`CP0_ENTRYHI];
@@ -221,6 +221,6 @@ module cp0_regfile #(
 
 	assign r_done = ren_cnt == 3'd1;
 
-	assign ready = wen && w_done || !wen;
+	assign ready = wen && w_done || !wen && !ren || ren && r_done;
     
 endmodule

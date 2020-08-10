@@ -219,7 +219,7 @@ module mycpu #(
 
         .inst_vaddr               (inst_cpu_vaddr)          ,
         .inst_info                (inst_info)               ,
-        .inst_req                 (inst_req)                ,
+        .inst_req                 (inst_cpu_req)            ,
         .inst_res                 (inst_res)                ,
         .inst_err                 (inst_err)                ,
         .inst_paddr               (inst_cpu_paddr)          ,
@@ -247,14 +247,14 @@ module mycpu #(
         .tlb_req                  (tlb_req)
     );
 
-    assign icached = inst_unmapped_cached || inst_TLB_cached;
-    assign dcached = data_unmapped_cached || data_TLB_cached;
+    assign icached = ~inst_unmapped_uncached;//inst_unmapped_cached || inst_TLB_cached;
+    assign dcached = ~data_unmapped_uncached;//data_unmapped_cached || data_TLB_cached;
 
-    assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || inst_TLB_cached);
-    assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || data_TLB_cached);
+    assign inst_cpu_cache_req = inst_cpu_req & icached & (inst_unmapped_cached || (inst_TLB_done && ~inst_unmapped_cached && inst_err == NO_EXC));
+    assign data_cpu_cache_req = data_cpu_req & dcached & (data_unmapped_cached || (data_TLB_done && ~data_unmapped_cached && data_err == NO_EXC));
 
-    assign inst_cpu_cache_req = inst_cpu_req & icached;
-    assign data_cpu_cache_req = data_cpu_req & dcached;
+    // assign inst_cpu_cache_req = inst_cpu_req & icached;
+    // assign data_cpu_cache_req = data_cpu_req & dcached;
 
     iCache icache(
         .clk                (clk)               ,
@@ -273,8 +273,8 @@ module mycpu #(
 
     mux2 #(1) i_mem_req_mux2(inst_cpu_req, inst_cache_req, icached, inst_req);
     mux2 #(32) i_mem_addr_mux2(inst_cpu_paddr, inst_cache_addr, icached, inst_addr);
-    mux2 #(1) i_cpu_data_ok_mux2(inst_data_ok, inst_cache_data_ok, icached, inst_cpu_data_ok);
-    mux2 #(1) i_cpu_addr_ok_mux2(inst_addr_ok, inst_cache_addr_ok, icached, inst_cpu_addr_ok);
+    mux2 #(1) i_cpu_data_ok_mux2(inst_data_ok, inst_err == NO_EXC ? inst_cache_data_ok : 1'b1, icached, inst_cpu_data_ok);
+    mux2 #(1) i_cpu_addr_ok_mux2(inst_addr_ok, inst_err == NO_EXC ? inst_cache_addr_ok : 1'b1, icached, inst_cpu_addr_ok);
     mux2 #(32) i_cpu_rdata_mux2(inst_mem_rdata, inst_cache_rdata, icached, inst_cpu_rdata);
     mux2 #(8) i_burst_len_mux2(8'b0, icache_burst_len, icached, inst_burst_len);
 
@@ -308,8 +308,8 @@ module mycpu #(
     // mux2 #(1) d_cpu_data_ok_mux2(data_data_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
     // mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
 
-    mux2 #(1) d_cpu_data_ok_mux2(data_wb_ok, data_cache_data_ok, dcached, data_cpu_data_ok);
-    mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_cache_addr_ok, dcached, data_cpu_addr_ok);
+    mux2 #(1) d_cpu_data_ok_mux2(data_wb_ok, data_err == NO_EXC ? data_cache_data_ok : 1'b1, dcached, data_cpu_data_ok);
+    mux2 #(1) d_cpu_addr_ok_mux2(data_addr_ok, data_err == NO_EXC ? data_cache_addr_ok : 1'b1, dcached, data_cpu_addr_ok);
     mux2 #(32) d_cpu_rdata_mux2(data_mem_rdata, data_cache_rdata, dcached, data_cpu_rdata);
     mux2 #(8) d_burst_len_mux2(8'b0, dcache_burst_len, dcached, data_burst_len);
     mux2 #(1) d_burst_wlast_mux2(1'b1, dcache_wlast, dcached, data_burst_wlast);

@@ -103,7 +103,8 @@ hazard hz(
     .stall          (stall_alpha),
     .flush          (flush_alpha),
     
-    .idmem          (idmem)
+    .idmem          (idmem),
+    .tlb_busy       (m_tlb_busy)
 );
 logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 

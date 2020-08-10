@@ -70,7 +70,8 @@ module SramlikeToAXI
     assign sram_rdata = rdata;
 
     always_ff @(posedge clk)
-        rready <= rvalid;
+        if (rready) rready <= 1'b0;
+        else rready <= rvalid;
 
     assign awid = 4'b0001;
     assign awaddr = addr;
