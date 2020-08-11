@@ -53,7 +53,7 @@ module data_addr_check(
     		addr_err = {1'b1, wr};
     		m_req = 1'b0;
     	end else begin
-    		badvaddr = 32'b0;
+    		badvaddr = addr;
     		addr_err = 2'b00;
     		m_req = memreq;
     	end

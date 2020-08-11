@@ -49,7 +49,7 @@ module TLB #(
     // output logic        data_TLBInvalid,
     // output logic        data_TLBModified,
     // output logic        data_TLBMiss,
-    output tlb_req_t    tlb_req,
+    input tlb_req_t    tlb_req,
     output logic        tlb_ok
     
 );
@@ -166,7 +166,7 @@ module TLB #(
     logic data_state;
     
     always_ff @(posedge clk)
-        if (data_unmapped || (tlb_req == NO_EXC && !data_req)) begin
+        if (data_unmapped || (tlb_req == NO_REQ && !data_req)) begin
             data_state <= 1'b0;
             data_TLB_done <= 1'b0;
             data_err <= NO_EXC;
