@@ -17,6 +17,7 @@ module datapath(
     output instr_inf      dinstrinf_alpha    ,
       
     // the next pc 
+    output logic          f_inst_req        ,
     output logic [31:0]   f_pc_alpha        ,
     output logic [31:0]	  m_pc_alpha        ,
     
@@ -103,7 +104,8 @@ hazard hz(
     .stall          (stall_alpha),
     .flush          (flush_alpha),
     
-    .idmem          (idmem)
+    .idmem          (idmem),
+    .tlb_busy       (m_tlb_busy)
 );
 logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 
@@ -228,6 +230,7 @@ pc_flop #(32) pcreg(
     .out       (dp_ftod_f_alpha.pc)
 ) ;
 
+assign f_inst_req = !dp_ftod_f_alpha.addr_err_if;
 assign f_pc_alpha = dp_ftod_f_alpha.pc ;
 assign m_pc_alpha = dp_etom_m_alpha.pc ;
 assign dp_ftod_f_alpha.pcplus4 = dp_ftod_f_alpha.pc + 32'd4;

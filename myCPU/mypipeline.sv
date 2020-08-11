@@ -45,6 +45,7 @@ module mypipeline(
     output logic         dcached
     );
 
+logic f_inst_req;
 logic [31:0] f_instr_alpha, f_inst_addr_tmp;
 logic [31:0] m_pc, m_pc_tmp;
 logic [31:0] m_data_rdata;
@@ -90,13 +91,14 @@ datapath dp(
     .resetn             (resetn)            ,
     .ext_int            (ext_int)           ,
 
-    .f_instr_alpha      (f_instr_alpha)     ,
+    .f_instr_alpha      (f_inst_req ? f_instr_alpha : 32'b0),
 
     .dsig_alpha        (dstage_alpha)       ,
 
     .idmem             (idmem)              ,
     .dinstrinf_alpha   (dinstrinf_alpha)    ,
 
+    .f_inst_req        (f_inst_req)         ,
     .f_pc_alpha        (f_inst_addr)        ,
     .m_pc_alpha        (m_pc)               ,
 
@@ -175,7 +177,7 @@ sram_like_handshake imem_handshake(
     .clk(clk),
     .rst(~resetn),
     .unique_id(f_inst_addr),
-    .need_req(1'b1),
+    .need_req(f_inst_req),
     .busy(idmem.imem_busy),
 
     .addr_ok(inst_addr_ok),
