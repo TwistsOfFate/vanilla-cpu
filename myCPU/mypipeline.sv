@@ -45,6 +45,7 @@ module mypipeline(
     output logic         dcached
     );
 
+tlb_exc_t f_tlb_exc, m_tlb_exc;
 logic f_inst_req;
 logic [31:0] f_instr_alpha, f_inst_addr_tmp;
 logic [31:0] m_pc, m_pc_tmp;
@@ -60,6 +61,7 @@ logic		 m_flush_late	   ;
 busy_ok      idmem ;
 logic        m_tlb_busy, tlb_req_logic;
 tlb_req_t    m_tlb_req;
+tlb_t        read_tlb;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
 branch_rel   dcompare_alpha, ecompare_alpha;
 
@@ -91,7 +93,7 @@ datapath dp(
     .resetn             (resetn)            ,
     .ext_int            (ext_int)           ,
 
-    .f_instr_alpha      (f_inst_req ? f_instr_alpha : 32'b0),
+    .f_instr_alpha      (f_inst_req && f_tlb_exc_if == NO_EXC ? f_instr_alpha : 32'b0),
 
     .dsig_alpha        (dstage_alpha)       ,
 
@@ -114,9 +116,9 @@ datapath dp(
     .m_data_rdata		(m_data_rdata)		,
 
     //TLB interface
-    .f_tlb_exc_if       (f_tlb_exc_if)      ,
-    .m_tlb_exc_mem      (m_tlb_exc_mem)     ,
-    .m_read_tlb         (m_read_tlb)        ,
+    .f_tlb_exc_if       (f_tlb_exc)         ,
+    .m_tlb_exc_mem      (m_tlb_exc)         ,
+    .m_read_tlb         (read_tlb)          ,
     .m_write_tlb        (m_write_tlb)       ,
     .m_tlb_req          (m_tlb_req)         ,
     .m_tlb_busy         (m_tlb_busy)        ,
@@ -156,6 +158,36 @@ rdata_latch m_rdata_latch(
 	.data_ok(data_data_ok),
 	.in(data_rdata),
 	.out(m_data_rdata)
+);
+
+exc_latch f_tlb_exc_latch(
+    .clk(clk),
+    .rst(~resetn),
+    .stall(stall_alpha.f),
+    .flush(1'b0),
+    .data_ok(inst_data_ok),
+    .in(f_tlb_exc_if),
+    .out(f_tlb_exc)
+);
+
+exc_latch m_tlb_exc_latch(
+    .clk(clk),
+    .rst(~resetn),
+    .stall(stall_alpha.m),
+    .flush(flush_alpha.m),
+    .data_ok(data_data_ok),
+    .in(m_tlb_exc_mem),
+    .out(m_tlb_exc)
+);
+
+tlb_latch m_tlb_latch(
+    .clk(clk),
+    .rst(~resetn),
+    .stall(stall_alpha.m),
+    .flush(flush_alpha.m),
+    .data_ok(tlb_ok),
+    .in(m_read_tlb),
+    .out(read_tlb)
 );
 
 // SRAM-Like Interface FSM
