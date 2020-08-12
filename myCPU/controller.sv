@@ -585,6 +585,24 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
+        6'b100010://LWL
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b1 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
+        6'b100110://LWR
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b1 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
         6'b101000://SB
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
@@ -922,13 +940,20 @@ always_comb
         dstage.tlb_req = NO_REQ;
 
 always_comb
-    if (dinstr.op == 6'b101010 || dinstr.op == 6'b101110)
+    if (dinstr.op == 6'b101010)
         dstage.swlr = 2'b01;
-    else if (0)
+    else if (dinstr.op == 6'b101110)
         dstage.swlr = 2'b10;
     else
         dstage.swlr = 2'b00;
 
-assign dstage.lwlr = 2'b00;
+always_comb
+    if (dinstr.op == 6'b100010)
+        dstage.lwlr = 2'b01;
+    else if (dinstr.op == 6'b100110)
+        dstage.lwlr = 2'b10;
+    else
+        dstage.lwlr = 2'b00;
+
 
 endmodule
