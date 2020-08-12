@@ -50,7 +50,7 @@ module exc_handler(
     output exc_info_t exc_info
     );
 
-    assign exc_info.badvaddr = m_badvaddr;
+    assign exc_info.badvaddr = tlb_exc_if != NO_EXC ? m_pc : m_badvaddr;
 
     always_comb begin
     	if (!m_is_instr) begin
