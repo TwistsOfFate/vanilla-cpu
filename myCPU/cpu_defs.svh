@@ -41,6 +41,10 @@ typedef enum logic [2:0] {
 	NO_REQ, TLBWI, TLBWR, TLBR, TLBP
 } tlb_req_t;
 
+typedef enum logic [2:0] {
+	NO_CACHE, IndexInvalid, IndexTag, HitInvalid, HitWbInvalid
+} cache_req_t;
+
 `define CP0_INDEX		8'b000_00000
 `define CP0_RANDOM		8'b000_00001
 `define CP0_ENTRYLO0	8'b000_00010
