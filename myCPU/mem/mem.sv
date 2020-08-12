@@ -181,5 +181,6 @@ module mem(
 	assign mtoh.rd 		 = etom.rd;
 	assign mtoh.link 	 = msig.link;
 	assign mtoh.cp0_ready = cp0_ready;
+	assign mtoh.tlb_req  = msig.tlb_req;
 
 endmodule

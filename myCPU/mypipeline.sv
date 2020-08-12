@@ -59,7 +59,7 @@ logic		 m_stall_late	   ;
 logic		 m_flush_late	   ;
 
 busy_ok      idmem ;
-logic        m_tlb_busy, tlb_req_logic;
+logic        m_tlb_busy, tlb_req_logic, w_tlbw;
 tlb_req_t    m_tlb_req;
 tlb_t        read_tlb;
 ctrl_reg     dstage_alpha,estage_alpha,mstage_alpha,wstage_alpha ;
@@ -99,6 +99,7 @@ datapath dp(
 
     .idmem             (idmem)              ,
     .dinstrinf_alpha   (dinstrinf_alpha)    ,
+    .w_tlbw             (w_tlbw)            ,
 
     .f_inst_req        (f_inst_req)         ,
     .f_pc_alpha        (f_inst_addr)        ,
@@ -208,6 +209,7 @@ flop em_instr_count (clk, ~resetn | flush_alpha.m, stall_alpha.m, e_instr_count,
 sram_like_handshake imem_handshake(
     .clk(clk),
     .rst(~resetn),
+    .force_req(w_tlbw),
     .unique_id(f_inst_addr),
     .need_req(f_inst_req),
     .busy(idmem.imem_busy),
@@ -220,6 +222,7 @@ sram_like_handshake imem_handshake(
 sram_like_handshake dmem_handshake(
     .clk(clk),
     .rst(~resetn),
+    .force_req(1'b0),
     .unique_id(m_instr_count),
     .need_req(m_data_req),
     .busy(idmem.dmem_busy),
@@ -232,6 +235,7 @@ sram_like_handshake dmem_handshake(
 sram_like_handshake tlb_handshake(
     .clk(clk),
     .rst(~resetn),
+    .force_req(1'b0),
     .unique_id(m_instr_count),
     .need_req(m_tlb_req != NO_REQ),
     .busy(m_tlb_busy),

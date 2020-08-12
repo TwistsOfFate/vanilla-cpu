@@ -12,7 +12,6 @@ module ex(
 
 	input 				e_guess_taken,
 
-	// output logic [31:0] e_bpc,
 	output 				bfrome,
 
 	output	dp_etom 	etom,
@@ -221,5 +220,6 @@ module ex(
 	assign etoh.rt		  = dtoe.rt		 ;
 	assign etoh.rd		  = dtoe.rd		 ;
 	assign etoh.link 	  = esig.link    ;
+	assign etoh.tlb_req   = esig.tlb_req ;
 	
 endmodule

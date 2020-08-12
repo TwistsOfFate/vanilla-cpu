@@ -25,7 +25,7 @@ module decode(
     output dp_dtoh     dtoh
 );
 
-logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc, pcbfrome ;
+logic [31:0] pcnextbr, d_pcbranch, pcnextjr, pcnexteret,pcnextjpc, pcbfrome;
 logic [31:0] d_signimm, d_signimmsh ;
 branch_rel dbranchcmp;
 logic pcsrc;
@@ -124,5 +124,6 @@ assign dtoh.rs = dtoe.rs ;
 assign dtoh.rt = dtoe.rt ;
 assign dtoh.mfc0 = dsig.mfc0;
 assign dtoh.jump = dsig.jump;
+assign dtoh.tlb_req = dsig.tlb_req;
 
 endmodule
