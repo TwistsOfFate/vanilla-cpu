@@ -161,7 +161,7 @@ module TLB #(
         end
     
     assign data_EntryHi_ASID = data_info.entryhi[7 : 0];
-    assign data_EntryHi_VPN2 = data_info.entryhi[31:13];
+    assign data_EntryHi_VPN2 = data_req ? data_vaddr[31:13] : data_info.entryhi[31:13];
 
     logic data_state;
     logic [4:0] data_index;
@@ -244,7 +244,7 @@ module TLB #(
                         // else data_err = NO_EXC;
                         // data_err = (tlb_req == TLBP || !data_req) ? NO_EXC : (data_wr ? REFILL_S : REFILL_L);
                         data_res.index = {1'b1, 31'b0};
-                    end;
+                    end
                     if (data_req) data_TLB_done = 1'b1;
                 end
             endcase
