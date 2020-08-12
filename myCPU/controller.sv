@@ -714,6 +714,15 @@ begin
                 dstage.regdst <= 2'b00 ;
                 dstage.reserved_instr <= 1'b0 ;
             end
+            else if(dinstr.funct == 6'b100000)//WAIT
+            begin
+                dstage.alu_srcb_sel_rt <= 0 ;
+                dstage.sft_srcb_sel_rs <= 0 ;
+                dstage.out_sel <= 3'b000 ;
+                dstage.regwrite <= 1'b0 ;
+                dstage.regdst <= 2'b00 ;
+                dstage.reserved_instr <= 1'b0 ;
+            end
             else
             begin
                 dstage.alu_srcb_sel_rt <= 0 ;
@@ -955,5 +964,6 @@ always_comb
     else
         dstage.lwlr = 2'b00;
 
+assign dstage.op_wait = dinstr.op == 6'b010000 && dinstr.funct == 6'b100000;
 
 endmodule

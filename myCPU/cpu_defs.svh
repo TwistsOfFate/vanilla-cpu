@@ -150,6 +150,7 @@ typedef struct packed {
 	tlb_req_t	 tlb_req;
 	logic [ 1:0] swlr;
 	logic [ 1:0] lwlr;
+	logic 		 op_wait;
 } ctrl_reg ;
 
 typedef struct packed {
