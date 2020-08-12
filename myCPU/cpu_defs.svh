@@ -243,6 +243,7 @@ typedef struct packed {
 	logic	[ 4:0]rt;
 	logic		  mfc0;
 	logic   [ 1:0]jump;
+	tlb_req_t	  tlb_req;
 } dp_dtoh;
 
 typedef struct packed {
@@ -262,6 +263,7 @@ typedef struct packed {
 	logic		  div_ready;
 	logic		  mul_ready;
 	logic		  link;
+	tlb_req_t	  tlb_req;
 } dp_etoh;
 
 typedef struct packed {
@@ -272,13 +274,13 @@ typedef struct packed {
 	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
-	// logic		  exc_cp0_wen;
 	logic		  eret;
 	logic		  is_valid_exc;
 	logic	[ 4:0]rt;
 	logic   [ 4:0]rd;
 	logic		  link;
 	logic 		  cp0_ready;
+	tlb_req_t	  tlb_req;
 } dp_mtoh;
 
 typedef struct packed {
@@ -289,6 +291,7 @@ typedef struct packed {
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  cp0_wen  ;
+	tlb_req_t	  tlb_req;
 } dp_wtoh;
 
 typedef struct packed {

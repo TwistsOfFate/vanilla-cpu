@@ -2,6 +2,7 @@ module sram_like_handshake(
 	input clk,
 	input rst,
 	input [31:0] unique_id,
+	input force_req,
 	input need_req,
 	output busy,
 
@@ -39,7 +40,7 @@ always_ff @(posedge clk) begin
 	end
 end
 
-assign req = state == 2'b00 ? need_req && unique_id != unique_id_prev :
+assign req = state == 2'b00 ? need_req && (unique_id != unique_id_prev || force_req) :
 			 (state == 2'b01 ? 1'b1 : 1'b0);
 
 assign busy = (state == 2'b00 && req || state == 2'b01 || state == 2'b10) && !data_ok;

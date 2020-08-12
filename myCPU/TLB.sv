@@ -95,46 +95,46 @@ module TLB #(
             inst_unmapped <= 1'b0;
         end
     
-    assign inst_EntryHi_ASID = inst_info.entryhi[7 : 0];
-
+    assign inst_EntryHi_ASID = data_info.entryhi[7 : 0];
     logic inst_state;
     
     always_ff @(posedge clk)
         if (inst_unmapped || !inst_req) begin
-            inst_state <= 1'b0;
-            inst_TLB_done <= 1'b0;
-            inst_err <= NO_EXC;
+            inst_state = 1'b0;
+            inst_TLB_done = 1'b0;
+            inst_err = NO_EXC;
         end else begin
-            inst_state <= 1'b1;
-            inst_found <= 1'b0;
+            inst_state = 1'b1;
+            inst_found = 1'b0;
             if (tlb_req == NO_REQ) begin
                 for (integer i = 0; i < TLBEntries; i = i + 1) begin
                     if ((TLB_VPN2[i] == inst_vaddr[31 : 13]) && (TLB_G[i] || TLB_ASID[i] == inst_EntryHi_ASID)) begin
                         if (inst_vaddr[12] == 0) begin
-                            inst_pfn <= TLB_PFN0[i];
-                            inst_v <= TLB_V0[i];
-                            inst_c <= TLB_C0[i];
-                            inst_d <= TLB_D0[i];
+                            inst_pfn = TLB_PFN0[i];
+                            inst_v = TLB_V0[i];
+                            inst_c = TLB_C0[i];
+                            inst_d = TLB_D0[i];
                         end else begin
-                            inst_pfn <= TLB_PFN1[i];
-                            inst_v <= TLB_V1[i];
-                            inst_c <= TLB_C1[i];
-                            inst_d <= TLB_D1[i];
+                            inst_pfn = TLB_PFN1[i];
+                            inst_v = TLB_V1[i];
+                            inst_c = TLB_C1[i];
+                            inst_d = TLB_D1[i];
                         end
-                        if (inst_v == 0 && inst_req) inst_err <= INVALID_L;
-                        else inst_err <= NO_EXC;
-                        inst_found <= 1; 
+                        if (inst_v == 0 && inst_req) inst_err = INVALID_L;
+                        else inst_err = NO_EXC;
+                        inst_found = 1; 
                         break;
                     end
                 end 
-                inst_TLB_done <= 1'b1;
-                if (inst_req && !inst_found) inst_err <= REFILL_L;
-                else inst_err <= NO_EXC;
+                inst_TLB_done = 1'b1;
+                if (inst_req && !inst_found) inst_err = REFILL_L;
+                else if (!inst_req) inst_err = NO_EXC;
             end else begin
-                inst_TLB_done <= 1'b0;
-                inst_err <= NO_EXC;
+                inst_TLB_done = 1'b0;
+                inst_err = NO_EXC;
             end
-            inst_TLB_cached <= inst_TLB_done;
+            inst_TLB_cached = inst_req && inst_err == NO_EXC && inst_c == 2'b11;
+            inst_TLB_uncached = inst_req && inst_err == NO_EXC && inst_c != 2'b11;
         end 
 
     always_comb 
@@ -161,93 +161,96 @@ module TLB #(
         end
     
     assign data_EntryHi_ASID = data_info.entryhi[7 : 0];
-    assign data_EntryHi_VPN2 = data_info.entryhi[31:13];
+    assign data_EntryHi_VPN2 = data_req ? data_vaddr[31:13] : data_info.entryhi[31:13];
 
     logic data_state;
+    logic [4:0] data_index;
+    assign data_index = data_info.index[4:0];
     
     always_ff @(posedge clk)
         if (data_unmapped || (tlb_req == NO_REQ && !data_req)) begin
-            data_state <= 1'b0;
-            data_TLB_done <= 1'b0;
-            data_err <= NO_EXC;
-            tlb_ok <= 1'b0;
+            data_state = 1'b0;
+            data_TLB_done = 1'b0;
+            data_err = NO_EXC;
+            tlb_ok = 1'b0;
         end else begin
-            data_state <= 1'b1;
-            data_found <= 1'b0;
-            data_err <= NO_EXC;
-            data_TLB_done <= 1'b0;
+            data_state = 1'b1;
+            data_found = 1'b0;
+            data_err = NO_EXC;
+            data_TLB_done = 1'b0;
             case (tlb_req)
                 TLBR : begin
-                    if (data_info.index < TLBEntries) begin
-                        data_res.pagemask <= '0;
-                        data_res.entryhi <= {TLB_VPN2[data_info.index], 5'b0, TLB_ASID[data_info.index]};
-                        data_res.entrylo1 <= {6'b0, TLB_PFN1[data_info.index], TLB_C1[data_info.index], TLB_D1[data_info.index], TLB_V1[data_info.index], TLB_G[data_info.index]};
-                        data_res.entrylo0 <= {6'b0, TLB_PFN0[data_info.index], TLB_C0[data_info.index], TLB_D0[data_info.index], TLB_V0[data_info.index], TLB_G[data_info.index]};
+                    if (data_index < TLBEntries) begin
+                        data_res.pagemask = '0;
+                        data_res.entryhi = {TLB_VPN2[data_index], 5'b0, TLB_ASID[data_index]};
+                        data_res.entrylo1 = {6'b0, TLB_PFN1[data_index], TLB_C1[data_index], TLB_D1[data_index], TLB_V1[data_index], TLB_G[data_index]};
+                        data_res.entrylo0 = {6'b0, TLB_PFN0[data_index], TLB_C0[data_index], TLB_D0[data_index], TLB_V0[data_index], TLB_G[data_index]};
                     end
                 end
                 TLBWI : begin
-                    TLB_VPN2[data_info.index] <= data_info.entryhi[31:13];
-                    TLB_ASID[data_info.index] <= data_info.entryhi[7:0];
-                    TLB_G[data_info.index] <= data_info.entrylo1[0] & data_info.entrylo0[0];
-                    TLB_PFN1[data_info.index] <= data_info.entrylo1[25:6];
-                    TLB_C1[data_info.index] <= data_info.entrylo1[5:3];
-                    TLB_D1[data_info.index] <= data_info.entrylo1[2];
-                    TLB_V1[data_info.index] <= data_info.entrylo1[1];
-                    TLB_PFN0[data_info.index] <= data_info.entrylo0[25:6];
-                    TLB_C0[data_info.index] <= data_info.entrylo0[5:3];
-                    TLB_D0[data_info.index] <= data_info.entrylo0[2];
-                    TLB_V0[data_info.index] <= data_info.entrylo0[1];
+                    TLB_VPN2[data_index] = data_info.entryhi[31:13];
+                    TLB_ASID[data_index] = data_info.entryhi[7:0];
+                    TLB_G[data_index] = data_info.entrylo1[0] & data_info.entrylo0[0];
+                    TLB_PFN1[data_index] = data_info.entrylo1[25:6];
+                    TLB_C1[data_index] = data_info.entrylo1[5:3];
+                    TLB_D1[data_index] = data_info.entrylo1[2];
+                    TLB_V1[data_index] = data_info.entrylo1[1];
+                    TLB_PFN0[data_index] = data_info.entrylo0[25:6];
+                    TLB_C0[data_index] = data_info.entrylo0[5:3];
+                    TLB_D0[data_index] = data_info.entrylo0[2];
+                    TLB_V0[data_index] = data_info.entrylo0[1];
                 end
                 TLBWR : begin
-                    TLB_VPN2[data_info.index] <= data_info.entryhi[31:13];
-                    TLB_ASID[data_info.index] <= data_info.entryhi[7:0];
-                    TLB_G[data_info.index] <= data_info.entrylo1[0] & data_info.entrylo0[0];
-                    TLB_PFN1[data_info.index] <= data_info.entrylo1[25:6];
-                    TLB_C1[data_info.index] <= data_info.entrylo1[5:3];
-                    TLB_D1[data_info.index] <= data_info.entrylo1[2];
-                    TLB_V1[data_info.index] <= data_info.entrylo1[1];
-                    TLB_PFN0[data_info.index] <= data_info.entrylo0[25:6];
-                    TLB_C0[data_info.index] <= data_info.entrylo0[5:3];
-                    TLB_D0[data_info.index] <= data_info.entrylo0[2];
-                    TLB_V0[data_info.index] <= data_info.entrylo0[1];
+                    TLB_VPN2[data_index] = data_info.entryhi[31:13];
+                    TLB_ASID[data_index] = data_info.entryhi[7:0];
+                    TLB_G[data_index] = data_info.entrylo1[0] & data_info.entrylo0[0];
+                    TLB_PFN1[data_index] = data_info.entrylo1[25:6];
+                    TLB_C1[data_index] = data_info.entrylo1[5:3];
+                    TLB_D1[data_index] = data_info.entrylo1[2];
+                    TLB_V1[data_index] = data_info.entrylo1[1];
+                    TLB_PFN0[data_index] = data_info.entrylo0[25:6];
+                    TLB_C0[data_index] = data_info.entrylo0[5:3];
+                    TLB_D0[data_index] = data_info.entrylo0[2];
+                    TLB_V0[data_index] = data_info.entrylo0[1];
                 end
                 default : begin
                     for (integer i = 0; i < TLBEntries; i = i + 1) begin
                         if ((TLB_VPN2[i] == data_EntryHi_VPN2) && (TLB_G[i] || TLB_ASID[i] == data_EntryHi_ASID)) begin
                             if (data_vaddr[12] == 0) begin
-                                data_pfn <= TLB_PFN0[i];
-                                data_v <= TLB_V0[i];
-                                data_c <= TLB_C0[i];
-                                data_d <= TLB_D0[i];
+                                data_pfn = TLB_PFN0[i];
+                                data_v = TLB_V0[i];
+                                data_c = TLB_C0[i];
+                                data_d = TLB_D0[i];
                             end else begin
-                                data_pfn <= TLB_PFN1[i];
-                                data_v <= TLB_V1[i];
-                                data_c <= TLB_C1[i];
-                                data_d <= TLB_D1[i];
+                                data_pfn = TLB_PFN1[i];
+                                data_v = TLB_V1[i];
+                                data_c = TLB_C1[i];
+                                data_d = TLB_D1[i];
                             end
                             if (data_v == 0 && data_req)
-                                data_err <= data_wr ? INVALID_S : INVALID_L;
-                            if (data_d == 0 && data_wr && data_req) 
-                                data_err <= MODIFIED;
-                            data_found <= 1;
-                            data_res.index <= i;
+                                data_err = data_wr ? INVALID_S : INVALID_L;
+                            if (data_v == 1 && data_d == 0 && data_wr && data_req) 
+                                data_err = MODIFIED;
+                            data_found = 1;
+                            data_res.index = i;
                             break;
                         end
                     end
                     if (!data_found) begin
-                        data_err <= data_req ? data_wr ? REFILL_S : REFILL_L : NO_EXC;
+                        data_err = data_req ? data_wr ? REFILL_S : REFILL_L : NO_EXC;
                         // if (data_req) 
                         //     if (data_wr) data_err = REFILL_S;
                         //     else data_err = REFILL_L;
                         // else data_err = NO_EXC;
                         // data_err = (tlb_req == TLBP || !data_req) ? NO_EXC : (data_wr ? REFILL_S : REFILL_L);
-                        data_res.index <= {1'b1, 31'b0};
-                    end else data_err <= NO_EXC;
-                    if (data_req) data_TLB_done <= 1'b1;
+                        data_res.index = {1'b1, 31'b0};
+                    end
+                    if (data_req) data_TLB_done = 1'b1;
                 end
             endcase
-            tlb_ok <= tlb_req != NO_REQ;
-            data_TLB_cached <= tlb_req != NO_REQ;
+            tlb_ok = tlb_req != NO_REQ;
+            data_TLB_cached = data_req && data_err == NO_EXC && data_c == 2'b11;
+            data_TLB_uncached = data_req && data_err == NO_EXC && data_c != 2'b11;
         end   
         
     

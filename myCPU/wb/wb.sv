@@ -2,9 +2,9 @@
 module wb(
 	input  dp_mtow   	mtow ,
 	input  ctrl_reg  	wsig ,
-	// input  logic[31:0]  cp0_rdata,
 
 	output dp_wtoh   	wtoh ,
+    output logic        w_tlbw,
 	output logic [31:0]	w_reg_wdata
 	
     );
@@ -13,6 +13,7 @@ module wb(
 	wire [31:0]		w_memreg_out;
 	wire [31:0]		w_link_out;
 
+    assign w_tlbw = wsig.tlb_req == TLBWI || wsig.tlb_req == TLBWR;
     assign w_rdata_out = mtow.rdata_out;
 
 	// rdata_extend w_rdata_extend(
@@ -61,5 +62,6 @@ module wb(
 	assign wtoh.hi_wen = wsig.hi_wen ;
 	assign wtoh.lo_wen = wsig.lo_wen ;
 	assign wtoh.cp0_wen = wsig.cp0_wen ;
+    assign wtoh.tlb_req = wsig.tlb_req;
     
 endmodule

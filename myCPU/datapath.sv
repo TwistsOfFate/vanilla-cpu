@@ -15,6 +15,7 @@ module datapath(
     
     // give the controller the inf of instr 
     output instr_inf      dinstrinf_alpha    ,
+    output logic          w_tlbw            ,
       
     // the next pc 
     output logic          f_inst_req        ,
@@ -65,7 +66,7 @@ ctrl_reg esig_alpha, msig_alpha, wsig_alpha;
 logic d_guess_taken, e_guess_taken;
 
 logic [31:0] exc_addr;
-logic [31:0] delayslot_addr, e_bpc ;
+logic [31:0] delayslot_addr, e_bpc;
 logic bfrome;
 
 logic [31:0] d_for_hi_alpha, d_for_lo_alpha;
@@ -297,6 +298,7 @@ wb my_wb(
     .wsig(wsig_alpha),
 
     .wtoh(dp_wtoh_w_alpha),
+    .w_tlbw(w_tlbw),
     .w_reg_wdata(w_reg_wdata_alpha)
     );
 
