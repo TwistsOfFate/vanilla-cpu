@@ -96,7 +96,6 @@ module TLB #(
         end
     
     assign inst_EntryHi_ASID = inst_info.entryhi[7 : 0];
-
     logic inst_state;
     
     always_ff @(posedge clk)
@@ -134,7 +133,8 @@ module TLB #(
                 inst_TLB_done = 1'b0;
                 inst_err = NO_EXC;
             end
-            inst_TLB_cached = inst_TLB_done;
+            inst_TLB_cached = inst_req && inst_err == NO_EXC && inst_c == 2'b11;
+            inst_TLB_uncached = inst_req && inst_err == NO_EXC && inst_c != 2'b11;
         end 
 
     always_comb 
@@ -249,7 +249,8 @@ module TLB #(
                 end
             endcase
             tlb_ok = tlb_req != NO_REQ;
-            data_TLB_cached = tlb_req != NO_REQ;
+            data_TLB_cached = data_req && data_err == NO_EXC && data_c == 2'b11;
+            data_TLB_uncached = data_req && data_err == NO_EXC && data_c != 2'b11;
         end   
         
     
