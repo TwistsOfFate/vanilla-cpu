@@ -95,7 +95,7 @@ module TLB #(
             inst_unmapped <= 1'b0;
         end
     
-    assign inst_EntryHi_ASID = inst_info.entryhi[7 : 0];
+    assign inst_EntryHi_ASID = data_info.entryhi[7 : 0];
     logic inst_state;
     
     always_ff @(posedge clk)
