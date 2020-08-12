@@ -229,7 +229,7 @@ module TLB #(
                             end
                             if (data_v == 0 && data_req)
                                 data_err = data_wr ? INVALID_S : INVALID_L;
-                            if (data_d == 0 && data_wr && data_req) 
+                            if (data_v == 1 && data_d == 0 && data_wr && data_req) 
                                 data_err = MODIFIED;
                             data_found = 1;
                             data_res.index = i;
@@ -244,7 +244,7 @@ module TLB #(
                         // else data_err = NO_EXC;
                         // data_err = (tlb_req == TLBP || !data_req) ? NO_EXC : (data_wr ? REFILL_S : REFILL_L);
                         data_res.index = {1'b1, 31'b0};
-                    end else data_err = NO_EXC;
+                    end;
                     if (data_req) data_TLB_done = 1'b1;
                 end
             endcase
