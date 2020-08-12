@@ -275,7 +275,7 @@ module mycpu #(
         .mem_data_ok        (inst_data_ok)
     ); 
 
-    mux2 #(1) i_mem_req_mux2(inst_cpu_req, inst_cache_req, icached, inst_req);
+    mux2 #(1) i_mem_req_mux2(inst_cpu_mem_req, inst_cache_req, icached, inst_req);
     mux2 #(32) i_mem_addr_mux2(inst_cpu_paddr, inst_cache_addr, icached, inst_addr);
     mux2 #(1) i_cpu_data_ok_mux2(inst_err == NO_EXC ? inst_data_ok : 1'b1, inst_err == NO_EXC ? inst_cache_data_ok : 1'b1, icached, inst_cpu_data_ok);
     mux2 #(1) i_cpu_addr_ok_mux2(inst_err == NO_EXC ? inst_addr_ok : 1'b1, inst_err == NO_EXC ? inst_cache_addr_ok : 1'b1, icached, inst_cpu_addr_ok);
@@ -305,7 +305,7 @@ module mycpu #(
     );
 
     mux2 #(2) d_mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);
-    mux2 #(1) d_mem_req_mux2(data_cpu_req, data_cache_req, dcached, data_req);
+    mux2 #(1) d_mem_req_mux2(data_cpu_mem_req, data_cache_req, dcached, data_req);
     mux2 #(1) d_mem_wen_mux2(data_cpu_wr, data_cache_wr, dcached, data_wr);
     mux2 #(32) d_mem_addr_mux2(data_cpu_paddr, data_cache_addr, dcached, data_addr);
     mux2 #(32) d_mem_wdata_mux2(data_cpu_wdata, data_cache_wdata, dcached, data_mem_wdata);

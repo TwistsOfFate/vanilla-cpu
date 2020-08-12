@@ -129,7 +129,7 @@ module TLB #(
                 end 
                 inst_TLB_done = 1'b1;
                 if (inst_req && !inst_found) inst_err = REFILL_L;
-                else inst_err = NO_EXC;
+                else if (!inst_req) inst_err = NO_EXC;
             end else begin
                 inst_TLB_done = 1'b0;
                 inst_err = NO_EXC;
