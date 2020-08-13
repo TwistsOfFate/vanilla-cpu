@@ -175,6 +175,8 @@ module mycpu #(
     tlb_req_t tlb_req;
     logic tlb_ok;
 
+    cache_req_t icache_op;
+
     assign icache_burst_len = ICACHE_BURST_LEN - 1;
     assign dcache_burst_len = DCACHE_BURST_LEN - 1;
 
@@ -264,8 +266,8 @@ module mycpu #(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
         .cpu_req            (inst_cpu_cache_req)      ,
-        .instr_addr         (inst_cpu_paddr)     ,
-        .instr_rdata        (inst_cache_rdata)    ,
+        .inst_addr          (inst_cpu_paddr)     ,
+        .inst_rdata         (inst_cache_rdata)    ,
         .cpu_addr_ok        (inst_cache_addr_ok)  ,
         .cpu_data_ok        (inst_cache_data_ok)  ,
         .mem_req            (inst_cache_req)          ,
