@@ -12,6 +12,7 @@ module flop_ftod(
     
     always_ff @(posedge clk) begin
     	if (rst) begin
+            out.instr <= '0;
     		out.addr_err_if <= '0;
             out.is_instr <= '0;
             out.in_delay_slot <= '0;
