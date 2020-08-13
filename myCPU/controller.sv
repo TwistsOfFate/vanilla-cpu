@@ -672,7 +672,15 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
-
+        6'b101111://CACHE AS NOP
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b0 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
         6'b010000:
         begin
             if(dinstr.funct == 6'b011000)//ERET
