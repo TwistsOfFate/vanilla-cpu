@@ -93,6 +93,8 @@ module SramlikeToAXI
             4'b0011 : wstrb = 4'b1000;
             4'b0100 : wstrb = 4'b0011;
             4'b0110 : wstrb = 4'b1100;
+            4'b1100 : wstrb = 4'b0111;
+            4'b1101 : wstrb = 4'b1110;
             default : wstrb = 4'b1111;
         endcase
     end
