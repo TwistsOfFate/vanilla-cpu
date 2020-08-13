@@ -17,8 +17,8 @@ module decode(
     input  dp_ftod     ftod,
 
     output logic[31:0] f_nextpc,
-    // output branch_rel  dbranchcmp,
     output logic       f_indelayslot,
+    output logic       d_rtzero,
 
     output dp_dtoe     dtoe ,
     output instr_inf   dinstrinf,
@@ -30,6 +30,8 @@ logic [31:0] d_signimm, d_signimmsh ;
 branch_rel dbranchcmp;
 logic pcsrc;
 logic [7:0] branch;
+
+assign d_rtzero = d_for_rtdata == 32'd0;
 
 assign dbranchcmp.equal = d_for_rsdata == d_for_rtdata;
 assign dbranchcmp.e0 = d_for_rsdata == 32'd0;
