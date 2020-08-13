@@ -22,7 +22,7 @@ module memsig_adjust(
         		2'b00:
         		begin
         			unique case (memoffset)
-        				2'b00:		tmp = in;
+        				2'b00:		tmp = in;               
         				2'b01:		tmp = {in[23:0], 8'b0};
         				2'b10:		tmp = {in[15:0], 16'b0};
         				2'b11:		tmp = {in[7:0], 24'b0};
@@ -49,20 +49,38 @@ module memsig_adjust(
         	endcase
             2'b01: // SWL
             unique case (memoffset)
-                2'b00:  begin       tmp = {24'b0, in[31:24]};   size_tmp = 2'b00;   end
-                2'b01:  begin       tmp = {16'b0, in[31:16]};   size_tmp = 2'b01;   end
-                2'b10:  begin       tmp = {8'b0, in[31:8]};     size_tmp = 2'b11;   end
-                2'b11:  begin       tmp = in;                   size_tmp = 2'b10;   end
+                2'b00:  tmp = {24'b0, in[31:24]};
+                2'b01:  tmp = {16'b0, in[31:16]};
+                2'b10:  tmp = {8'b0, in[31:8]};
+                2'b11:  tmp = in;
             endcase
             2'b10: // SWR
             unique case (memoffset)
-                2'b00:  begin       tmp = in;                   size_tmp = 2'b10;   end
-                2'b01:  begin       tmp = {in[23:0], 8'b0};     size_tmp = 2'b11;   end
-                2'b10:  begin       tmp = {in[15:0], 16'b0};    size_tmp = 2'b01;   end
-                2'b11:  begin       tmp = {in[7:0], 24'b0};     size_tmp = 2'b00;   end
+                2'b00:  tmp = in;
+                2'b01:  tmp = {in[23:0], 8'b0};
+                2'b10:  tmp = {in[15:0], 16'b0};
+                2'b11:  tmp = {in[7:0], 24'b0};
             endcase
         endcase
     end
+
+    always_comb
+        unique case (swlr)
+            2'b01:
+            unique case (memoffset)
+                2'b00:  size_tmp = 2'b00;
+                2'b01:  size_tmp = 2'b01;
+                2'b10:  size_tmp = 2'b11;
+                2'b11:  size_tmp = 2'b10;
+            endcase
+            2'b10:
+            unique case (memoffset)
+                2'b00:  size_tmp = 2'b10;
+                2'b01:  size_tmp = 2'b11;
+                2'b10:  size_tmp = 2'b01;
+                2'b11:  size_tmp = 2'b00;
+            endcase
+        endcase
     
     assign out = tmp;
     assign real_size = swlr == 2'b00 ? size : size_tmp;

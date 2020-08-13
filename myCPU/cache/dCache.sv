@@ -41,7 +41,7 @@ module dCache #(
     logic linew_en, new_valid, strategy_en;
     logic [OFFSET_WIDTH - 3 : 0] block_offset;
     logic [LINE_NUM - 1 : 0] ram_data[31 : 0];
-    logic [31 : 0] replaceID;
+    logic [7 : 0] replaceID;
     logic [1 : 0] state;
     logic [2 : 0] wr_size;
     logic hit;
@@ -69,10 +69,10 @@ module dCache #(
     always_comb begin
         case (state == 2'b00 && linew_en) 
             1'b1 : begin
-                     line_wdata <= '0;
-                     line_wdata[data_addr_offset * 32 +: 32] <= wdata;
+                     line_wdata = '0;
+                     line_wdata[data_addr_offset * 32 +: 32] = wdata;
                    end  
-            default : line_wdata <= line_data;
+            default : line_wdata = line_data;
         endcase
     end
 
@@ -80,7 +80,7 @@ module dCache #(
     generate
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
         
-        assign dcache_line_wen[i] = linew_en && (((i == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
+        assign dcache_line_wen[i] = linew_en && (((i[7:0] == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
     
         icache_Info_Ram #(TAG_WIDTH + 1, INDEX_WIDTH)
         dcache_info_ram(clk, reset,
@@ -97,8 +97,8 @@ module dCache #(
                                     dcache_line_wen[i]);
         
         always_comb
-            if (dcache_line_valid[i] && dcache_line_tag[i] == data_addr_tag) way_selector[i] <= 1;
-            else way_selector[i] <= 0;
+            if (dcache_line_valid[i] && dcache_line_tag[i] == data_addr_tag) way_selector[i] = 1;
+            else way_selector[i] = 0;
         end
     endgenerate
     
@@ -107,13 +107,13 @@ module dCache #(
         begin
             hit_line_num = 0;
             for (int i = 0; i < LINE_NUM; i = i + 1)
-                hit_line_num |= (way_selector[i] == 1) ? d_int'(i) : 0;
+                hit_line_num |= (way_selector[i] == 1'b1) ? d_int'(i) : 0;
         end 
         
     always_comb
         case (hit)
-            1'b1 : data_rdata <= dcache_line_data[hit_line_num][data_addr_offset * 32 +: 32];
-            default : data_rdata <= dcache_line_data[replaceID][data_addr_offset * 32 +: 32];
+            1'b1 : data_rdata = dcache_line_data[hit_line_num][data_addr_offset * 32 +: 32];
+            default : data_rdata = dcache_line_data[replaceID][data_addr_offset * 32 +: 32];
         endcase
         
     assign hit = (state == 2'b00) && |way_selector;
