@@ -78,6 +78,7 @@ module mem(
 		.m_in_delay_slot(etom.in_delay_slot),
 		.m_pc(etom.pc),
 		.m_pcminus4(etom.pcminus4),
+		.m_pcplus4(etom.pcplus4),
 		.m_badvaddr(m_badvaddr),
 		
 		.m_addr_err(m_addr_err),
@@ -87,6 +88,7 @@ module mem(
 		.m_syscall(msig.syscall),
 		.m_eret(msig.eret),
 		.m_mtc0(msig.cp0_wen),
+		.m_wait(msig.op_wait),
 		.m_tlb_req(tlb_req),
 		.tlb_exc_if(etom.tlb_exc_if),
 		.tlb_exc_mem(tlb_exc_mem),
@@ -182,5 +184,6 @@ module mem(
 	assign mtoh.link 	 = msig.link;
 	assign mtoh.cp0_ready = cp0_ready;
 	assign mtoh.tlb_req  = msig.tlb_req;
+	assign mtoh.op_wait  = msig.op_wait;
 
 endmodule

@@ -144,6 +144,10 @@ module cp0_regfile #(
     		begin
     			regs_new[`CP0_INDEX] = read_tlb.index;
     		end
+    		OP_WAIT:
+    		begin
+    			regs_new[`CP0_EPC] = exc_info.epc;
+    		end
     	endcase
     end
 

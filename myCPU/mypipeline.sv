@@ -46,7 +46,7 @@ module mypipeline(
     );
 
 tlb_exc_t f_tlb_exc, m_tlb_exc;
-logic f_inst_req;
+logic f_inst_req, d_rtzero;
 logic [31:0] f_instr_alpha, f_inst_addr_tmp;
 logic [31:0] m_pc, m_pc_tmp;
 logic [31:0] m_data_rdata;
@@ -80,10 +80,11 @@ controller ctrl(
     .clk                (clk)               ,
     .resetn             (resetn)            ,
 
-    .dinstr             (dinstrinf_alpha)         ,
+    .dinstr             (dinstrinf_alpha)   ,
+    .d_rtzero           (d_rtzero)          ,
 
-    .flush              (flush_alpha)             ,
-    .stall              (stall_alpha)             ,
+    .flush              (flush_alpha)       ,
+    .stall              (stall_alpha)       ,
 
     .dstage             (dstage_alpha)
 );
@@ -99,6 +100,7 @@ datapath dp(
 
     .idmem             (idmem)              ,
     .dinstrinf_alpha   (dinstrinf_alpha)    ,
+    .d_rtzero           (d_rtzero)          ,
     .w_tlbw             (w_tlbw)            ,
 
     .f_inst_req        (f_inst_req)         ,

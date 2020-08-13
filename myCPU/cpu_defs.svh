@@ -20,7 +20,7 @@
 
 typedef enum logic [3:0] {
 	OP_NONE, OP_MTC0, OP_EXC, OP_BADVA, OP_ERET,
-	OP_TLB_EXC, OP_TLBW, OP_TLBR, OP_TLBP
+	OP_TLB_EXC, OP_TLBW, OP_TLBR, OP_TLBP, OP_WAIT
 } cp0_op_t;
 
 typedef enum logic [4:0] {
@@ -216,6 +216,7 @@ typedef struct packed {
 	logic		  intovf;
 	logic		  is_instr	   ;
 	logic 	[31:0]pcminus4;
+	logic 	[31:0]pcplus4;
 	logic   [ 2:0]cp0_sel;
 	tlb_exc_t    tlb_exc_if	   ;
 } dp_etom;
@@ -282,6 +283,7 @@ typedef struct packed {
 	logic		  link;
 	logic 		  cp0_ready;
 	tlb_req_t	  tlb_req;
+	logic 		  op_wait;
 } dp_mtoh;
 
 typedef struct packed {

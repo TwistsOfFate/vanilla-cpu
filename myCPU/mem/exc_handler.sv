@@ -30,6 +30,7 @@ module exc_handler(
 	input m_in_delay_slot,
 	input [31:0] m_pc,
     input [31:0] m_pcminus4,
+    input [31:0] m_pcplus4,
 	input [31:0] m_badvaddr,
 	
 	input [1:0] m_addr_err,
@@ -39,6 +40,7 @@ module exc_handler(
 	input m_syscall,
 	input m_eret,
     input m_mtc0,
+    input m_wait,
     input tlb_req_t m_tlb_req,
     input tlb_exc_t tlb_exc_if,
     input tlb_exc_t tlb_exc_mem,
@@ -143,6 +145,11 @@ module exc_handler(
             exc_info.cause_exccode = 5'b0;
             cp0_op = OP_MTC0;
             exc_addr = 32'hBFC00380;
+        end else if (m_wait) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_WAIT;
+            exc_addr = 32'hBFC00380;
         end else if (m_tlb_req == TLBWI || m_tlb_req == TLBWR) begin
             is_valid_exc = 1'b0;
             exc_info.cause_exccode = 5'b0;
@@ -167,16 +174,19 @@ module exc_handler(
     end
     
     always_comb begin
-    	if (cp0_status[1]) begin
+    	if (cp0_status[1] && is_valid_exc) begin
     		exc_info.epc = cp0_epc;
     		exc_info.cause_bd = cp0_cause[31];
-    	end else if (m_in_delay_slot == 1'b1) begin
+    	end else if (m_in_delay_slot == 1'b1 && is_valid_exc) begin
     		exc_info.epc = m_pcminus4;
     		exc_info.cause_bd = 1'b1;
-    	end else begin
+    	end else if (is_valid_exc) begin
     		exc_info.epc = m_pc;
     		exc_info.cause_bd = 1'b0;
-    	end
+    	end else begin     // WAIT
+            exc_info.epc = m_pcplus4;
+            exc_info.cause_bd = 1'b0;
+        end
     end
 
     

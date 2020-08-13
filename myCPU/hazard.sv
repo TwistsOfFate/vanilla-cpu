@@ -24,7 +24,7 @@ logic lwstall, jrstall, hilostall, link_stall, linkr_stall;
 logic mfc0_stall, cp0_busy_stall;
 logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
-logic tlbw_stall;
+logic tlbw_stall, wait_stall;
 
 logic [9:0] stall_flush;
 
@@ -110,6 +110,8 @@ assign dmem_stall = idmem.dmem_busy;
 assign tlbw_stall = d_alpha.tlb_req == TLBWI || d_alpha.tlb_req == TLBWR || e_alpha.tlb_req == TLBWI || e_alpha.tlb_req == TLBWR
  || m_alpha.tlb_req == TLBWI || m_alpha.tlb_req == TLBWR;
 
+assign wait_stall = m_alpha.op_wait;
+
 
 always_comb begin
     if (dmem_stall || cp0_busy_stall || divider_stall || multiplier_stall)
@@ -120,6 +122,8 @@ always_comb begin
         stall_flush = 10'b00000_01111;
     else if (imem_stall && bfrome)
         stall_flush = 10'b11111_00000;
+    else if (wait_stall)
+        stall_flush = 10'b11110_00001;
     else if (imem_stall)
         stall_flush = 10'b11000_00100;
     else if (bfrome)

@@ -14,7 +14,8 @@ module datapath(
     input  busy_ok        idmem             ,
     
     // give the controller the inf of instr 
-    output instr_inf      dinstrinf_alpha    ,
+    output instr_inf      dinstrinf_alpha   ,
+    output logic          d_rtzero          ,
     output logic          w_tlbw            ,
       
     // the next pc 
@@ -214,6 +215,7 @@ decode my_decode(
 
     .f_nextpc(f_nextpc_alpha),
     .f_indelayslot(dp_ftod_f_alpha.in_delay_slot),
+    .d_rtzero(d_rtzero),
 
     .dtoe(dp_dtoe_d_alpha),
     .dinstrinf(dinstrinf_alpha),
