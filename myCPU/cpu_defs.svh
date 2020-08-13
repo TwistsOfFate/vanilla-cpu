@@ -198,7 +198,7 @@ typedef struct packed {
 	logic		  in_delay_slot;
 	logic		  is_instr	   ;
 	logic   [ 2:0]cp0_sel;
-	tlb_exc_t    tlb_exc_if	   ;
+	tlb_exc_t     tlb_exc_if;
 } dp_dtoe;
 
 typedef struct packed {
@@ -214,11 +214,11 @@ typedef struct packed {
 	logic	[31:0]lo_wdata;
 	logic		  addr_err_if;
 	logic		  intovf;
-	logic		  is_instr	   ;
+	logic		  is_instr;
 	logic 	[31:0]pcminus4;
 	logic 	[31:0]pcplus4;
 	logic   [ 2:0]cp0_sel;
-	tlb_exc_t    tlb_exc_if	   ;
+	tlb_exc_t     tlb_exc_if;
 } dp_etom;
 
 typedef struct packed {

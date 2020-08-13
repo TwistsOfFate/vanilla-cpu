@@ -73,26 +73,26 @@ module TLB #(
     logic inst_found, data_found;
 
     always_comb 
-        if (inst_vaddr < 32'h8000_0000) begin					//kuseg
+        if (inst_vaddr[31:28] < 4'h8) begin					//kuseg
             inst_paddr = {inst_pfn[19 : 0], inst_vaddr[11 : 0]};
-            inst_unmapped_uncached <= 1'b0;
-            inst_unmapped_cached <= 1'b0;
-            inst_unmapped <= 1'b0;
-        end else if (inst_vaddr < 32'hA000_0000) begin			//kseg0
-            inst_paddr = inst_vaddr - 32'h8000_0000;
-            inst_unmapped_uncached <= 1'b0;
-            inst_unmapped_cached <= 1'b1;
-            inst_unmapped <= 1'b1;
-        end else if (inst_vaddr < 32'hC000_0000) begin			//kseg1
-            inst_paddr = inst_vaddr - 32'hA000_0000;
-            inst_unmapped_uncached <= 1'b1;
-            inst_unmapped_cached <= 1'b0;
-            inst_unmapped <= 1'b1;
+            inst_unmapped_uncached = 1'b0;
+            inst_unmapped_cached = 1'b0;
+            inst_unmapped = 1'b0;
+        end else if (inst_vaddr[31:28] < 4'hA) begin			//kseg0
+            inst_paddr = {inst_vaddr[31:28]-4'h8, inst_vaddr[27:0]};
+            inst_unmapped_uncached = 1'b0;
+            inst_unmapped_cached = 1'b1;
+            inst_unmapped = 1'b1;
+        end else if (inst_vaddr[31:28] < 4'hC) begin			//kseg1
+            inst_paddr = {inst_vaddr[31:28]-4'hA, inst_vaddr[27:0]};
+            inst_unmapped_uncached = 1'b1;
+            inst_unmapped_cached = 1'b0;
+            inst_unmapped = 1'b1;
         end else begin										//kseg2, kseg3
             inst_paddr = {inst_pfn[19 : 0], inst_vaddr[11 : 0]};
-            inst_unmapped_uncached <= 1'b0;
-            inst_unmapped_cached <= 1'b0;
-            inst_unmapped <= 1'b0;
+            inst_unmapped_uncached = 1'b0;
+            inst_unmapped_cached = 1'b0;
+            inst_unmapped = 1'b0;
         end
     
     assign inst_EntryHi_ASID = data_info.entryhi[7 : 0];
@@ -138,26 +138,26 @@ module TLB #(
         end 
 
     always_comb 
-        if (data_vaddr < 32'h8000_0000) begin					//kuseg
+        if (data_vaddr[31:28] < 4'h8) begin					//kuseg
             data_paddr = {data_pfn[19 : 0], data_vaddr[11 : 0]};
-            data_unmapped_uncached <= 1'b0;
-            data_unmapped_cached <= 1'b0;
-            data_unmapped <= 1'b0;
-        end else if (data_vaddr < 32'hA000_0000) begin			//kseg0
-            data_paddr = data_vaddr - 32'h8000_0000;
-            data_unmapped_uncached <= 1'b0;
-            data_unmapped_cached <= 1'b1;
-            data_unmapped <= 1'b1;
-        end else if (data_vaddr < 32'hC000_0000) begin			//kseg1
-            data_paddr = data_vaddr - 32'hA000_0000;
-            data_unmapped_uncached <= 1'b1;
-            data_unmapped_cached <= 1'b0;
-            data_unmapped <= 1'b1;
+            data_unmapped_uncached = 1'b0;
+            data_unmapped_cached = 1'b0;
+            data_unmapped = 1'b0;
+        end else if (data_vaddr[31:28] < 4'hA) begin			//kseg0
+            data_paddr = {data_vaddr[31:28]-4'h8, data_vaddr[27:0]};
+            data_unmapped_uncached = 1'b0;
+            data_unmapped_cached = 1'b1;
+            data_unmapped = 1'b1;
+        end else if (data_vaddr[31:28] < 4'hC) begin			//kseg1
+            data_paddr = {data_vaddr[31:28]-4'hA, data_vaddr[27:0]};
+            data_unmapped_uncached = 1'b1;
+            data_unmapped_cached = 1'b0;
+            data_unmapped = 1'b1;
         end else begin										//kseg2, kseg3
             data_paddr = {data_pfn[19 : 0], data_vaddr[11 : 0]};
-            data_unmapped_uncached <= 1'b0;
-            data_unmapped_cached <= 1'b0;
-            data_unmapped <= 1'b0;
+            data_unmapped_uncached = 1'b0;
+            data_unmapped_cached = 1'b0;
+            data_unmapped = 1'b0;
         end
     
     assign data_EntryHi_ASID = data_info.entryhi[7 : 0];

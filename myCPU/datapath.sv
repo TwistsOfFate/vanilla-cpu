@@ -114,7 +114,6 @@ logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 regfile rf(
     .clk           (clk)         ,
     .reset         (~resetn)      ,
-    // .w_stall	   (stall_alpha.w)	  ,
     .regwrite_en   (wsig_alpha.regwrite & ~stall_alpha.w)   ,
     .regwrite_addr (dp_mtow_w_alpha.reg_waddr)   ,
     .regwrite_data (w_reg_wdata_alpha) ,

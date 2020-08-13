@@ -9,18 +9,15 @@ module flop_mtow(
     );
     
     integer i;
-    dp_mtow tmp;
     
     always_ff @(posedge clk) begin
     	if (rst) begin
-    		tmp <= '0;
+    		out.is_instr <= '0;
     	end else if (stall) begin
-    		tmp <= tmp;
+    		out <= out;
     	end else begin
-    		tmp <= in;
+    		out <= in;
     	end
     end
-    
-    assign out = tmp;
-    
+        
 endmodule

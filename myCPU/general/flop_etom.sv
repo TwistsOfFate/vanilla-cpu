@@ -9,18 +9,20 @@ module flop_etom(
     );
     
     integer i;
-    dp_etom tmp;
     
     always_ff @(posedge clk) begin
     	if (rst) begin
-    		tmp <= '0;
+    		out.in_delay_slot <= '0;
+            out.addr_err_if <= '0;
+            out.intovf <= '0;
+            out.is_instr <= '0;
+            out.cp0_sel <= '0;
+            out.tlb_exc_if <= NO_EXC;
     	end else if (stall) begin
-    		tmp <= tmp;
+    		out <= out;
     	end else begin
-    		tmp <= in;
+    		out <= in;
     	end
     end
-    
-    assign out = tmp;
-    
+        
 endmodule

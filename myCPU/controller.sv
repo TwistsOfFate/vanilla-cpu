@@ -950,7 +950,7 @@ assign dstage.mips_break = (dinstr.op == 6'b000000 && dinstr.funct == 6'b001101)
 assign dstage.syscall = (dinstr.op == 6'b000000 && dinstr.funct == 6'b001100) ;
 
 assign dstage.rdata_sign = (dinstr.op == 6'b100000 || dinstr.op == 6'b100001 || dinstr.op == 6'b100011) ;
-assign dstage.memtoreg = (dinstr.op == 6'b100000 || dinstr.op == 6'b100001 || dinstr.op == 6'b100011 || dinstr.op == 6'b100100 || dinstr.op == 6'b100101) ;
+assign dstage.memtoreg = (dinstr.op == 6'b100000 || dinstr.op == 6'b100001 || dinstr.op == 6'b100011 || dinstr.op == 6'b100100 || dinstr.op == 6'b100101 || dinstr.op == 6'b100010 || dinstr.op == 6'b100110) ;
 
 assign dstage.eret = (dinstr.op == 6'b010000 && dinstr.funct == 6'b011000) ;
 
