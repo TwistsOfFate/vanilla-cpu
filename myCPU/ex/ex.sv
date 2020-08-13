@@ -161,7 +161,7 @@ module ex(
 		.d		(dtoe.lo),
 		.e		(mul_lo),
 		.f		(e_cl_out),
-		.g		(),
+		.g		(e_for_rsdata),
 		.h		(),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)

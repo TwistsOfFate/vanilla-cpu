@@ -353,7 +353,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;   
                     dstage.sft_srcb_sel_rs <= 0 ;    
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 3'b110 ;
                     dstage.regwrite <= !d_rtzero ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -362,7 +362,7 @@ begin
                 begin
                     dstage.alu_srcb_sel_rt <= 0 ;   
                     dstage.sft_srcb_sel_rs <= 0 ;    
-                    dstage.out_sel <= 3'b001 ;
+                    dstage.out_sel <= 3'b110 ;
                     dstage.regwrite <= d_rtzero ;
                     dstage.regdst <= 2'b01 ;
                     dstage.reserved_instr <= 1'b0 ;
@@ -857,7 +857,7 @@ always_comb//sft_func
 begin
     if(dinstr.op == 6'b001111)
         dstage.sft_func = 2'b00 ;
-    else if(dinstr.op == 6'b000000 && (dinstr.funct == 6'b000100 || dinstr.funct == 6'b000000 || dinstr.funct == 6'b001011 || dinstr.funct == 6'b001010))
+    else if(dinstr.op == 6'b000000 && (dinstr.funct == 6'b000100 || dinstr.funct == 6'b000000))
         dstage.sft_func = 2'b01 ;
     else if(dinstr.op == 6'b000000 && (dinstr.funct == 6'b000111 || dinstr.funct == 6'b000011))
         dstage.sft_func = 2'b10 ;
