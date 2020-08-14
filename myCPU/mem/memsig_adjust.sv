@@ -80,8 +80,6 @@ module memsig_adjust(
                 2'b10:  size_tmp = 2'b01;
                 2'b11:  size_tmp = 2'b00;
             endcase
-            default:
-                size_tmp = 2'b00;
         endcase
     
     assign out = tmp;

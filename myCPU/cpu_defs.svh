@@ -155,8 +155,7 @@ typedef struct packed {
 	logic [ 1:0] swlr;
 	logic [ 1:0] lwlr;
 	logic 		 op_wait;
-	cache_req_t  icache_req;
-	cache_req_t  dcache_req;
+	cache_req_t  cache_req;
 } ctrl_reg ;
 
 typedef struct packed {

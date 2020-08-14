@@ -20,10 +20,6 @@ module mem(
 	input  tlb_t 	read_tlb,
 	output tlb_t	write_tlb,
 	output tlb_req_t tlb_req,
-
-	output cache_req_t icache_req,
-	output cache_req_t dcache_req,
-	output [31:0]	taglo,
 	
 	//SRAM-LIKE INTERFACE
 	output         	m_data_req,
@@ -47,7 +43,6 @@ module mem(
     exc_info_t		exc_info;
     wire [31:0]		cp0_status;
     wire [31:0]		cp0_cause;
-    wire 			pending_exc;
         
 //DATA_ADDR_CHECK
 	data_addr_check my_data_addr_check(
@@ -62,16 +57,15 @@ module mem(
 		.m_req(m_req)
 	);
 
-//EXC_CHECKER
-	exc_checker exc_check(
-		// .in_req(msig.tlb_req),
+//TLB_REQUESTOR
+	tlb_requestor my_tlb_req(
+		.in_req(msig.tlb_req),
 		.addr_err(m_addr_err),		// "Address error - Data access" comes before TLB data access exceptions
 		.reserved_instr(msig.reserved_instr),
 		.intovf(etom.intovf),
 		.tlb_exc_if(etom.tlb_exc_if),
 		.cp0_ready(1'b1),
-		// .out_req(tlb_req)
-		.pending_exc(pending_exc)
+		.out_req(tlb_req)
 	);
 	
 //EXC_HANDLER
@@ -163,15 +157,6 @@ module mem(
     	.lwlr(msig.lwlr),
     	.out(mtow.rdata_out)
     );
-
-//TLB REQUESTS
-	assign tlb_req = pending_exc ? NO_REQ : msig.tlb_req;
-
-//CACHE REQUESTS
-	assign icache_req = pending_exc ? NO_CACHE : msig.icache_req;
-	assign dcache_req = pending_exc ? NO_CACHE : msig.dcache_req;
-
-	assign taglo = 32'b0;
 
 // MtoW and MtoH signals
 	assign mtow.ex_out = etom.ex_out ;

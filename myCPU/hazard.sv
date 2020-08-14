@@ -16,8 +16,7 @@ module hazard(
     output stage_val_1 flush,
 
     input busy_ok      idmem,
-    input logic        tlb_busy,
-    input logic        cache_busy
+    input logic        tlb_busy
     );
                
     
@@ -100,7 +99,7 @@ assign mfc0_stall = (e_alpha.mfc0 && (e_alpha.reg_waddr == d_alpha.rs || e_alpha
 || (m_alpha.mfc0 && (m_alpha.reg_waddr == d_alpha.rs || m_alpha.reg_waddr == d_alpha.rt)) 
 || (w_alpha.mfc0 && (w_alpha.reg_waddr == d_alpha.rs || w_alpha.reg_waddr == d_alpha.rt));
 
-assign cp0_busy_stall = !m_alpha.cp0_ready || tlb_busy || cache_busy;
+assign cp0_busy_stall = !m_alpha.cp0_ready || tlb_busy;
 
 assign divider_stall = e_alpha.div_en && !e_alpha.div_ready;
 assign multiplier_stall = e_alpha.mul_en && !e_alpha.mul_ready;

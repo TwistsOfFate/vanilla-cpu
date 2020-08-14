@@ -4,8 +4,7 @@ module iCache_Controller #(
 	parameter OFFSET_WIDTH = `ICACHE_B,
 			  OFFSET_SIZE  = 2 ** (`ICACHE_B - 2)
 )(
-	input  logic                                  clk, reset, cpu_req,
-	input  logic                                  mem_addr_ok, mem_data_ok, hit,
+	input  logic                                  clk, reset, mem_addr_ok, mem_data_ok, hit,
 	input  logic [OFFSET_WIDTH - 3 : 0]           addr_offset,
 	output logic                                  linew_en, 
 	output logic [OFFSET_WIDTH - 3 : 0]           addr_block_offset,
@@ -15,10 +14,7 @@ module iCache_Controller #(
 	output logic                                  mem_req,
 	input  logic [31:0]                           mem_rdata,
 	output logic [OFFSET_SIZE * 32 - 1 : 0]       line_data,
-	output logic                                  line_data_ok,
-	input  cache_req_t                            cache_op_req,
-	input  logic                                  wr_valid,
-	output logic                                  valid
+	output logic                                  line_data_ok
 );
 
 	logic [31 : 0] load;
@@ -44,7 +40,7 @@ module iCache_Controller #(
 			if (reset) begin
 			    state <= 1'b0; // Set Initial
 			    mem_req <= 1'b0;
-			end else if (cpu_req) begin
+			end else begin
 				case (state)
 					1'b0: if (hit) begin 
 							state <= state; // Initial -> Initial
@@ -83,21 +79,5 @@ module iCache_Controller #(
 						data_block_offset <= load[OFFSET_WIDTH - 3 : 0];
 						linew_en <= 1'b1;
 				   end
-		endcase
-	
-	always_comb
-		case (cache_op_req) 
-			IndexInvalid : begin
-				valid <= 1'b0;
-			end
-			IndexTag : begin
-				valid <= wr_valid;
-			end
-			HitInvalid : begin
-				valid <= 1'b0;
-			end
-			default : begin
-				valid <= 1'b1;
-			end
 		endcase
 endmodule

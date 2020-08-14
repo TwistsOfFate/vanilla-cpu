@@ -672,7 +672,7 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
-        6'b101111://CACHE
+        6'b101111://CACHE AS NOP
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
@@ -841,7 +841,7 @@ assign dstage.memwr =  dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinst
 
 always_comb//alu_func
 begin
-    if((dinstr.op == 6'b000000 && (dinstr.funct == 6'b100000 || dinstr.funct == 6'b100001)) || dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dstage.memreq || dinstr.op == 6'b101111)
+    if((dinstr.op == 6'b000000 && (dinstr.funct == 6'b100000 || dinstr.funct == 6'b100001)) || dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dstage.memreq)
         dstage.alu_func = 3'b000 ;
     else if((dinstr.op == 6'b000000) && (dinstr.funct == 6'b100010 || dinstr.funct == 6'b100011))
         dstage.alu_func = 3'b001 ;
@@ -880,8 +880,7 @@ assign dstage.cl_mode = dinstr.op == 6'b011100 && dinstr.funct == 6'b100001; // 
 assign dstage.intovf_en = ((dinstr.op == 6'b000000 && dinstr.funct == 6'b100000) || dinstr.op == 6'b001000 || (dinstr.op == 6'b000000 && dinstr.funct == 6'b100010)) ;
 
 assign dstage.imm_sign = (dinstr.op == 6'b001000 || dinstr.op == 6'b001001 || dinstr.op == 6'b001010 || dinstr.op == 6'b001011) || 
-(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011)
-|| dinstr.op == 6'b101111;
+(dinstr.op == 6'b100000 || dinstr.op == 6'b100100 || dinstr.op == 6'b100001 || dinstr.op == 6'b100101 || dinstr.op == 6'b100011 || dinstr.op == 6'b101000 || dinstr.op == 6'b101001 || dinstr.op == 6'b101011);
 
 assign dstage.mul_en = (dinstr.op == 6'b000000 && (dinstr.funct == 6'b011000 || dinstr.funct == 6'b011001)) 
 || (dinstr.op == 6'b011100 && (dinstr.funct == 6'b000010 || dinstr.funct == 6'b000000 || dinstr.funct == 6'b000001 || dinstr.funct == 6'b000100 || dinstr.funct == 6'b000101));
@@ -997,54 +996,5 @@ always_comb
         dstage.lwlr = 2'b00;
 
 assign dstage.op_wait = dinstr.op == 6'b010000 && dinstr.funct == 6'b100000;
-
-always_comb
-    if (dinstr.op == 6'b101111) begin
-        unique case (dinstr.branchfunct)
-            5'b00000://ICACHE INDEX INVALID
-            begin
-                dstage.icache_req = IndexInvalid;
-                dstage.dcache_req = NO_CACHE;
-            end
-            5'b01000://ICACHE INDEX STORE TAG
-            begin
-                dstage.icache_req = IndexTag;
-                dstage.dcache_req = NO_CACHE;
-            end
-            5'b10000://ICACHE HIT INVALID
-            begin
-                dstage.icache_req = HitInvalid;
-                dstage.dcache_req = NO_CACHE;
-            end
-            5'b00001://DCACHE INDEX WRITEBACK INVALID
-            begin
-                dstage.icache_req = NO_CACHE;
-                dstage.dcache_req = IndexInvalid;
-            end
-            5'b01001://DCACHE INDEX STORE TAG
-            begin
-                dstage.icache_req = NO_CACHE;
-                dstage.dcache_req = IndexTag;
-            end
-            5'b10001://DCACHE HIT INVALID
-            begin
-                dstage.icache_req = NO_CACHE;
-                dstage.dcache_req = HitInvalid;
-            end
-            5'b10101://DCACHE HIT WRITEBACK INVALID
-            begin
-                dstage.icache_req = NO_CACHE;
-                dstage.dcache_req = HitWbInvalid;
-            end
-            default:
-            begin
-                dstage.icache_req = NO_CACHE;
-                dstage.dcache_req = NO_CACHE;
-            end
-        endcase
-    end else begin
-        dstage.icache_req = NO_CACHE;
-        dstage.dcache_req = NO_CACHE;
-    end
 
 endmodule

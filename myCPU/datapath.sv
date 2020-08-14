@@ -42,11 +42,6 @@ module datapath(
     output tlb_t          m_write_tlb       ,
     output tlb_req_t      m_tlb_req         ,
     input  logic          m_tlb_busy        ,
-
-    output cache_req_t    m_icache_req      ,
-    output cache_req_t    m_dcache_req      ,
-    input  logic          m_cache_busy      ,
-    output logic [31:0]   m_taglo           ,
     
 	//debug signals
     output logic [31:0]   debug_wb_pc       ,
@@ -56,7 +51,8 @@ module datapath(
     );
 
 
-dp_ftod dp_ftod_f_alpha, dp_ftod_d_alpha ;
+dp_ftod dp_ftod_f_alpha ;
+dp_ftod dp_ftod_d_alpha ;
 dp_dtoe dp_dtoe_d_alpha, dp_dtoe_e_alpha ;
 dp_etom dp_etom_e_alpha, dp_etom_m_alpha ;
 dp_mtow dp_mtow_m_alpha, dp_mtow_w_alpha ; 
@@ -112,8 +108,7 @@ hazard hz(
     .flush          (flush_alpha),
     
     .idmem          (idmem),
-    .tlb_busy       (m_tlb_busy),
-    .cache_busy     (m_cache_busy)
+    .tlb_busy       (m_tlb_busy)
 );
 logic [31:0] d_hi,d_lo, d_rsdata, d_rtdata ;
 
@@ -291,10 +286,6 @@ mem my_mem(
     .write_tlb(m_write_tlb),
 
     .tlb_req(m_tlb_req),
-
-    .icache_req(m_icache_req),
-    .dcache_req(m_dcache_req),
-    .taglo(m_taglo),
 	
 	//SRAM INTERFACE
 	.m_data_req(m_data_req),
