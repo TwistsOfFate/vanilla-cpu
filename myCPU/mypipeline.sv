@@ -34,6 +34,13 @@ module mypipeline(
     output tlb_req_t      tlb_req           ,
     input logic           m_tlb_ok          ,
 
+    //CACHE signals
+    output cache_req_t    icache_req,
+    output cache_req_t    dcache_req,
+    output logic [31:0]   m_taglo,
+    input logic           m_icache_ok,
+    input logic           m_dcache_ok,
+
     //debug signals
     output logic [31:0]  debug_wb_pc	,
 	output logic [ 3:0]  debug_wb_rf_wen,
@@ -44,6 +51,10 @@ module mypipeline(
     output logic         icached      ,
     output logic         dcached
     );
+
+//Cache Requests
+logic icache_req_logic, dcache_req_logic, m_cache_busy, m_icache_busy, m_dcache_busy;
+cache_req_t  m_icache_req, m_dcache_req;
 
 tlb_exc_t f_tlb_exc, m_tlb_exc;
 logic f_inst_req, d_rtzero;
@@ -125,6 +136,11 @@ datapath dp(
     .m_write_tlb        (m_write_tlb)       ,
     .m_tlb_req          (m_tlb_req)         ,
     .m_tlb_busy         (m_tlb_busy)        ,
+
+    .m_icache_req       (m_icache_req)      ,
+    .m_dcache_req       (m_dcache_req)      ,
+    .m_cache_busy       (m_cache_busy)      ,
+    .m_taglo            (m_taglo)           ,
 
 	//debug
     .debug_wb_pc        (debug_wb_pc)       ,
@@ -247,6 +263,36 @@ sram_like_handshake tlb_handshake(
     .req(tlb_req_logic)
     );
 
+sram_like_handshake icache_handshake(
+    .clk(clk),
+    .rst(~resetn),
+    .force_req(1'b0),
+    .unique_id(m_instr_count),
+    .need_req(m_icache_req != NO_CACHE),
+    .busy(m_icache_busy),
+
+    .addr_ok(m_icache_ok),
+    .data_ok(m_icache_ok),
+    .req(icache_req_logic)
+    );
+
+sram_like_handshake dcache_handshake(
+    .clk(clk),
+    .rst(~resetn),
+    .force_req(1'b0),
+    .unique_id(m_instr_count),
+    .need_req(m_dcache_req != NO_CACHE),
+    .busy(m_dcache_busy),
+
+    .addr_ok(m_dcache_ok),
+    .data_ok(m_dcache_ok),
+    .req(dcache_req_logic)
+    );
+
 assign tlb_req = tlb_req_logic ? m_tlb_req : NO_REQ;
+assign icache_req = icache_req_logic ? m_icache_req : NO_CACHE;
+assign dcache_req = dcache_req_logic ? m_dcache_req : NO_CACHE;
+
+assign m_cache_busy = m_icache_busy | m_dcache_busy;
 
 endmodule
