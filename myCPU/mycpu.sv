@@ -227,6 +227,7 @@ module mycpu #(
 
     TLB TLB(
         .clk                      (clk)                     ,
+        .reset                    (~resetn)                 ,
 
         .inst_vaddr               (inst_cpu_cache_vaddr)    ,
         .inst_info                (inst_info)               ,
