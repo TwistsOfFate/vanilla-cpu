@@ -28,12 +28,12 @@ module cp0_regfile #(
 	parameter PABITS = 32,
 	parameter RANDOM_MAX = 2 ** INDEX_WIDTH - 1,
 	parameter TLB_SIZE = 2 ** INDEX_WIDTH,
-	parameter C1_IS = `ICACHE_E == 32 ? 7 : $clog2(`ICACHE_E) - 6,	// ICACHE_E should be between 32 to 4096
-	parameter C1_IL = `ICACHE_B - 1,	// ICACHE_B should be between 2 to 7
-	parameter C1_IA = `ISET_NUM - 1,	// ISET_NUM should be between 2 to 8
-	parameter C1_DS = `DCACHE_E == 32 ? 7 : $clog2(`DCACHE_E) - 6,	// DCACHE_E should be between 32 to 4096
-	parameter C1_DL = `DCACHE_B - 1,	// DCACHE_B should be between 2 to 7
-	parameter C1_DA = `DSET_NUM - 1	// DSET_NUM should be between 2 to 8
+	parameter C1_IS = `ICACHE_S == 5 ? 7 : `ICACHE_S - 6, // ICACHE_S should be between 5 and 12
+	parameter C1_IL = `ICACHE_B - 1, // ICACHE_B should be between 2 and 7
+	parameter C1_IA = `ICACHE_E - 1, // should be between 2 and 8
+	parameter C1_DS = `DCACHE_S == 5 ? 7 : `DCACHE_S - 6, // DCACHE_S should be between 5 and 12
+	parameter C1_DL = `DCACHE_B - 1, // DCACHE_B should be between 2 and 7
+	parameter C1_DA = `DCACHE_E - 1 // should be between 2 and 8
 )(
 	input 				clk,
 	input 				rst,
