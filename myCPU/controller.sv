@@ -1041,6 +1041,7 @@ always_comb
                 dstage.icache_req = NO_CACHE;
                 dstage.dcache_req = NO_CACHE;
             end
+        endcase
     end else begin
         dstage.icache_req = NO_CACHE;
         dstage.dcache_req = NO_CACHE;
