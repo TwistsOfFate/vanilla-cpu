@@ -71,7 +71,8 @@ module SramlikeToAXI
 
     always_ff @(posedge clk)
         if (rready) rready <= 1'b0;
-        else rready <= rvalid;
+        else 
+        rready <= rvalid;
 
     assign awid = 4'b0001;
     assign awaddr = addr;

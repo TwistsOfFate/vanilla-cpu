@@ -10,7 +10,8 @@ module iCache #(
               SET_NUM      = `ISET_NUM,
               OFFSET_WIDTH = `ICACHE_B,
               LINE_NUM     = `ICACHE_E,
-              OFFSET_SIZE  = 2 ** (`ICACHE_B - 2)
+              OFFSET_SIZE  = 2 ** (`ICACHE_B - 2),
+              LINE_WIDTH   = `ICACHE_LINE_WIDTH
 )(	
     /* CPU */
     input  logic           clk, reset, 
@@ -21,6 +22,9 @@ module iCache #(
     output logic           cpu_addr_ok,
     output logic           cpu_data_ok, // whether the data is transported
     output logic [31 : 0]  inst_rdata, // the data need to be read 
+
+    output logic           icache_busy,
+    input  logic [31 : 0]  taglo,
     
     /* Memory */	
     output logic           mem_req,
@@ -33,13 +37,15 @@ module iCache #(
     logic [TAG_WIDTH - 1 : 0] inst_addr_tag;
     logic [INDEX_WIDTH - 1 : 0] inst_addr_index;
     logic [OFFSET_WIDTH - 3 : 0] inst_addr_offset;
+    logic [LINE_WIDTH - 1 : 0] inst_addr_way;
     logic [31 : 0] replaceID;
     logic [OFFSET_WIDTH - 3 : 0] addr_block_offset, data_block_offset;
     logic state, hit, valid;
     
-    assign inst_addr_tag = inst_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
+    assign inst_addr_tag = cache_op_req == IndexTag ? taglo[31 : INDEX_WIDTH + OFFSET_WIDTH] : inst_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
     assign inst_addr_index = inst_addr[INDEX_WIDTH + OFFSET_WIDTH - 1 : OFFSET_WIDTH];
     assign inst_addr_offset = inst_addr[OFFSET_WIDTH - 1 : 2];
+    assign inst_addr_width = inst_addr[INDEX_WIDTH + OFFSET_WIDTH + LINE_WIDTH - 1 : INDEX_WIDTH + OFFSET_WIDTH];
 
     logic [TAG_WIDTH - 1 : 0] icache_line_tag[LINE_NUM - 1 : 0];
     logic [OFFSET_SIZE * 32 - 1 : 0] icache_line_data[LINE_NUM - 1 : 0];
@@ -61,7 +67,7 @@ module iCache #(
                 icache_tag_ram  (clk, reset, inst_addr_index, 
                                  valid, inst_addr_tag, 
                                  icache_line_valid[i], icache_line_tag[i], 
-                                 cache_op_req == IndexInvalid || cache_op_req == IndexTag || (cache_op_req == HitInvalid && way_selector[i]) || ((i == replaceID) && line_data_ok));
+                                 (state == 1'b0 && ((cache_op_req == IndexInvalid && addr_way == i) || (cache_op_req == IndexTag && addr_way == i) || (cache_op_req == HitInvalid && way_selector[i]))) || ((i == replaceID) && line_data_ok));
 
             iCache_Ram  #(OFFSET_SIZE * 32, OFFSET_SIZE) 
                 icache_data_ram (clk, inst_addr_index, line_data, icache_line_data[i], (i == replaceID) && line_data_ok);
@@ -92,12 +98,13 @@ module iCache #(
     
     iCache_Controller icache_ctrl(clk, reset, cpu_req, mem_addr_ok, mem_data_ok, hit, inst_addr_offset, linew_en, 
                                   addr_block_offset, data_block_offset, state, mem_req,
-                                  mem_read_data, line_data, line_data_ok, cache_op_req, inst_addr[7], valid);
+                                  mem_read_data, line_data, line_data_ok, cache_op_req, taglo[7], valid);
  
     assign cpu_addr_ok = cpu_req & hit; 
     assign cpu_data_ok = hit & cpu_req;
 
     assign cache_op_ok = cache_op_req != NO_CACHE;
+    assign icache_busy = state;
 
     assign mem_read_addr = {inst_addr_tag, inst_addr_index, addr_block_offset, 2'b00};
 

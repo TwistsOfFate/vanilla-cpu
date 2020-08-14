@@ -15,6 +15,7 @@
 
 // number of lines per set
 `define ICACHE_E 4
+`define ICACHE_LINE_WIDTH 2
 
 `define ISET_NUM 2**`ICACHE_S
 `define IBLOCK_SIZE 2**`ICACHE_B

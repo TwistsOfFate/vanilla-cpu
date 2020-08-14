@@ -136,6 +136,7 @@ module mycpu #(
     logic inst_cache_addr_ok, inst_cache_data_ok, inst_cache_req;
     logic [31:0] inst_cache_addr;
     logic [31:0] inst_cache_rdata;
+    logic [31:0] cp0_tagLo;
 
     logic inst_cpu_addr_ok, inst_cpu_data_ok, inst_cpu_req;
     // logic [31:0] inst_cpu_addr;
@@ -175,10 +176,17 @@ module mycpu #(
     tlb_req_t tlb_req;
     logic tlb_ok;
 
-    cache_req_t icache_op;
+    cache_req_t icache_op_req, dcache_op_req, _icache_op_req;
+    logic [31:0] inst_cpu_cache_vaddr, data_cpu_cache_vaddr;
+    logic icache_ok, dcache_ok;
+    logic [31:0] inst_cache_op_addr, data_cache_op_addr;
+    logic icache_busy, _inst_cpu_cache_req;
+    logic icahce_op_ok, dcache_op_ok;
 
     assign icache_burst_len = ICACHE_BURST_LEN - 1;
     assign dcache_burst_len = DCACHE_BURST_LEN - 1;
+    assign icache_op_req = NO_CACHE;
+    assign dcache_op_req = NO_CACHE;
 
     mypipeline mypipeline(
         .clk                (clk)               ,
@@ -220,8 +228,9 @@ module mycpu #(
     TLB TLB(
         .clk                      (clk)                     ,
 
-        .inst_vaddr               (inst_cpu_vaddr)          ,
+        .inst_vaddr               (inst_cpu_cache_vaddr)    ,
         .inst_info                (inst_info)               ,
+        .icache_op_req            (icache_op_req)           ,
         .inst_req                 (inst_cpu_req)            ,
         .inst_res                 (inst_res)                ,
         .inst_err                 (inst_err)                ,
@@ -233,8 +242,9 @@ module mycpu #(
         .inst_TLB_uncached        (inst_TLB_uncached)       ,
         .inst_TLB_done            (inst_TLB_done)           ,
 
-        .data_vaddr               (data_cpu_vaddr)          ,
+        .data_vaddr               (data_cpu_cache_vaddr)    ,
         .data_info                (data_info)               ,
+        .dcache_op_req            (dcache_op_req)           ,
         .data_req                 (data_cpu_req)            ,
         .data_wr                  (data_cpu_wr)             ,
         .data_res                 (data_res)                ,
@@ -262,22 +272,38 @@ module mycpu #(
     // assign inst_cpu_cache_req = inst_cpu_req & icached;
     // assign data_cpu_cache_req = data_cpu_req & dcached;
 
+    assign inst_cpu_cache_vaddr = _icache_op_req != NO_CACHE ? inst_cache_op_addr : inst_cpu_vaddr;
+    assign data_cpu_cache_vaddr = dcache_op_req != NO_CACHE ? data_cache_op_addr : data_cpu_vaddr;
+
+    always_comb 
+        if (icache_op_req != NO_CACHE && !icache_busy) begin
+            _inst_cpu_cache_req <= 1'b0;
+            _icache_op_req <= icache_op_req;
+        end else begin
+            _inst_cpu_cache_req <= inst_cpu_cache_req;
+            _icache_op_req <= NO_CACHE;
+        end
+
     iCache icache(
         .clk                (clk)               ,
         .reset              (~resetn)           ,
-        .cpu_req            (inst_cpu_cache_req)      ,
+        .cpu_req            (_inst_cpu_cache_req)      ,
         .inst_addr          (inst_cpu_paddr)     ,
         .inst_rdata         (inst_cache_rdata)    ,
         .cpu_addr_ok        (inst_cache_addr_ok)  ,
         .cpu_data_ok        (inst_cache_data_ok)  ,
+        .cache_op_req       (_icache_op_req)      ,
+        .cache_op_ok        (icache_op_ok)        ,
+        .icache_busy        (icache_busy)         ,
         .mem_req            (inst_cache_req)          ,
         .mem_read_addr      (inst_cache_addr)         ,
         .mem_read_data      (inst_mem_rdata)        ,
         .mem_addr_ok        (inst_addr_ok)      ,
-        .mem_data_ok        (inst_data_ok)
+        .mem_data_ok        (inst_data_ok)      ,
+        .taglo              (cp0_tagLo)
     ); 
 
-    mux2 #(1) i_mem_req_mux2(inst_cpu_mem_req, inst_cache_req, icached, inst_req);
+    mux2 #(1) i_mem_req_mux2(inst_cpu_mem_req, inst_cache_req && icache_op_req == NO_CACHE, icached, inst_req);
     mux2 #(32) i_mem_addr_mux2(inst_cpu_paddr, inst_cache_addr, icached, inst_addr);
     mux2 #(1) i_cpu_data_ok_mux2(inst_err == NO_EXC ? inst_data_ok : 1'b1, inst_err == NO_EXC ? inst_cache_data_ok : 1'b1, icached, inst_cpu_data_ok);
     mux2 #(1) i_cpu_addr_ok_mux2(inst_err == NO_EXC ? inst_addr_ok : 1'b1, inst_err == NO_EXC ? inst_cache_addr_ok : 1'b1, icached, inst_cpu_addr_ok);
@@ -295,6 +321,8 @@ module mycpu #(
         .data_rdata         (data_cache_rdata)    ,
         .cpu_addr_ok        (data_cache_addr_ok)  ,
         .cpu_data_ok        (data_cache_data_ok)  ,
+        .cache_op_req       (dcache_op_req)       ,
+        .cache_op_ok        (dcache_op_ok)        ,
         .mem_req            (data_cache_req)          ,
         .mem_wen            (data_cache_wr)           ,
         .mem_addr           (data_cache_addr)         ,
@@ -304,11 +332,12 @@ module mycpu #(
         .mem_data_ok        (data_data_ok)      ,
         .wlast              (dcache_wlast)      ,
         .awvalid            (data_cache_awvalid),
-        .wb_ok              (data_wb_ok)
+        .wb_ok              (data_wb_ok)        ,
+        .taglo              (cp0_tagLo)
     );
 
     mux2 #(2) d_mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);
-    mux2 #(1) d_mem_req_mux2(data_cpu_mem_req, data_cache_req, dcached, data_req);
+    mux2 #(1) d_mem_req_mux2(data_cpu_mem_req, data_cache_req && dcache_op_req == NO_CACHE, dcached, data_req);
     mux2 #(1) d_mem_wen_mux2(data_cpu_wr, data_cache_wr, dcached, data_wr);
     mux2 #(32) d_mem_addr_mux2(data_cpu_paddr, data_cache_addr, dcached, data_addr);
     mux2 #(32) d_mem_wdata_mux2(data_cpu_wdata, data_cache_wdata, dcached, data_mem_wdata);

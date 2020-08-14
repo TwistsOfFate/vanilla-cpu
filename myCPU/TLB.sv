@@ -7,6 +7,7 @@ module TLB #(
 
     input  logic [31:0]	inst_vaddr,
     input  tlb_t        inst_info,
+    input  cache_req_t  icache_op_req,
     input  logic        inst_req,
     output tlb_t        inst_res,
     output tlb_exc_t    inst_err,
@@ -15,6 +16,7 @@ module TLB #(
 
     input  logic [31:0]	data_vaddr,
     input  tlb_t        data_info,
+    input  cache_req_t  dcache_op_req,
     input  logic        data_req,
     input  logic        data_wr,
     output tlb_t        data_res,
@@ -73,7 +75,12 @@ module TLB #(
     logic inst_found, data_found;
 
     always_comb 
-        if (inst_vaddr < 32'h8000_0000) begin					//kuseg
+        if (icache_op_req == IndexInvalid || icache_op_req == IndexTag) begin
+            inst_paddr = inst_vaddr;
+            inst_unmapped_uncached <= 1'b0;
+            inst_unmapped_cached <= 1'b1;
+            inst_unmapped <= 1'b1;
+        end else if (inst_vaddr < 32'h8000_0000) begin					//kuseg
             inst_paddr = {inst_pfn[19 : 0], inst_vaddr[11 : 0]};
             inst_unmapped_uncached <= 1'b0;
             inst_unmapped_cached <= 1'b0;
@@ -138,7 +145,12 @@ module TLB #(
         end 
 
     always_comb 
-        if (data_vaddr < 32'h8000_0000) begin					//kuseg
+        if (dcache_op_req == IndexInvalid || dcache_op_req == IndexTag) begin
+            data_paddr = data_vaddr;
+            data_unmapped_uncached <= 1'b0;
+            data_unmapped_cached <= 1'b1;
+            data_unmapped <= 1'b1;
+        end else if (data_vaddr < 32'h8000_0000) begin					//kuseg
             data_paddr = {data_pfn[19 : 0], data_vaddr[11 : 0]};
             data_unmapped_uncached <= 1'b0;
             data_unmapped_cached <= 1'b0;

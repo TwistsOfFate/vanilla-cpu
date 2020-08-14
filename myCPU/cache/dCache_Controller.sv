@@ -28,7 +28,7 @@ module dCache_Controller #(
 );
 
     logic [31 : 0] load;
-    logic [31 : 0] wb_line_done;
+    // logic [31 : 0] wb_line_done;
 
     logic zero;	
         
@@ -50,6 +50,7 @@ module dCache_Controller #(
         begin
             if (reset) begin
                 state <= 2'b00;
+                awvalid <= 1'b0;
                 mem_req <= 1'b0; // Set Initial
             end else if (cpu_req) begin
                 case (state)
@@ -78,28 +79,28 @@ module dCache_Controller #(
                                 end 
                                 else begin 
                                     wlast <= 1'b0;
-                                    if (cache_op_req != NO_CACHE && wb_line_done < LINE_NUM - 1)
-                                        state <= 2'b11;
-                                    else begin
+                                    // if (cache_op_req != NO_CACHE && wb_line_done < LINE_NUM - 1)
+                                    //     state <= 2'b11;
+                                    // else begin
                                         state <= 2'b01; // WriteBack -> ReadMem
                                         mem_req <= 1'b1;
-                                    end
+                                    // end
                                 end
                             end
-                    2'b11 : begin
-                        if (!wb_ok) state <= state;
-                        else begin 
-                            state <= 2'b10;
-                            wlast <= 1'b0;
-                            mem_req <= 1'b1;
-                            awvalid <= 1'b1;
-                        end
-                    end
+                    // 2'b11 : begin
+                    //     if (!wb_ok) state <= state;
+                    //     else begin 
+                    //         state <= 2'b10;
+                    //         wlast <= 1'b0;
+                    //         mem_req <= 1'b1;
+                    //         awvalid <= 1'b1;
+                    //     end
+                    // end
                     default : begin
                         if (cache_op_req == IndexInvalid || cache_op_req == HitWbInvalid) begin 
                             if (hit) begin
                                 state <= 2'b10; // Initial -> WriteBack
-                                wb_line_done <= '0;
+                                // wb_line_done <= '0;
                                 wlast <= 1'b0;
                                 mem_req <= 1'b1;
                                 awvalid <= 1'b1;
