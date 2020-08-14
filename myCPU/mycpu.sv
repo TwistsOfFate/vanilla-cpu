@@ -303,7 +303,8 @@ module mycpu #(
         .mem_addr_ok        (data_addr_ok)      ,
         .mem_data_ok        (data_data_ok)      ,
         .wlast              (dcache_wlast)      ,
-        .awvalid            (data_cache_awvalid)
+        .awvalid            (data_cache_awvalid),
+        .wb_ok              (data_wb_ok)
     );
 
     mux2 #(2) d_mem_size_mux2(data_cpu_size, 2'b10, dcached, data_size);

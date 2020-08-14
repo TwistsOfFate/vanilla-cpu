@@ -61,7 +61,7 @@ module iCache #(
                 icache_tag_ram  (clk, reset, inst_addr_index, 
                                  valid, inst_addr_tag, 
                                  icache_line_valid[i], icache_line_tag[i], 
-                                 (cache_op_req == HitInvalid && way_selector[i]) || ((i == replaceID) && line_data_ok));
+                                 cache_op_req == IndexInvalid || cache_op_req == IndexTag || (cache_op_req == HitInvalid && way_selector[i]) || ((i == replaceID) && line_data_ok));
 
             iCache_Ram  #(OFFSET_SIZE * 32, OFFSET_SIZE) 
                 icache_data_ram (clk, inst_addr_index, line_data, icache_line_data[i], (i == replaceID) && line_data_ok);
