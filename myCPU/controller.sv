@@ -672,7 +672,7 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
-        6'b101111://CACHE AS NOP
+        6'b101111://CACHE
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
@@ -680,48 +680,6 @@ begin
             dstage.regwrite <= 1'b0 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
-            unique case (dinstr.branchfunct)
-                5'b00000://ICACHE INDEX INVALID
-                begin
-                    dstage.icache_req = IndexInvalid;
-                    dstage.dcache_req = NO_CACHE;
-                end
-                5'b01000://ICACHE INDEX STORE TAG
-                begin
-                    dstage.icache_req = IndexTag;
-                    dstage.dcache_req = NO_CACHE;
-                end
-                5'b10000://ICACHE HIT INVALID
-                begin
-                    dstage.icache_req = HitInvalid;
-                    dstage.dcache_req = NO_CACHE;
-                end
-                5'b00001://DCACHE INDEX WRITEBACK INVALID
-                begin
-                    dstage.icache_req = NO_CACHE;
-                    dstage.dcache_req = IndexInvalid;
-                end
-                5'b01001://DCACHE INDEX STORE TAG
-                begin
-                    dstage.icache_req = NO_CACHE;
-                    dstage.dcache_req = IndexTag;
-                end
-                5'b10001://DCACHE HIT INVALID
-                begin
-                    dstage.icache_req = NO_CACHE;
-                    dstage.dcache_req = HitInvalid;
-                end
-                5'b10101://DCACHE HIT WRITEBACK INVALID
-                begin
-                    dstage.icache_req = NO_CACHE;
-                    dstage.dcache_req = HitWbInvalid;
-                end
-                default:
-                begin
-                    dstage.icache_req = NO_CACHE;
-                    dstage.dcache_req = NO_CACHE;
-                end
-            endcase
         end
         6'b010000:
         begin
@@ -1039,5 +997,53 @@ always_comb
         dstage.lwlr = 2'b00;
 
 assign dstage.op_wait = dinstr.op == 6'b010000 && dinstr.funct == 6'b100000;
+
+always_comb
+    if (dinstr.op == 6'b101111) begin
+        unique case (dinstr.branchfunct)
+            5'b00000://ICACHE INDEX INVALID
+            begin
+                dstage.icache_req = IndexInvalid;
+                dstage.dcache_req = NO_CACHE;
+            end
+            5'b01000://ICACHE INDEX STORE TAG
+            begin
+                dstage.icache_req = IndexTag;
+                dstage.dcache_req = NO_CACHE;
+            end
+            5'b10000://ICACHE HIT INVALID
+            begin
+                dstage.icache_req = HitInvalid;
+                dstage.dcache_req = NO_CACHE;
+            end
+            5'b00001://DCACHE INDEX WRITEBACK INVALID
+            begin
+                dstage.icache_req = NO_CACHE;
+                dstage.dcache_req = IndexInvalid;
+            end
+            5'b01001://DCACHE INDEX STORE TAG
+            begin
+                dstage.icache_req = NO_CACHE;
+                dstage.dcache_req = IndexTag;
+            end
+            5'b10001://DCACHE HIT INVALID
+            begin
+                dstage.icache_req = NO_CACHE;
+                dstage.dcache_req = HitInvalid;
+            end
+            5'b10101://DCACHE HIT WRITEBACK INVALID
+            begin
+                dstage.icache_req = NO_CACHE;
+                dstage.dcache_req = HitWbInvalid;
+            end
+            default:
+            begin
+                dstage.icache_req = NO_CACHE;
+                dstage.dcache_req = NO_CACHE;
+            end
+    end else begin
+        dstage.icache_req = NO_CACHE;
+        dstage.dcache_req = NO_CACHE;
+    end
 
 endmodule

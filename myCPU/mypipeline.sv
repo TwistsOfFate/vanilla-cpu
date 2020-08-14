@@ -45,11 +45,7 @@ module mypipeline(
     output logic [31:0]  debug_wb_pc	,
 	output logic [ 3:0]  debug_wb_rf_wen,
 	output logic [ 4:0]  debug_wb_rf_wnum,
-    output logic [31:0]  debug_wb_rf_wdata,
-
-    //cache signals
-    output logic         icached      ,
-    output logic         dcached
+    output logic [31:0]  debug_wb_rf_wdata
     );
 
 //Cache Requests
@@ -204,7 +200,7 @@ tlb_latch m_tlb_latch(
     .rst(~resetn),
     .stall(stall_alpha.m),
     .flush(flush_alpha.m),
-    .data_ok(tlb_ok),
+    .data_ok(m_tlb_ok),
     .in(m_read_tlb),
     .out(read_tlb)
 );

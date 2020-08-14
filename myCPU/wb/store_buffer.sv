@@ -26,8 +26,6 @@ module store_buffer #(
 	output logic 			cpu_addr_ok,
 	output logic			cpu_data_ok,
 
-	input					cpu_dcached,
-
 //Memory Signals
 	output logic 			mem_req,
 	output logic			mem_wr,
@@ -37,9 +35,7 @@ module store_buffer #(
 
 	input  [31:0]			mem_rdata,
 	input 					mem_addr_ok,
-	input					mem_data_ok,
-
-	output logic			mem_dcached
+	input					mem_data_ok
 	);
 
 logic [31:0] ticks;
@@ -56,8 +52,8 @@ assign queue_empty = (tail_ptr == head_ptr);
 
 // A summary of request types, ordered by priority
 assign need_clear_queue = cpu_req & ~cpu_wr & ~queue_empty | queue_full;
-assign need_thru = cpu_req & (~cpu_wr | ~cpu_dcached);
-assign need_queue = cpu_req & (cpu_wr & cpu_dcached);
+assign need_thru = cpu_req & ~cpu_wr;
+assign need_queue = cpu_req & cpu_wr;
 
 // FSM: Choose data from either CPU(uncached) or queue
 always_ff @(posedge clk)
@@ -85,14 +81,12 @@ always_comb
 		mem_size = queue[head_ptr].size;
 		mem_addr = queue[head_ptr].addr;
 		mem_wdata = queue[head_ptr].wdata;
-		mem_dcached = 1'b0;
 	end else/* if (state == `STATE_THRU || state == `STATE_IDLE && need_thru)*/ begin
 		mem_req = cpu_req;
 		mem_wr = cpu_wr;
 		mem_size = cpu_size;
 		mem_addr = cpu_addr;
 		mem_wdata = cpu_wdata;
-		mem_dcached = cpu_dcached;
 	end
 
 // Send signals to CPU according to FSM
