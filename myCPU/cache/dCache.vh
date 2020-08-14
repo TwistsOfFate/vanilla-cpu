@@ -15,6 +15,7 @@
 
 // number of lines per set
 `define DCACHE_E 4
+`define DCACHE_LINE_WIDTH 2
 
 `define DSET_NUM 2**`DCACHE_S
 `define DBLOCK_SIZE 2**`DCACHE_B

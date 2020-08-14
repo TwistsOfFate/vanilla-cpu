@@ -1,4 +1,5 @@
 `include "dCache.vh"
+`include "cpu_defs.svh"
 
 typedef logic [31:0] d_int;
 /* SRAM */
@@ -8,7 +9,8 @@ module dCache #(
               SET_NUM      = `DSET_NUM,
               OFFSET_WIDTH = `DCACHE_B,
               OFFSET_SIZE  = 2 ** (`DCACHE_B - 2),
-              LINE_NUM     = `DCACHE_E
+              LINE_NUM     = `DCACHE_E,
+              LINE_WIDTH   = `DCACHE_LINE_WIDTH
 )(
     /* CPU */
     input  logic           clk, reset, 
@@ -17,6 +19,8 @@ module dCache #(
     input  logic [1 : 0]   size, // the byte size of the request   0:1byte 1:2bytes 2:4bytes
     input  logic [31 : 0]  data_addr, // the request address
     input  logic [31 : 0]  wdata, // the data need to be written
+    input  cache_req_t     cache_op_req,
+    output logic           cache_op_ok,
     output logic           cpu_addr_ok,
     output logic           cpu_data_ok, // whether the data is transported
     output logic [31 : 0]  data_rdata, // the data need to be read 
@@ -30,12 +34,15 @@ module dCache #(
     input  logic           mem_addr_ok,
     input  logic           mem_data_ok,
     output logic           wlast,
-    output logic           awvalid
+    output logic           awvalid,
+    input  logic           wb_ok,
+    input  logic [31 : 0]  taglo
 );
     
     logic [TAG_WIDTH - 1 : 0] data_addr_tag;
     logic [INDEX_WIDTH - 1 : 0] data_addr_index;
     logic [OFFSET_WIDTH - 3 : 0] data_addr_offset;
+    logic [LINE_WIDTH - 1 : 0] data_addr_way;
     logic [OFFSET_WIDTH - 3 : 0] addr_block_offset;
     logic [1 : 0] data_addr_bit, data_addr_bit_0;
     logic linew_en, new_valid, strategy_en;
@@ -47,7 +54,8 @@ module dCache #(
     logic hit;
     logic set_dcache_valid, set_dcache_dirty;
     
-    assign data_addr_tag = data_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
+    assign data_addr_tag = cache_op_req == IndexTag ? taglo[31 : INDEX_WIDTH + OFFSET_WIDTH] : data_addr[31 : INDEX_WIDTH + OFFSET_WIDTH];
+    assign data_addr_way = data_addr[INDEX_WIDTH + OFFSET_WIDTH + LINE_WIDTH - 1 : INDEX_WIDTH + OFFSET_WIDTH];
     assign data_addr_index = data_addr[INDEX_WIDTH + OFFSET_WIDTH - 1 : OFFSET_WIDTH];
     assign data_addr_offset = data_addr[OFFSET_WIDTH - 1 : 2];
     assign data_addr_bit = data_addr[1 : 0];
@@ -79,8 +87,7 @@ module dCache #(
     genvar i;
     generate
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
-        
-        assign dcache_line_wen[i] = linew_en && (((i[7:0] == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
+        assign dcache_line_wen[i] = (cache_op_req == IndexInvalid && data_addr_way == i) || (cache_op_req == IndexTag && data_addr_way == i) || (cache_op_req != NO_CACHE && way_selector[i]) || (linew_en && ((i == replaceID && state == 2'b01) || (way_selector[i] && state == 2'b00)) && cpu_req);
     
         icache_Info_Ram #(TAG_WIDTH + 1, INDEX_WIDTH)
         dcache_info_ram(clk, reset,
@@ -120,10 +127,13 @@ module dCache #(
         
     dCache_Replacement dcache_replacement(clk, reset, cpu_req, hit, replaceID);
         
-    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, dcache_line_valid[replaceID] & dcache_line_dirty[replaceID], 
+    dCache_Controller dcache_ctrl(clk, reset, cpu_req, wr, hit, 
+                                  taglo[7], taglo[6], dcache_line_valid[replaceID] & dcache_line_dirty[replaceID], 
                                   data_addr_bit, data_addr_offset, addr_block_offset, 
                                   linew_en, set_dcache_valid, set_dcache_dirty, mem_wen, state,
-                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, wlast, awvalid);
+                                  mem_req, mem_data_ok, mem_addr_ok, mem_rdata, wdata, line_data, line_data_ok, size, wr_size, 
+                                  wlast, awvalid, wb_ok,
+                                  cache_op_req);
     
     assign cpu_addr_ok = cpu_req & hit;
     assign cpu_data_ok = hit & cpu_req;
