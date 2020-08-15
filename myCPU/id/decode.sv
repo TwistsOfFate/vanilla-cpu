@@ -127,5 +127,8 @@ assign dtoh.rt = dtoe.rt ;
 assign dtoh.mfc0 = dsig.mfc0;
 assign dtoh.jump = dsig.jump;
 assign dtoh.tlb_req = dsig.tlb_req;
+assign dtoh.pcsrc = pcsrc;
+assign dtoh.likely = dsig.likely;
+
 
 endmodule

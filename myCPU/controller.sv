@@ -478,6 +478,24 @@ begin
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
         end
+        6'b010100://BEQL
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b0 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
+        6'b010101://BNEL
+        begin
+            dstage.alu_srcb_sel_rt <= 0 ;
+            dstage.sft_srcb_sel_rs <= 0 ;
+            dstage.out_sel <= 3'b000 ;
+            dstage.regwrite <= 1'b0 ;
+            dstage.regdst <= 2'b00 ;
+            dstage.reserved_instr <= 1'b0 ;
+        end
         6'b000001:
         begin 
             unique case(dinstr.branchfunct)
@@ -784,22 +802,22 @@ assign dstage.link = ((dinstr.op == 6'b000001) && (dinstr.branchfunct == 5'b1000
         ||((dinstr.op == 6'b000001) && (dinstr.branchfunct == 5'b10000))   //BLTZAL
         ||(dinstr.op == 6'b000011) || ((dinstr.op == 6'b000000) && (dinstr.funct == 6'b001001 )) ;//JAL,JALR
 
-assign dstage.isbranch = ((dinstr.op == 6'b000100) || (dinstr.op == 6'b000101) || (dinstr.op == 6'b000001)
-        || (dinstr.op == 6'b000111) || (dinstr.op == 6'b000110)) ;
+assign dstage.isbranch = (dinstr.op == 6'b000100) || (dinstr.op == 6'b000101) || (dinstr.op == 6'b000001)
+        || (dinstr.op == 6'b000111) || (dinstr.op == 6'b000110) || dinstr.op == 6'b010100 || dinstr.op == 6'b010101 ;
 
 assign dstage.isjump =   ((dinstr.op == 6'b000000) && (dinstr.funct == 6'b001000))
         || ((dinstr.op == 6'b000000) && (dinstr.funct == 6'b001001))
         || (dinstr.op == 6'b000010) || (dinstr.op == 6'b000011) ;
 
-
+assign dstage.likely = dinstr.op == 6'b010100 || dinstr.op == 6'b010101;
 
 
 
 always_comb//dstage.branch
 begin
-    if(dinstr.op == 6'b000100)
+    if(dinstr.op == 6'b000100 || dinstr.op == 6'b010100)
         dstage.branch = 3'b000 ;
-    else if(dinstr.op == 6'b000101)
+    else if(dinstr.op == 6'b000101 || dinstr.op == 6'b010101)
         dstage.branch = 3'b001 ;
     else if(dinstr.op == 6'b000001 && dinstr.branchfunct == 5'b00001)
         dstage.branch = 3'b010 ;

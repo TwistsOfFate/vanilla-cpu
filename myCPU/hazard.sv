@@ -25,6 +25,7 @@ logic mfc0_stall, cp0_busy_stall;
 logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
 logic tlbw_stall, wait_stall;
+logic d_unlikely, e_unlikely;
 
 logic [9:0] stall_flush;
 
@@ -112,6 +113,9 @@ assign tlbw_stall = d_alpha.tlb_req == TLBWI || d_alpha.tlb_req == TLBWR || e_al
 
 assign wait_stall = m_alpha.op_wait;
 
+assign d_unlikely = d_alpha.likely && !d_alpha.pcsrc;
+assign e_unlikely = e_alpha.likely && bfrome;
+
 
 always_comb begin
     if (dmem_stall || cp0_busy_stall || divider_stall || multiplier_stall)
@@ -120,13 +124,15 @@ always_comb begin
         stall_flush = 10'b11111_00000;
     else if (m_alpha.is_valid_exc || m_alpha.eret)
         stall_flush = 10'b00000_01111;
-    else if (imem_stall && bfrome)
+    else if (imem_stall && (bfrome || d_unlikely))
         stall_flush = 10'b11111_00000;
     else if (wait_stall)
         stall_flush = 10'b11110_00001;
     else if (imem_stall)
         stall_flush = 10'b11000_00100;
-    else if (bfrome)
+    else if (bfrome && e_unlikely)
+        stall_flush = 10'b00000_01100;
+    else if (bfrome && !e_unlikely || d_unlikely)
         stall_flush = 10'b00000_01000;
     else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall || linkr_stall)
         stall_flush = 10'b11000_00100;

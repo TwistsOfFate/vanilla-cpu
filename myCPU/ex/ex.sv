@@ -222,5 +222,6 @@ module ex(
 	assign etoh.rd		  = dtoe.rd		 ;
 	assign etoh.link 	  = esig.link    ;
 	assign etoh.tlb_req   = esig.tlb_req ;
+	assign etoh.likely 	  = esig.likely  ;
 	
 endmodule
