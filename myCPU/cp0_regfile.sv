@@ -156,7 +156,7 @@ module cp0_regfile #(
     		regs <= '0;
     		regs[`CP0_RANDOM] <= RANDOM_MAX;
     		regs[`CP0_STATUS] <= {9'b0, 1'b1, 22'b0};
-    		regs[`CP0_PRID] <= {8'b0, 8'b1, 8'h80, 8'b0};
+    		regs[`CP0_PRID] <= {8'b0, 8'b0, 8'h42, 8'h20};
     		regs[`CP0_CONFIG] <= {1'b1, 21'b0, 3'b1, 4'b0, 3'd3};
     		regs[`CP0_CONFIG1] <= {1'b0, tlb_size_m1[5:0], C1_IS[2:0], C1_IL[2:0], C1_IA[2:0], C1_DS[2:0], C1_DL[2:0], C1_DA[2:0], 7'b0};
     	end
