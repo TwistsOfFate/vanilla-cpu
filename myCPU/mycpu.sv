@@ -248,8 +248,8 @@ module mycpu #(
         .tlb_req                  (tlb_req)
     );
 
-    assign icached = inst_unmapped_cached; //~inst_unmapped_uncached;//inst_unmapped_cached || inst_TLB_cached;
-    assign dcached = data_unmapped_cached; //~data_unmapped_uncached;//data_unmapped_cached || data_TLB_cached;
+    assign icached = inst_unmapped_cached || inst_TLB_cached;
+    assign dcached = data_unmapped_cached || data_TLB_cached;
 
     assign inst_cpu_cache_req = inst_cpu_req & (inst_unmapped_cached || (inst_TLB_done && ~inst_unmapped_cached && inst_err == NO_EXC && inst_TLB_cached));
     assign data_cpu_cache_req = data_cpu_req & (data_unmapped_cached || (data_TLB_done && ~data_unmapped_cached && data_err == NO_EXC && data_TLB_cached));
