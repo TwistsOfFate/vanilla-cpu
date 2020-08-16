@@ -90,8 +90,8 @@ module mem(
 		.m_mtc0(msig.cp0_wen),
 		.m_wait(msig.op_wait),
 		.m_tlb_req(tlb_req),
-		.tlb_exc_if(etom.tlb_exc_if),
-		.tlb_exc_mem(tlb_exc_mem),
+		.tlb_exc_if(NO_EXC/*etom.tlb_exc_if*/),
+		.tlb_exc_mem(NO_EXC/*tlb_exc_mem*/),
 		
 		//OUTPUT
 		.is_valid_exc(mtoh.is_valid_exc),
