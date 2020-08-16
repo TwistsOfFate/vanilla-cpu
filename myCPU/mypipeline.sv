@@ -188,7 +188,7 @@ tlb_latch m_tlb_latch(
     .rst(~resetn),
     .stall(stall_alpha.m),
     .flush(flush_alpha.m),
-    .data_ok(tlb_ok),
+    .data_ok(m_tlb_ok),
     .in(m_read_tlb),
     .out(read_tlb)
 );

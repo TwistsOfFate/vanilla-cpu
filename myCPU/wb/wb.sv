@@ -25,7 +25,9 @@ module wb(
  //    );
 
     always_comb
-        if (wsig.mfc0)
+        if (wsig.sc)
+            w_reg_wdata = 32'b1;
+        else if (wsig.mfc0)
             w_reg_wdata = mtow.cp0_rdata;
         else if (wsig.link)
             w_reg_wdata = mtow.pcplus8;
@@ -63,5 +65,6 @@ module wb(
 	assign wtoh.lo_wen = wsig.lo_wen ;
 	assign wtoh.cp0_wen = wsig.cp0_wen ;
     assign wtoh.tlb_req = wsig.tlb_req;
+    assign wtoh.sc      = wsig.sc;
     
 endmodule

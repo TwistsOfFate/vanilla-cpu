@@ -162,7 +162,7 @@ module ex(
 		.e		(mul_lo),
 		.f		(e_cl_out),
 		.g		(e_for_rsdata),
-		.h		(32'b1),
+		.h		(),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)
 	);
@@ -223,5 +223,6 @@ module ex(
 	assign etoh.link 	  = esig.link    ;
 	assign etoh.tlb_req   = esig.tlb_req ;
 	assign etoh.likely 	  = esig.likely  ;
+	assign etoh.sc 		  = esig.sc      ;
 	
 endmodule

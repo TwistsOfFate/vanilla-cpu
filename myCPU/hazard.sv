@@ -26,6 +26,7 @@ logic divider_stall, multiplier_stall;
 logic imem_stall, dmem_stall;
 logic tlbw_stall, wait_stall;
 logic d_unlikely, e_unlikely;
+logic sc_stall;
 
 logic [9:0] stall_flush;
 
@@ -116,6 +117,7 @@ assign wait_stall = m_alpha.op_wait;
 assign d_unlikely = d_alpha.likely && (!d_alpha.pcsrc && !d_guess_taken);
 assign e_unlikely = e_alpha.likely && bfrome;
 
+assign sc_stall = e_alpha.sc || m_alpha.sc || w_alpha.sc;
 
 always_comb begin
     if (dmem_stall || cp0_busy_stall || divider_stall || multiplier_stall)
@@ -134,7 +136,7 @@ always_comb begin
         stall_flush = 10'b00000_01100;
     else if (bfrome && !e_unlikely || d_unlikely)
         stall_flush = 10'b00000_01000;
-    else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall || linkr_stall)
+    else if (lwstall || jrstall || hilostall || mfc0_stall || link_stall || linkr_stall || sc_stall)
         stall_flush = 10'b11000_00100;
     else if (tlbw_stall)
         stall_flush = 10'b10000_01000;

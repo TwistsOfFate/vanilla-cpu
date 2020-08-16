@@ -185,5 +185,6 @@ module mem(
 	assign mtoh.cp0_ready = cp0_ready;
 	assign mtoh.tlb_req  = msig.tlb_req;
 	assign mtoh.op_wait  = msig.op_wait;
+	assign mtoh.sc       = msig.sc;
 
 endmodule

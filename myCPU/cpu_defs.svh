@@ -157,6 +157,7 @@ typedef struct packed {
 	logic 		 op_wait;
 	cache_req_t  cache_req;
 	logic		 likely;
+	logic 		 sc;
 } ctrl_reg ;
 
 typedef struct packed {
@@ -275,6 +276,7 @@ typedef struct packed {
 	logic		  link;
 	tlb_req_t	  tlb_req;
 	logic 		  likely;
+	logic 		  sc;
 } dp_etoh;
 
 typedef struct packed {
@@ -293,6 +295,7 @@ typedef struct packed {
 	logic 		  cp0_ready;
 	tlb_req_t	  tlb_req;
 	logic 		  op_wait;
+	logic		  sc;
 } dp_mtoh;
 
 typedef struct packed {
@@ -304,6 +307,7 @@ typedef struct packed {
 	logic		  lo_wen   ;
 	logic		  cp0_wen  ;
 	tlb_req_t	  tlb_req;
+	logic 	      sc;
 } dp_wtoh;
 
 typedef struct packed {

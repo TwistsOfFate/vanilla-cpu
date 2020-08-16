@@ -685,7 +685,7 @@ begin
         begin
             dstage.alu_srcb_sel_rt <= 0 ;
             dstage.sft_srcb_sel_rs <= 0 ;
-            dstage.out_sel <= 3'b111 ;
+            dstage.out_sel <= 3'b000 ;
             dstage.regwrite <= 1'b1 ;
             dstage.regdst <= 2'b00 ;
             dstage.reserved_instr <= 1'b0 ;
@@ -1043,5 +1043,7 @@ always_comb
         dstage.lwlr = 2'b00;
 
 assign dstage.op_wait = dinstr.op == 6'b010000 && dinstr.funct == 6'b100000;
+
+assign dstage.sc = dinstr.op == 6'b111000;
 
 endmodule
