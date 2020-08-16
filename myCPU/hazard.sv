@@ -113,7 +113,7 @@ assign tlbw_stall = d_alpha.tlb_req == TLBWI || d_alpha.tlb_req == TLBWR || e_al
 
 assign wait_stall = m_alpha.op_wait;
 
-assign d_unlikely = d_alpha.likely && !d_alpha.pcsrc;
+assign d_unlikely = d_alpha.likely && (!d_alpha.pcsrc && !d_guess_taken);
 assign e_unlikely = e_alpha.likely && bfrome;
 
 
