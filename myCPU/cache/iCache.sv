@@ -67,11 +67,19 @@ module iCache #(
     generate
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
                  
-            icache_Info_Ram  #(TAG_WIDTH, INDEX_WIDTH)
-                icache_tag_ram  (clk, reset, instr_addr_index, 
-                                 1'b1, instr_addr_tag, 
-                                 icache_line_valid[i], icache_line_tag[i], 
+            valid_Info_Ram  #(INDEX_WIDTH)
+                icache_valid_ram  (clk, reset, instr_addr_index, 
+                                 1'b1,
+                                 icache_line_valid[i],
                                  (i[7:0] == replaceID) & line_data_ok);
+
+            //icache_Info_Ram  #(TAG_WIDTH, INDEX_WIDTH)
+            dram_icache_info
+                icache_tag_ram  (.clk(clk), 
+                                 .a(instr_addr_index), 
+                                 .d(instr_addr_tag), 
+                                 .spo(icache_line_tag[i]), 
+                                 .we((i[7:0] == replaceID) & line_data_ok));
 
             iCache_Ram  #(OFFSET_SIZE * 32, OFFSET_SIZE) 
                 icache_data_ram (clk, instr_addr_index, line_data, icache_line_data[i], (i[7:0] == replaceID) & line_data_ok);

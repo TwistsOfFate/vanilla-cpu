@@ -81,15 +81,19 @@ module dCache #(
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
         
         assign dcache_line_wen[i] = linew_en && (((i[7:0] == replaceID) && (state == 2'b01)) || (way_selector[i] && state == 2'b00)) && cpu_req;
-    
-        icache_Info_Ram #(TAG_WIDTH + 1, INDEX_WIDTH)
-        dcache_info_ram(clk, reset,
-                        data_addr_index,
-                        set_dcache_valid, {set_dcache_dirty, data_addr_tag}, 
-                        dcache_line_valid[i], {dcache_line_dirty[i], dcache_line_tag[i]}, 
-                        dcache_line_wen[i]);
+        valid_Info_Ram #(INDEX_WIDTH)
+        dcache_valid_ram(clk, reset, data_addr_index, set_dcache_valid, dcache_line_valid[i], dcache_line_wen[i]);
+
+        valid_Info_Ram #(INDEX_WIDTH)
+                dcache_dirty_ram(clk, reset, data_addr_index, set_dcache_dirty, dcache_line_dirty[i], dcache_line_wen[i]);
+
+        dram_dcache_info 
+        dcache_info_ram(.clk(clk), 
+                        .a(data_addr_index),
+                        .d(data_addr_tag), 
+                        .spo(dcache_line_tag[i]), 
+                        .we(dcache_line_wen[i]));
         
-                        
         dCache_Ram #(OFFSET_SIZE * 32, OFFSET_SIZE) 
                     dcache_data_ram(clk, data_addr_index, data_addr_bit, data_addr_offset, wr_size,
                                     line_wdata, 
