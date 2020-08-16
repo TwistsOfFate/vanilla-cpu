@@ -162,7 +162,7 @@ module ex(
 		.e		(mul_lo),
 		.f		(e_cl_out),
 		.g		(e_for_rsdata),
-		.h		(),
+		.h		(32'b1),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)
 	);
