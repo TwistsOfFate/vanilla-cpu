@@ -102,6 +102,8 @@ module TLB #(
         if (inst_unmapped || !inst_req) begin
             inst_state = 1'b0;
             inst_TLB_done = 1'b0;
+            inst_TLB_cached = 1'b0;
+            inst_TLB_uncached = 1'b0;
             inst_err = NO_EXC;
         end else begin
             inst_state = 1'b1;
@@ -171,6 +173,8 @@ module TLB #(
         if (data_unmapped || (tlb_req == NO_REQ && !data_req)) begin
             data_state = 1'b0;
             data_TLB_done = 1'b0;
+            data_TLB_cached = 1'b0;
+            data_TLB_uncached = 1'b0;
             data_err = NO_EXC;
             tlb_ok = 1'b0;
         end else begin
