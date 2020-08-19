@@ -36,6 +36,7 @@ module ex(
 	wire [31:0]			div_lo;
 //OZ_COUNT
 	wire [31:0]			e_cl_out;
+	wire [31:0]			e_lsa_out;
 
 //BRANCH COMPARE
 	logic [7:0] ebranch;
@@ -147,6 +148,12 @@ module ex(
 		.in(e_for_rsdata),
 		.out(e_cl_out)
 	);
+	lsa my_lsa(
+		.rsdata(e_for_rsdata),
+		.rtdata(e_for_rtdata),
+		.sa(dtoe.sa[1:0]),
+		.out(e_lsa_out)
+	);
 //INT_OVERFLOW
 	and e_intovf_and(
 		etom.intovf,
@@ -162,7 +169,7 @@ module ex(
 		.e		(mul_lo),
 		.f		(e_cl_out),
 		.g		(e_for_rsdata),
-		.h		(),
+		.h		(e_lsa_out),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)
 	);

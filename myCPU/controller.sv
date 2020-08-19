@@ -20,6 +20,15 @@ begin
         6'b011100:
         begin
             unique case (dinstr.funct)
+                6'b110111: // LSA
+                begin
+                    dstage.alu_srcb_sel_rt <= 0;
+                    dstage.sft_srcb_sel_rs <= 0;
+                    dstage.out_sel <= 3'b111;
+                    dstage.regwrite <= 1'b1;
+                    dstage.regdst <= 2'b01;
+                    dstage.reserved_instr <= 1'b0;
+                end
                 6'b000010: // MUL
                 begin
                     dstage.alu_srcb_sel_rt <= 0;
