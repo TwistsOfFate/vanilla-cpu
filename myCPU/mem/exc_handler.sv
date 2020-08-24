@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "../cpu_defs.svh"
+`include "cpu_defs.svh"
 
 
 module exc_handler(
@@ -29,6 +29,8 @@ module exc_handler(
 	input [31:0] cp0_cause,
 	input m_in_delay_slot,
 	input [31:0] m_pc,
+    input [31:0] m_pcminus4,
+    input [31:0] m_pcplus4,
 	input [31:0] m_badvaddr,
 	
 	input [1:0] m_addr_err,
@@ -37,79 +39,155 @@ module exc_handler(
 	input m_break,
 	input m_syscall,
 	input m_eret,
+    input m_mtc0,
+    input m_wait,
+    input tlb_req_t m_tlb_req,
+    input tlb_exc_t tlb_exc_if,
+    input tlb_exc_t tlb_exc_mem,
 	
 	//OUTPUT
 	output logic is_valid_exc,
-	output logic [31:0] m_epc_wdata,
-	output logic m_cause_bd_wdata,
-	output logic [4:0] m_cause_exccode_wdata,
-	
-	output logic m_cp0_wen,
-	output logic [4:0] m_cp0_waddr,
-	output logic [31:0] m_cp0_wdata
+    output logic [31:0] exc_addr,
+    output cp0_op_t cp0_op,
+    output exc_info_t exc_info
     );
-    
+
+    assign exc_info.badvaddr = tlb_exc_if != NO_EXC ? m_pc : m_badvaddr;
+
     always_comb begin
     	if (!m_is_instr) begin
     		is_valid_exc = 1'b0;
-    		m_cause_exccode_wdata = 5'b0;
+    		exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_NONE;
+            exc_addr = 32'hBFC00380;
     	end else if (((cp0_cause[15:8] & cp0_status[15:8]) != 8'b0) && cp0_status[0] && !cp0_status[1]) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_INT;
+    		exc_info.cause_exccode = `EXCCODE_INT;
+            cp0_op = OP_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_addr_err == 2'b01) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_ADEL;
+    		exc_info.cause_exccode = `EXCCODE_ADEL;
+            cp0_op = OP_BADVA;
+            exc_addr = 32'hBFC00380;
+        end else if (tlb_exc_if == REFILL_L) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBL;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = cp0_status[1] ? 32'hBFC00380 : 32'hBFC00200;
+        end else if (tlb_exc_if == INVALID_L) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBL;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_reserved_instr == 1'b1) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_RI;
+    		exc_info.cause_exccode = `EXCCODE_RI;
+            cp0_op = OP_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_intovf == 1'b1) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_OV;
+    		exc_info.cause_exccode = `EXCCODE_OV;
+            cp0_op = OP_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_break == 1'b1) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_BP;
+    		exc_info.cause_exccode = `EXCCODE_BP;
+            cp0_op = OP_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_syscall == 1'b1) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_SYS;
+    		exc_info.cause_exccode = `EXCCODE_SYS;
+            cp0_op = OP_EXC;
+            exc_addr = 32'hBFC00380;
     	end else if (m_addr_err == 2'b10) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_ADEL;
+    		exc_info.cause_exccode = `EXCCODE_ADEL;
+            cp0_op = OP_BADVA;
+            exc_addr = 32'hBFC00380;
     	end else if (m_addr_err == 2'b11) begin
     		is_valid_exc = 1'b1;
-    		m_cause_exccode_wdata = `EXCCODE_ADES;
+    		exc_info.cause_exccode = `EXCCODE_ADES;
+            cp0_op = OP_BADVA;
+            exc_addr = 32'hBFC00380;
+        end else if (tlb_exc_mem == REFILL_L) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBL;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = cp0_status[1] ? 32'hBFC00380 : 32'hBFC00200;
+        end else if (tlb_exc_mem == REFILL_S) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBS;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = cp0_status[1] ? 32'hBFC00380 : 32'hBFC00200;
+        end else if (tlb_exc_mem == INVALID_L) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBL;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = 32'hBFC00380;
+        end else if (tlb_exc_mem == INVALID_S) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_TLBS;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = 32'hBFC00380;
+        end else if (tlb_exc_mem == MODIFIED) begin
+            is_valid_exc = 1'b1;
+            exc_info.cause_exccode = `EXCCODE_MOD;
+            cp0_op = OP_TLB_EXC;
+            exc_addr = 32'hBFC00380;
+        end else if (m_eret) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_ERET;
+            exc_addr = 32'hBFC00380;
+        end else if (m_mtc0) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_MTC0;
+            exc_addr = 32'hBFC00380;
+        end else if (m_wait) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_WAIT;
+            exc_addr = 32'hBFC00380;
+        end else if (m_tlb_req == TLBWI || m_tlb_req == TLBWR) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_TLBW;
+            exc_addr = 32'hBFC00380;
+        end else if (m_tlb_req == TLBR) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_TLBR;
+            exc_addr = 32'hBFC00380;
+        end else if (m_tlb_req == TLBP) begin
+            is_valid_exc = 1'b0;
+            exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_TLBP;
+            exc_addr = 32'hBFC00380;
     	end else begin
     		is_valid_exc = 1'b0;
-    		m_cause_exccode_wdata = 5'b0;
+    		exc_info.cause_exccode = 5'b0;
+            cp0_op = OP_NONE;
+            exc_addr = 32'hBFC00380;
     	end
     end
     
     always_comb begin
-    	if (cp0_status[1]) begin
-    		m_epc_wdata = cp0_epc;
-    		m_cause_bd_wdata = cp0_cause[31];
-    	end else if (m_in_delay_slot == 1'b1) begin
-    		m_epc_wdata = m_pc - 32'd4;
-    		m_cause_bd_wdata = 1'b1;
-    	end else begin
-    		m_epc_wdata = m_pc;
-    		m_cause_bd_wdata = 1'b0;
-    	end
+    	if (cp0_status[1] && is_valid_exc) begin
+    		exc_info.epc = cp0_epc;
+    		exc_info.cause_bd = cp0_cause[31];
+    	end else if (m_in_delay_slot == 1'b1 && is_valid_exc) begin
+    		exc_info.epc = m_pcminus4;
+    		exc_info.cause_bd = 1'b1;
+    	end else if (is_valid_exc) begin
+    		exc_info.epc = m_pc;
+    		exc_info.cause_bd = 1'b0;
+    	end else begin     // WAIT
+            exc_info.epc = m_pcplus4;
+            exc_info.cause_bd = 1'b0;
+        end
     end
-    
-    always_comb begin
-    	if (m_addr_err != 2'b00) begin
-    		m_cp0_wen = 1'b1;
-    		m_cp0_waddr = `CP0_BADVADDR;
-    		m_cp0_wdata = m_badvaddr;
-    	end else if (m_eret == 1'b1) begin
-    		m_cp0_wen = 1'b1;
-    		m_cp0_waddr = `CP0_STATUS;
-    		m_cp0_wdata = {cp0_status[31:2], 1'b0, cp0_status[0]};
-    	end else begin
-    		m_cp0_wen = 1'b0;
-    		m_cp0_waddr = 32'b0;
-    		m_cp0_wdata = 32'b0;
-    	end
-    end
+
     
 endmodule

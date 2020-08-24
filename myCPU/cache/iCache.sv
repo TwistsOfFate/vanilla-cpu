@@ -33,7 +33,7 @@ module iCache #(
     logic linew_en, new_valid;
     logic [31 : 0] ram_data[LINE_NUM - 1 : 0];
     logic [31 : 0] instr_rdata_0;
-    logic [31 : 0] replaceID;
+    logic [ 7 : 0] replaceID;
     logic [31 : 0] ram_addr;
     logic [OFFSET_WIDTH - 3 : 0] addr_block_offset, data_block_offset;
     logic state, hit, hit_0, hit_1;
@@ -67,18 +67,26 @@ module iCache #(
     generate
         for (i = 0; i < LINE_NUM; i = i + 1) begin:AccessCache
                  
-            icache_Info_Ram  #(TAG_WIDTH, INDEX_WIDTH)
-                icache_tag_ram  (clk, reset, instr_addr_index, 
-                                 1'b1, instr_addr_tag, 
-                                 icache_line_valid[i], icache_line_tag[i], 
-                                 (i == replaceID) & line_data_ok);
+            valid_Info_Ram  #(INDEX_WIDTH)
+                icache_valid_ram  (clk, reset, instr_addr_index, 
+                                 1'b1,
+                                 icache_line_valid[i],
+                                 (i[7:0] == replaceID) & line_data_ok);
+
+            //icache_Info_Ram  #(TAG_WIDTH, INDEX_WIDTH)
+            dram_icache_info
+                icache_tag_ram  (.clk(clk), 
+                                 .a(instr_addr_index), 
+                                 .d(instr_addr_tag), 
+                                 .spo(icache_line_tag[i]), 
+                                 .we((i[7:0] == replaceID) & line_data_ok));
 
             iCache_Ram  #(OFFSET_SIZE * 32, OFFSET_SIZE) 
-                icache_data_ram (clk, instr_addr_index, line_data, icache_line_data[i], (i == replaceID) & line_data_ok);
+                icache_data_ram (clk, instr_addr_index, line_data, icache_line_data[i], (i[7:0] == replaceID) & line_data_ok);
 
             always_comb
-                if (icache_line_valid[i] && icache_line_tag[i] == instr_addr_tag_0) way_selector[i] <= 1;
-                else way_selector[i] <= 0;
+                if (icache_line_valid[i] && icache_line_tag[i] == instr_addr_tag_0) way_selector[i] = 1;
+                else way_selector[i] = 0;
         end
     endgenerate
     
@@ -91,14 +99,14 @@ module iCache #(
            hit_line_num = 0;
            for (int i = 0; i < LINE_NUM; i = i + 1)
                begin
-                   hit_line_num |= (way_selector[i] == 1) ? _int'(i) : 0;
+                   hit_line_num |= (way_selector[i] == 1'b1) ? _int'(i) : 0;
                end
        end 
       
     always_comb
         case (hit)
-            1'b1 : instr_rdata_0 <= icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
-                   default: instr_rdata_0 <= icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
+            1'b1 : instr_rdata_0 = icache_line_data[hit_line_num][instr_addr_offset * 32 +: 32];
+                   default: instr_rdata_0 = icache_line_data[replaceID][instr_addr_offset * 32 +: 32];
                endcase
 
     assign hit = (|way_selector) || !cpu_req;

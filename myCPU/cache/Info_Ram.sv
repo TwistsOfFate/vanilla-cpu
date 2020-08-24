@@ -35,30 +35,50 @@ module dcache_Info_Ram #(
 
 endmodule
 
+module valid_Info_Ram #(
+    parameter ADDR_WIDTH   = 4
+)(
+    input  logic                         clk, reset,
+    input  logic [ADDR_WIDTH - 1 : 0]    addr,
+    input  logic                         new_valid,
+    output logic                         now_valid,
+    input  logic                         wen
+);
+    logic [2 ** ADDR_WIDTH - 1 : 0] valid;
+
+    assign now_valid = valid[addr];
+
+    always_ff @(posedge clk)
+        if (reset) valid <= '0;
+        else if (wen) valid[addr] <= new_valid;
+
+endmodule
+
 module icache_Info_Ram #(
     parameter DATA_WIDTH   = 32,
               ADDR_WIDTH   = 4
 )(
     input  logic                         clk, reset,
     input  logic [ADDR_WIDTH - 1 : 0]    addr,
-    input  logic                         new_valid,
+//    input  logic                         new_valid,
     input  logic [DATA_WIDTH - 1 : 0]    din,
-    output logic                         now_valid,
+//    output logic                         now_valid,
     output logic [DATA_WIDTH - 1 : 0]    wdata,
     input  logic                         wen
 );
     logic [DATA_WIDTH - 1 : 0] RAM[2 ** ADDR_WIDTH - 1 : 0];
-    logic [2 ** ADDR_WIDTH - 1 : 0] valid;
+//    logic [2 ** ADDR_WIDTH - 1 : 0] valid;
 
     assign wdata = RAM[addr];
-    assign now_valid = valid[addr];
+//    assign now_valid = valid[addr];
 
     always_ff @(posedge clk)
-        if (reset) begin
-          valid <= '0;
-        end else if (wen) begin
+        // if (reset) begin
+        //   valid <= '0;
+        // end else 
+        if (wen) begin
           RAM[addr] <= din;
-          valid[addr] <= new_valid;
+        //   valid[addr] <= new_valid;
         end
 
 endmodule

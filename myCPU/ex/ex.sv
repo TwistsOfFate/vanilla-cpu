@@ -12,7 +12,6 @@ module ex(
 
 	input 				e_guess_taken,
 
-	// output logic [31:0] e_bpc,
 	output 				bfrome,
 
 	output	dp_etom 	etom,
@@ -30,14 +29,14 @@ module ex(
 	wire [31:0]			e_sft_srca;
 	wire [4:0]			e_sft_srcb;
 	wire [31:0]			e_sft_out;
-	wire [31:0]			e_bta_out;
 
 	wire [31:0]			mul_hi;
 	wire [31:0]			mul_lo;
 	wire [31:0]			div_hi;
 	wire [31:0]			div_lo;
-
-	// assign e_bpc = dtoe.pc + 32'd8;
+//OZ_COUNT
+	wire [31:0]			e_cl_out;
+	wire [31:0]			e_lsa_out;
 
 //BRANCH COMPARE
 	logic [7:0] ebranch;
@@ -77,8 +76,6 @@ module ex(
 		.func	(esig.alu_func),
 		.srca	(e_for_rsdata),
 		.srcb	(e_alu_srcb),
-		.zero	(),
-		.sign	(),
 		.out	(e_alu_out),
 		.intovf	(e_alu_intovf)
 	);
@@ -103,12 +100,6 @@ module ex(
 		.func	(esig.sft_func),
 		.out	(e_sft_out)
 	);
-//BTA_GENERATOR
-	bta_generator my_bta_generator(
-		.offset	(dtoe.imm),
-		.pc		(dtoe.pc),
-		.out	(e_bta_out)
-	);
 //MULTIPLIER
 	// multiplier my_multiplier(
 	// 	.sign	(esig.mul_sign),
@@ -122,8 +113,11 @@ module ex(
 		.rst(rst),
 		.in_valid(esig.mul_en),
 		.sign(esig.mul_sign),
+		.mode(esig.mul_mode),
 		.srca(e_for_rsdata),
 		.srcb(e_for_rtdata),
+		.in_hi(dtoe.hi),
+		.in_lo(dtoe.lo),
 		.out_valid(etoh.mul_ready),
 		.hi(mul_hi),
 		.lo(mul_lo)
@@ -149,22 +143,33 @@ module ex(
 		.hi(div_hi),
 		.lo(div_lo)
 	);
+	oz_count my_oz_count(
+		.mode(esig.cl_mode),
+		.in(e_for_rsdata),
+		.out(e_cl_out)
+	);
+	lsa my_lsa(
+		.rsdata(e_for_rsdata),
+		.rtdata(e_for_rtdata),
+		.sa(dtoe.sa[1:0]),
+		.out(e_lsa_out)
+	);
 //INT_OVERFLOW
 	and e_intovf_and(
 		etom.intovf,
 		esig.intovf_en,
 		e_alu_intovf
 	);
-//E_OUT_MUX2
-	mux8 e_out_mux4(
+//E_OUT_MUX8
+	mux8 e_out_mux8(
 		.a		(e_alu_out),
 		.b		(e_sft_out),
 		.c		(dtoe.hi),
 		.d		(dtoe.lo),
 		.e		(mul_lo),
-		.f		(),
-		.g		(),
-		.h		(),
+		.f		(e_cl_out),
+		.g		(e_for_rsdata),
+		.h		(e_lsa_out),
 		.sel	(esig.out_sel),
 		.out	(etom.ex_out)
 	);
@@ -204,12 +209,16 @@ module ex(
 	assign etom.rd = dtoe.rd ;
 	assign etom.addr_err_if = dtoe.addr_err_if ;
 	assign etom.is_instr	= dtoe.is_instr ;
+	assign etom.pcminus4 = dtoe.pc - 32'd4;
+	assign etom.pcplus4 = dtoe.pc + 32'd4;
+	assign etom.cp0_sel = dtoe.cp0_sel;
+	assign etom.tlb_exc_if = dtoe.tlb_exc_if;
 
 	assign etoh.reg_waddr = etom.reg_waddr ;
 	assign etoh.regwrite  = esig.regwrite ;
 	assign etoh.memtoreg  = esig.memtoreg ;
 	assign etoh.out_sel   = esig.out_sel  ;
-	assign etoh.cp0_sel   = esig.cp0_sel ;
+	assign etoh.mfc0   = esig.mfc0 ;
 	assign etoh.cp0_wen   = esig.cp0_wen ;
 	assign etoh.hi_wen    = esig.hi_wen  ;
 	assign etoh.lo_wen    = esig.lo_wen  ;
@@ -219,5 +228,8 @@ module ex(
 	assign etoh.rt		  = dtoe.rt		 ;
 	assign etoh.rd		  = dtoe.rd		 ;
 	assign etoh.link 	  = esig.link    ;
+	assign etoh.tlb_req   = esig.tlb_req ;
+	assign etoh.likely 	  = esig.likely  ;
+	assign etoh.sc 		  = esig.sc      ;
 	
 endmodule

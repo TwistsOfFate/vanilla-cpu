@@ -1,6 +1,6 @@
 module SramlikeToAXI
 (
-    input  logic        clk,
+    input  logic        clk, reset,
     input  logic [3 :0] reqType ,
     input  logic        req     ,
     input  logic        wr      ,
@@ -70,7 +70,20 @@ module SramlikeToAXI
     assign sram_rdata = rdata;
 
     always_ff @(posedge clk)
-        rready <= rvalid;
+        if (rready) rready <= 1'b0;
+        else rready <= rvalid;
+        
+    logic wd_state;
+    always_ff @(posedge clk)
+        if (reset) wd_state <= 1'b0;
+        else if (wvalid && !wready) wd_state <= 1'b1;
+        else wd_state <= 1'b0;
+    
+    always_comb
+        case (wd_state)
+            1'b0 : wvalid = req & wr;
+            1'b1 : wvalid= 1'b1;
+        endcase
 
     assign awid = 4'b0001;
     assign awaddr = addr;
@@ -92,11 +105,12 @@ module SramlikeToAXI
             4'b0011 : wstrb = 4'b1000;
             4'b0100 : wstrb = 4'b0011;
             4'b0110 : wstrb = 4'b1100;
+            4'b1100 : wstrb = 4'b0111;
+            4'b1101 : wstrb = 4'b1110;
             default : wstrb = 4'b1111;
         endcase
     end
     assign wlast = burst_wlast;
-    assign wvalid = req & wr;
     assign bready = 1'b1;
 
     assign addr_ok = wr ? awvalid & awready : arvalid & arready;

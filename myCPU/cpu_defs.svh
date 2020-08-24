@@ -1,30 +1,88 @@
 `ifndef CPU_DEFS_SVH
 `define CPU_DEFS_SVH
 
-typedef enum logic [6:0] {
-	OP_ADD, OP_ADDI, OP_ADDU, OP_ADDIU, OP_SUB, OP_SUBU,
-	OP_SLT, OP_SLTI, OP_SLTU, OP_SLTIU,
-	OP_DIV, OP_DIVU,
-	OP_MULT, OP_MULTU,
-	OP_AND, OP_ANDI, OP_LUI, OP_NOR, OP_OR, OP_ORI, OP_XOR, OP_XORI,
-	OP_SLLV, OP_SLL, OP_SRAV, OP_SRA, OP_SRLV, OP_SRL,
-	OP_BEQ, OP_BNE, OP_BGEZ, OP_BGTZ, OP_BLEZ, OP_BLTZ,
-	OP_BGEZAL, OP_BLTZAL,
-	OP_J, OP_JAL, OP_JR, OP_JALR,
-	OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO,
-	OP_BREAK, OP_SYSCALL,
-	OP_LB, OP_LBU, OP_LH, OP_LHU, OP_LW,
-	OP_SB, OP_SH, OP_SW,
-	OP_ERET, OP_MFC0, OP_MTC0
-} op_t;
+// typedef enum logic [6:0] {
+// 	OP_ADD, OP_ADDI, OP_ADDU, OP_ADDIU, OP_SUB, OP_SUBU,
+// 	OP_SLT, OP_SLTI, OP_SLTU, OP_SLTIU,
+// 	OP_DIV, OP_DIVU,
+// 	OP_MULT, OP_MULTU,
+// 	OP_AND, OP_ANDI, OP_LUI, OP_NOR, OP_OR, OP_ORI, OP_XOR, OP_XORI,
+// 	OP_SLLV, OP_SLL, OP_SRAV, OP_SRA, OP_SRLV, OP_SRL,
+// 	OP_BEQ, OP_BNE, OP_BGEZ, OP_BGTZ, OP_BLEZ, OP_BLTZ,
+// 	OP_BGEZAL, OP_BLTZAL,
+// 	OP_J, OP_JAL, OP_JR, OP_JALR,
+// 	OP_MFHI, OP_MFLO, OP_MTHI, OP_MTLO,
+// 	OP_BREAK, OP_SYSCALL,
+// 	OP_LB, OP_LBU, OP_LH, OP_LHU, OP_LW,
+// 	OP_SB, OP_SH, OP_SW,
+// 	OP_ERET, OP_MFC0, OP_MTC0
+// } op_t;
 
-`define CP0_BADVADDR 	5'd8
-`define CP0_COUNT		5'd9
-`define CP0_STATUS		5'd12
-`define CP0_CAUSE		5'd13
-`define CP0_EPC			5'd14
+typedef enum logic [3:0] {
+	OP_NONE, OP_MTC0, OP_EXC, OP_BADVA, OP_ERET,
+	OP_TLB_EXC, OP_TLBW, OP_TLBR, OP_TLBP, OP_WAIT
+} cp0_op_t;
+
+typedef enum logic [4:0] {
+	INDEX, RANDOM, ENTRYLO0, ENTRYLO1, CONTEXT,
+	PAGEMASK, WIRED, HWRENA, BADVADDR, COUNT,
+	ENTRYHI, COMPARE, STATUS, CAUSE, EPC,
+	PRID, CONFIG, LLADDR, WATCHLO, WATCHHI,
+	R20, R21, R22, DEBUG, DEPC,
+	PERFCNT, ERRCTL, CACHEERR, TAGLO, TAGHI,
+	ERROREPC, DESAVE
+} cp0_reg_t;
+
+typedef enum logic [2:0] {
+	NO_EXC, REFILL_L, REFILL_S, INVALID_L, INVALID_S, MODIFIED
+} tlb_exc_t;
+
+typedef enum logic [2:0] {
+	NO_REQ, TLBWI, TLBWR, TLBR, TLBP
+} tlb_req_t;
+
+typedef enum logic [2:0] {
+	NO_CACHE, IndexInvalid, IndexTag, HitInvalid, HitWbInvalid
+} cache_req_t;
+
+`define CP0_INDEX		8'b000_00000
+`define CP0_RANDOM		8'b000_00001
+`define CP0_ENTRYLO0	8'b000_00010
+`define CP0_ENTRYLO1	8'b000_00011
+`define CP0_CONTEXT		8'b000_00100
+`define CP0_PAGEMASK	8'b000_00101
+`define CP0_WIRED		8'b000_00110
+`define CP0_R7			8'b000_00111 // Not implemented
+`define CP0_BADVADDR 	8'b000_01000
+`define CP0_COUNT		8'b000_01001
+`define CP0_ENTRYHI		8'b000_01010
+`define CP0_COMPARE		8'b000_01011
+`define CP0_STATUS		8'b000_01100
+`define CP0_CAUSE		8'b000_01101
+`define CP0_EPC			8'b000_01110
+`define CP0_PRID		8'b000_01111
+`define CP0_CONFIG		8'b000_10000
+`define CP0_CONFIG1		8'b001_10000
+`define CP0_LLADDR		8'b000_10001 // Not implemented
+`define CP0_WATCHLO		8'b000_10010 // Not implemented
+`define CP0_WATCHHI		8'b000_10011 // Not implemented
+`define CP0_R20			8'b000_10100 // Not implemented
+`define CP0_R21			8'b000_10101 // Not implemented
+`define CP0_R22			8'b000_10110 // Not implemented
+`define CP0_R23			8'b000_10111 // Not implemented
+`define CP0_R24			8'b000_11000 // Not implemented
+`define CP0_PERFCNT		8'b000_11001 // Not implemented
+`define CP0_ERRCTL		8'b000_11010 // Not implemented
+`define CP0_CACHEERR	8'b000_11011 // Not implemented
+`define CP0_TAGLO		8'b000_11100
+`define CP0_TAGHI		8'b000_11101 // Not implemented
+`define CP0_ERROREPC	8'b000_11110 // Not implemented
+`define CP0_R31			8'b000_11111 // Not implemented
 
 `define EXCCODE_INT		5'h0
+`define EXCCODE_MOD		5'h1
+`define EXCCODE_TLBL	5'h2
+`define EXCCODE_TLBS	5'h3
 `define EXCCODE_ADEL	5'h4
 `define EXCCODE_ADES	5'h5
 `define EXCCODE_SYS		5'h8
@@ -39,6 +97,22 @@ typedef struct packed {
 	logic m;
 	logic w;
 } stage_val_1;
+
+typedef struct packed {
+	logic [31:0] epc;
+	logic cause_bd;
+	logic [4:0] cause_exccode;
+	logic [31:0] badvaddr;
+} exc_info_t;
+
+typedef struct packed {
+	logic [31:0] index;
+	logic [31:0] random;
+	logic [31:0] entryhi;
+	logic [31:0] pagemask;
+	logic [31:0] entrylo0;
+	logic [31:0] entrylo1;
+} tlb_t;
 
 typedef struct packed {
 	logic 	 	 memtoreg ;
@@ -68,14 +142,22 @@ typedef struct packed {
 	logic [ 1:0] size;
 	logic 		 hi_wen;
 	logic		 lo_wen;
-	logic		 cp0_sel;
+	logic		 mfc0;
 	logic		 cp0_wen;
 	logic		 eret;
-	logic		 pcsrc;
 	logic		 isbranch;
 	logic [ 2:0] branch;
 	logic  		 isjump;
 	logic [ 1:0] jump;
+	logic 		 cl_mode;
+	logic [ 1:0] mul_mode;
+	tlb_req_t	 tlb_req;
+	logic [ 1:0] swlr;
+	logic [ 1:0] lwlr;
+	logic 		 op_wait;
+	cache_req_t  cache_req;
+	logic		 likely;
+	logic 		 sc;
 } ctrl_reg ;
 
 typedef struct packed {
@@ -101,9 +183,11 @@ typedef struct packed {
 typedef struct packed {
 	logic [31:0] instr         ;
 	logic [31:0] pc 	 	   ;
+	logic [31:0] pcplus4	   ;
 	logic        addr_err_if   ;
 	logic		 is_instr	   ;
 	logic 		 in_delay_slot ;
+	tlb_exc_t    tlb_exc_if	   ;
 } dp_ftod;
 
 typedef struct packed {
@@ -120,6 +204,8 @@ typedef struct packed {
 	logic		  addr_err_if;
 	logic		  in_delay_slot;
 	logic		  is_instr	   ;
+	logic   [ 2:0]cp0_sel;
+	tlb_exc_t     tlb_exc_if;
 } dp_dtoe;
 
 typedef struct packed {
@@ -135,7 +221,11 @@ typedef struct packed {
 	logic	[31:0]lo_wdata;
 	logic		  addr_err_if;
 	logic		  intovf;
-	logic		  is_instr	   ;
+	logic		  is_instr;
+	logic 	[31:0]pcminus4;
+	logic 	[31:0]pcplus4;
+	logic   [ 2:0]cp0_sel;
+	tlb_exc_t     tlb_exc_if;
 } dp_etom;
 
 typedef struct packed {
@@ -144,29 +234,35 @@ typedef struct packed {
 	logic	[31:0]rtdata;
 	logic	[ 4:0]reg_waddr;
 	logic	[31:0]pc;
+	logic   [31:0]pcplus8;
 	logic	[31:0]hi_wdata;
 	logic	[31:0]lo_wdata;
 	logic	[ 4:0]rd;
 	logic		  is_instr;
 	logic   [31:0]data_rdata;
+	logic	[31:0]cp0_rdata;
+	logic  	[31:0]rdata_out;
 } dp_mtow;
 
 typedef struct packed {
 	logic		  isbranch;
 	logic		  isjump;
-	logic	[ 1:0]out_sel;
+	logic	[ 2:0]out_sel;
 	logic	[ 4:0]rs;
 	logic	[ 4:0]rt;
-	logic		  cp0_sel;
+	logic		  mfc0;
 	logic   [ 1:0]jump;
+	tlb_req_t	  tlb_req;
+	logic 		  pcsrc;
+	logic 		  likely;
 } dp_dtoh;
 
 typedef struct packed {
 	logic	[ 4:0]reg_waddr;
 	logic 	 	  regwrite ;
 	logic		  memtoreg ;
-	logic	[ 1:0]out_sel  ;
-	logic		  cp0_sel  ;
+	logic	[ 2:0]out_sel  ;
+	logic		  mfc0  ;
 	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
@@ -178,32 +274,40 @@ typedef struct packed {
 	logic		  div_ready;
 	logic		  mul_ready;
 	logic		  link;
+	tlb_req_t	  tlb_req;
+	logic 		  likely;
+	logic 		  sc;
 } dp_etoh;
 
 typedef struct packed {
 	logic	[ 4:0]reg_waddr;
 	logic 	 	  regwrite ;
 	logic		  memtoreg ;
-	logic		  cp0_sel  ;
+	logic		  mfc0  ;
 	logic		  cp0_wen  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
-	logic		  exc_cp0_wen;
 	logic		  eret;
 	logic		  is_valid_exc;
 	logic	[ 4:0]rt;
 	logic   [ 4:0]rd;
 	logic		  link;
+	logic 		  cp0_ready;
+	tlb_req_t	  tlb_req;
+	logic 		  op_wait;
+	logic		  sc;
 } dp_mtoh;
 
 typedef struct packed {
 	logic	[ 4:0]rd;
 	logic	[ 4:0]reg_waddr;
 	logic 	 	  regwrite ;
-	logic		  cp0_sel  ;
+	logic		  mfc0  ;
 	logic		  hi_wen   ;
 	logic		  lo_wen   ;
 	logic		  cp0_wen  ;
+	tlb_req_t	  tlb_req;
+	logic 	      sc;
 } dp_wtoh;
 
 typedef struct packed {
